@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { LogOut, User, LayoutDashboard, Users, Briefcase, MessageSquare, Calendar, ShieldAlert } from 'lucide-react';
+import { LogOut, User, LayoutDashboard, Users, Briefcase, MessageSquare, Calendar, ShieldAlert, Trash2 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -47,6 +47,22 @@ const Dashboard: React.FC = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you sure you want to permanently delete your account? This action cannot be undone and will erase all your profile data, posts, and jobs.')) {
+      setLoading(true);
+      try {
+        const { error } = await supabase.rpc('delete_user_account');
+        if (error) throw error;
+        await supabase.auth.signOut();
+        navigate('/');
+      } catch (err: any) {
+        console.error('Error deleting account:', err);
+        alert('Failed to delete account. Please ensure the delete_user_account SQL function is set up in Supabase.');
+        setLoading(false);
+      }
+    }
   };
 
   if (loading) {
@@ -107,6 +123,9 @@ const Dashboard: React.FC = () => {
           </div>
           <button onClick={handleSignOut} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
             <LogOut size={16} /> Sign Out
+          </button>
+          <button onClick={handleDeleteAccount} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem', color: 'var(--accent-danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+            <Trash2 size={16} /> Delete Account
           </button>
         </div>
       </aside>
