@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, Briefcase, GraduationCap, ArrowLeft, Filter, BadgeCheck } from 'lucide-react';
+import { Search, MapPin, GraduationCap, ArrowLeft, Filter, BadgeCheck } from 'lucide-react';
 import { mockUsers, industries, years } from '../lib/mockData';
 import type { UserProfile } from '../lib/mockData';
 

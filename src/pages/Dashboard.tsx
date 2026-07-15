@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase, isMock } from '../lib/supabase';
-import { LogOut, User, LayoutDashboard, Users, Briefcase, MessageSquare, Heart } from 'lucide-react';
+import { LogOut, User, LayoutDashboard, Users, Briefcase, MessageSquare, Calendar, ShieldAlert } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +11,10 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const checkUser = async () => {
       if (isMock) {
-        setUser({ email: 'mockuser@example.com', user_metadata: { full_name: 'Mock User' } });
+        const mockEmail = localStorage.getItem('mockUserEmail') || 'mockuser@example.com';
+        const userType = mockEmail.includes('admin') ? 'admin' : 'student';
+        const fullName = mockEmail.includes('admin') ? 'Dr. College Admin' : 'Mock User';
+        setUser({ email: mockEmail, user_metadata: { full_name: fullName, user_type: userType } });
         setLoading(false);
         return;
       }
@@ -55,18 +58,23 @@ const Dashboard: React.FC = () => {
           <Link to="/directory" className="btn btn-glass" style={{ justifyContent: 'flex-start', border: 'transparent' }}>
             <Users size={20} /> Alumni Directory
           </Link>
-          <Link to="/mentorship" className="btn btn-glass" style={{ justifyContent: 'flex-start', border: 'transparent' }}>
-            <Briefcase size={20} /> Mentorship Portal
-          </Link>
           <Link to="/forums" className="btn btn-glass" style={{ justifyContent: 'flex-start', border: 'transparent' }}>
-            <MessageSquare size={20} /> Forums
+            <MessageSquare size={20} /> Discussion Forums
           </Link>
           <Link to="/jobs" className="btn btn-glass" style={{ justifyContent: 'flex-start', border: 'transparent' }}>
             <Briefcase size={20} /> Job Portal
           </Link>
-          <Link to="/donations" className="btn btn-glass" style={{ justifyContent: 'flex-start', border: 'transparent', color: '#ef4444' }}>
-            <Heart size={20} /> Give Back
+          <Link to="/events" className="btn btn-glass" style={{ justifyContent: 'flex-start', border: 'transparent', color: 'var(--brand-primary)' }}>
+            <Calendar size={20} /> Campus Events
           </Link>
+          {user?.user_metadata?.user_type === 'admin' && (
+            <div style={{ height: '1px', background: 'var(--border-color)', margin: '0.5rem 0' }}></div>
+          )}
+          {user?.user_metadata?.user_type === 'admin' && (
+            <Link to="/admin" className="btn btn-glass" style={{ justifyContent: 'flex-start', border: 'transparent', color: 'var(--accent-warning)' }}>
+              <ShieldAlert size={20} /> Verification Queue
+            </Link>
+          )}
         </nav>
 
         <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>

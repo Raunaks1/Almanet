@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { mockUsers } from '../lib/mockData';
-import { ArrowLeft, MapPin, Briefcase, GraduationCap, Mail, MessageSquare, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, MapPin, GraduationCap, Mail, MessageSquare, BadgeCheck } from 'lucide-react';
 
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();

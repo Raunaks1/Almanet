@@ -44,13 +44,7 @@ const Home: React.FC = () => {
             <p style={{ color: 'var(--text-secondary)' }}>Connect with graduates across various industries, graduation years, and specializations.</p>
           </div>
 
-          <div className="glass-card" style={{ padding: '2rem' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-              <HeartHandshake size={24} color="var(--brand-secondary)" />
-            </div>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Mentorship Program</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>Seek guidance from experienced alumni or give back by mentoring current students.</p>
-          </div>
+
 
           <div className="glass-card" style={{ padding: '2rem' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>

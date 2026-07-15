@@ -5,10 +5,10 @@ import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import Directory from './pages/Directory';
 import Profile from './pages/Profile';
-import Mentorship from './pages/Mentorship';
 import Forums from './pages/Forums';
 import Jobs from './pages/Jobs';
-import Donations from './pages/Donations';
+import Events from './pages/Events';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -20,10 +20,10 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/directory" element={<Directory />} />
           <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/mentorship" element={<Mentorship />} />
           <Route path="/forums" element={<Forums />} />
           <Route path="/jobs" element={<Jobs />} />
-          <Route path="/donations" element={<Donations />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </div>
     </Router>

@@ -7,10 +7,20 @@ import type { ForumPost } from '../lib/mockData';
 const Forums: React.FC = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  
+  // Mock current user (John Smith, Student, Pending Verification)
+  // To test Admin/Approved state, change to mockUsers[0] (Jane Doe, Approved)
+  const currentUser = mockUsers[1]; 
+  const isApproved = currentUser.verification_status === 'approved';
+  
+  const gradYearStr = currentUser.graduation_year ? currentUser.graduation_year.toString().slice(-2) : 'N/A';
+  const batchName = `My Batch (${currentUser.branch || 'Unknown'} '${gradYearStr})`;
 
   const filteredPosts = selectedCategory === 'All' 
     ? mockForumPosts 
-    : mockForumPosts.filter(post => post.category === selectedCategory);
+    : selectedCategory === batchName
+      ? [] // Mock empty batch community for now
+      : mockForumPosts.filter(post => post.category === selectedCategory);
 
   const getAuthorName = (authorId: string) => {
     return mockUsers.find(u => u.id === authorId)?.full_name || 'Unknown User';
@@ -29,14 +39,27 @@ const Forums: React.FC = () => {
         </h1>
       </header>
 
-      <main className="container" style={{ padding: '2rem 1.5rem', maxWidth: '1000px', width: '100%', display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+      <main className="container" style={{ padding: '2rem 1.5rem', maxWidth: '1000px', width: '100%', display: 'flex', gap: '2rem', alignItems: 'flex-start', flexDirection: 'column' }}>
         
-        {/* Sidebar Categories */}
-        <aside style={{ width: '250px', flexShrink: 0, position: 'sticky', top: '100px' }}>
-          <div className="glass-panel" style={{ padding: '1.5rem' }}>
-            <button className="btn btn-primary" style={{ width: '100%', marginBottom: '2rem' }} onClick={() => alert('New discussion modal would open here! (Mock)')}>
-              <PlusCircle size={18} /> New Post
-            </button>
+        {!isApproved && (
+          <div style={{ width: '100%', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--accent-danger)', color: 'var(--accent-danger)', padding: '1rem', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <MessageSquare size={20} />
+            <p style={{ margin: 0 }}><strong>Access Restricted:</strong> Your account is pending admin verification. You cannot post or chat in community sections yet.</p>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '2rem', width: '100%', alignItems: 'flex-start' }}>
+          {/* Sidebar Categories */}
+          <aside style={{ width: '250px', flexShrink: 0, position: 'sticky', top: '100px' }}>
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', marginBottom: '2rem', opacity: isApproved ? 1 : 0.5, cursor: isApproved ? 'pointer' : 'not-allowed' }} 
+                onClick={() => isApproved ? alert('New discussion modal would open here! (Mock)') : alert('You must be verified to post.')}
+                disabled={!isApproved}
+              >
+                <PlusCircle size={18} /> New Post
+              </button>
             
             <h3 style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
               Categories
@@ -49,6 +72,19 @@ const Forums: React.FC = () => {
               >
                 All Discussions
               </button>
+              
+              <div style={{ height: '1px', background: 'var(--border-color)', margin: '0.5rem 0' }}></div>
+              
+              {/* Cohort Specific Community */}
+              <button 
+                onClick={() => setSelectedCategory(batchName)}
+                style={{ textAlign: 'left', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', background: selectedCategory === batchName ? 'rgba(255,255,255,0.1)' : 'transparent', color: selectedCategory === batchName ? 'var(--brand-primary)' : 'var(--brand-secondary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <MessageCircle size={16} /> {batchName}
+              </button>
+              
+              <div style={{ height: '1px', background: 'var(--border-color)', margin: '0.5rem 0' }}></div>
+
               {forumCategories.map(cat => (
                 <button 
                   key={cat}
@@ -96,10 +132,11 @@ const Forums: React.FC = () => {
             <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--glass-bg)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)' }}>
               <MessageSquare size={48} color="var(--text-secondary)" style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
               <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No discussions yet</h3>
-              <p style={{ color: 'var(--text-secondary)' }}>Be the first to start a conversation in this category!</p>
+              <p style={{ color: 'var(--text-secondary)' }}>Be the first to start a conversation in {selectedCategory}!</p>
             </div>
           )}
         </div>
+      </div>
 
       </main>
     </div>

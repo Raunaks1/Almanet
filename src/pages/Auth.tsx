@@ -9,7 +9,7 @@ const Auth: React.FC = () => {
   const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
   
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
-  const [userType, setUserType] = useState<'student' | 'alumni'>('alumni');
+  const [userType, setUserType] = useState<'student' | 'alumni' | 'admin'>('alumni');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,6 +17,14 @@ const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  
+  // Cohort & Verification Fields
+  const [college, setCollege] = useState('');
+  const [degree, setDegree] = useState('');
+  const [branch, setBranch] = useState('');
+  const [graduationYear, setGraduationYear] = useState('');
+  const [adminPassphrase, setAdminPassphrase] = useState('');
+  const [idDocument, setIdDocument] = useState<File | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +36,17 @@ const Auth: React.FC = () => {
         // Mock authentication for preview purposes
         setTimeout(() => {
           if (mode === 'register') {
-            alert('Mock Registration successful! Redirecting to login...');
+            if (userType === 'admin' && adminPassphrase !== 'admin123') {
+              setError('Invalid admin pass-phrase.');
+              setLoading(false);
+              return;
+            }
+            alert('Mock Registration successful! Your account is pending admin verification. Redirecting to login...');
             setMode('login');
           } else {
+            // For mock login, we can't easily check verification status without a real backend, 
+            // but in a real app, we'd check it here and maybe redirect to a "Pending" page.
+            localStorage.setItem('mockUserEmail', email);
             navigate('/dashboard');
           }
           setLoading(false);
@@ -39,13 +55,18 @@ const Auth: React.FC = () => {
       }
 
       if (mode === 'register') {
-        const { data, error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
               full_name: fullName,
               user_type: userType,
+              college,
+              degree,
+              branch,
+              graduation_year: graduationYear,
+              verification_status: 'pending'
             }
           }
         });
@@ -53,7 +74,7 @@ const Auth: React.FC = () => {
         alert('Registration successful! Please check your email.');
         setMode('login');
       } else {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
@@ -109,7 +130,7 @@ const Auth: React.FC = () => {
                   <button 
                     type="button" 
                     className={`btn ${userType === 'alumni' ? 'btn-primary' : 'btn-outline'}`} 
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, padding: '0.5rem' }}
                     onClick={() => setUserType('alumni')}
                   >
                     Alumni
@@ -117,10 +138,18 @@ const Auth: React.FC = () => {
                   <button 
                     type="button" 
                     className={`btn ${userType === 'student' ? 'btn-primary' : 'btn-outline'}`} 
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, padding: '0.5rem' }}
                     onClick={() => setUserType('student')}
                   >
                     Student
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`btn ${userType === 'admin' ? 'btn-primary' : 'btn-outline'}`} 
+                    style={{ flex: 1, padding: '0.5rem' }}
+                    onClick={() => setUserType('admin')}
+                  >
+                    Admin
                   </button>
                 </div>
               </div>
@@ -137,6 +166,91 @@ const Auth: React.FC = () => {
                   required 
                 />
               </div>
+
+              <div className="input-group">
+                <label className="input-label" htmlFor="college">College / Institute Name</label>
+                <input 
+                  type="text" 
+                  id="college" 
+                  className="input-field" 
+                  placeholder="e.g. Engineering College"
+                  value={college}
+                  onChange={(e) => setCollege(e.target.value)}
+                  required 
+                />
+              </div>
+
+              {userType === 'admin' ? (
+                <div className="input-group">
+                  <label className="input-label" htmlFor="adminPassphrase">Admin Verification Pass-phrase</label>
+                  <input 
+                    type="password" 
+                    id="adminPassphrase" 
+                    className="input-field" 
+                    placeholder="Enter college admin code"
+                    value={adminPassphrase}
+                    onChange={(e) => setAdminPassphrase(e.target.value)}
+                    required 
+                  />
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Hint: Use 'admin123' for this prototype.</p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div className="input-group" style={{ flex: 1 }}>
+                      <label className="input-label" htmlFor="degree">Degree</label>
+                      <input 
+                        type="text" 
+                        id="degree" 
+                        className="input-field" 
+                        placeholder="e.g. B.Tech"
+                        value={degree}
+                        onChange={(e) => setDegree(e.target.value)}
+                        required 
+                      />
+                    </div>
+                    <div className="input-group" style={{ flex: 1 }}>
+                      <label className="input-label" htmlFor="graduationYear">Graduation Year</label>
+                      <input 
+                        type="number" 
+                        id="graduationYear" 
+                        className="input-field" 
+                        placeholder="e.g. 2024"
+                        value={graduationYear}
+                        onChange={(e) => setGraduationYear(e.target.value)}
+                        required 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="input-group">
+                    <label className="input-label" htmlFor="branch">Branch / Major</label>
+                    <input 
+                      type="text" 
+                      id="branch" 
+                      className="input-field" 
+                      placeholder="e.g. Computer Science"
+                      value={branch}
+                      onChange={(e) => setBranch(e.target.value)}
+                      required 
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label className="input-label" htmlFor="idDocument">Upload ID / Certificate (Verification)</label>
+                    <input 
+                      type="file" 
+                      id="idDocument" 
+                      className="input-field"
+                      style={{ padding: '0.5rem' }}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => setIdDocument(e.target.files ? e.target.files[0] : null)}
+                      required
+                    />
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Upload a valid college ID or degree certificate for admin review.</p>
+                  </div>
+                </>
+              )}
             </>
           )}
 

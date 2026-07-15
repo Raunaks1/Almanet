@@ -1,79 +1,109 @@
 export type UserType = 'alumni' | 'student' | 'admin';
 
+export interface MockEvent {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  description: string;
+  registeredCount: number;
+}
+
+export const mockEvents: MockEvent[] = [
+  {
+    id: '1',
+    title: 'Annual Tech Symposium 2026',
+    date: 'August 15, 2026 • 10:00 AM',
+    location: 'Main Auditorium, Engineering College',
+    description: 'Join us for our biggest tech event of the year featuring keynote speakers from top FAANG companies and exciting startup pitches.',
+    registeredCount: 142
+  },
+  {
+    id: '2',
+    title: 'Alumni Networking Mixer',
+    date: 'September 5, 2026 • 6:00 PM',
+    location: 'Grand Hotel, City Center',
+    description: 'An exclusive networking evening for all verified alumni and final-year students. Great opportunity to connect and find mentors.',
+    registeredCount: 85
+  }
+];
+
 export interface UserProfile {
   id: string;
-  full_name: string;
-  user_type: UserType;
   email: string;
+  full_name: string;
+  user_type: 'alumni' | 'student' | 'admin';
+  college?: string;
+  degree?: string;
+  branch?: string;
   graduation_year?: number;
   industry?: string;
   location?: string;
-  bio?: string;
-  avatar_url?: string;
-  is_verified: boolean;
   skills: string[];
+  is_verified: boolean; // Deprecated, use verification_status
+  verification_status: 'pending' | 'approved' | 'rejected';
+  bio?: string;
 }
 
 export const mockUsers: UserProfile[] = [
   {
     id: '1',
-    full_name: 'Dr. Jane Smith',
+    email: 'jane.doe@example.com',
+    full_name: 'Jane Doe',
     user_type: 'alumni',
-    email: 'jane.smith@example.com',
-    graduation_year: 2015,
+    college: 'Engineering College',
+    degree: 'B.Tech',
+    branch: 'Computer Science',
+    graduation_year: 2018,
     industry: 'Software Engineering',
     location: 'Bangalore, India',
-    bio: 'Senior Staff Engineer at Google. Passionate about distributed systems and mentoring young talent from my alma mater.',
+    skills: ['React', 'Node.js', 'System Design', 'Mentor'],
     is_verified: true,
-    skills: ['System Design', 'Go', 'Kubernetes', 'Mentorship']
+    verification_status: 'approved',
+    bio: 'Senior SDE at TechCorp. Passionate about helping juniors transition into tech.'
   },
   {
     id: '2',
-    full_name: 'Rahul Sharma',
-    user_type: 'alumni',
-    email: 'rahul.s@example.com',
-    graduation_year: 2020,
-    industry: 'Data Science',
-    location: 'Pune, India',
-    bio: 'Data Scientist at an exciting fintech startup. Always looking to connect with fellow data enthusiasts.',
-    is_verified: true,
-    skills: ['Python', 'Machine Learning', 'SQL']
+    email: 'john.smith@example.com',
+    full_name: 'John Smith',
+    user_type: 'student',
+    college: 'Engineering College',
+    degree: 'B.Tech',
+    branch: 'Computer Science',
+    graduation_year: 2025,
+    industry: '',
+    location: 'Mumbai, India',
+    skills: ['React', 'TypeScript'],
+    is_verified: false,
+    verification_status: 'pending',
+    bio: 'Final year CS student looking for roles.'
   },
   {
     id: '3',
-    full_name: 'Anita Desai',
-    user_type: 'alumni',
-    email: 'anita.d@example.com',
-    graduation_year: 2012,
-    industry: 'Product Management',
-    location: 'Mumbai, India',
-    bio: 'VP of Product at InnovateCorp. Helping shape the future of EdTech.',
+    email: 'admin@college.edu',
+    full_name: 'Dr. College Admin',
+    user_type: 'admin',
+    college: 'Engineering College',
+    skills: ['Administration'],
     is_verified: true,
-    skills: ['Product Strategy', 'Agile', 'Leadership']
+    verification_status: 'approved',
+    bio: 'Official College Administrator.'
   },
   {
     id: '4',
-    full_name: 'Vikram Singh',
-    user_type: 'student',
     email: 'vikram.s@example.com',
-    graduation_year: 2025,
-    industry: 'Software Engineering',
-    location: 'Jaipur, India',
-    bio: 'Final year CS student looking for guidance in backend development and cloud architecture.',
-    is_verified: false,
-    skills: ['Java', 'Spring Boot', 'AWS Basic']
-  },
-  {
-    id: '5',
-    full_name: 'Neha Gupta',
+    full_name: 'Vikram Singh',
     user_type: 'alumni',
-    email: 'neha.g@example.com',
-    graduation_year: 2018,
-    industry: 'Cybersecurity',
-    location: 'Delhi, India',
-    bio: 'Security Analyst focused on web application security. Happy to review resumes or conduct mock interviews.',
-    is_verified: true,
-    skills: ['Pen Testing', 'Network Security', 'Cryptography']
+    college: 'Engineering College',
+    degree: 'B.Tech',
+    branch: 'Mechanical',
+    graduation_year: 2020,
+    industry: 'Automotive',
+    location: 'Pune, India',
+    skills: ['CAD', 'Design'],
+    is_verified: false,
+    verification_status: 'pending',
+    bio: 'Working in auto design.'
   }
 ];
 
