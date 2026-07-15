@@ -1,23 +1,49 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Users, PlusCircle, ArrowLeft, CheckCircle } from 'lucide-react';
-import { mockEvents } from '../lib/mockData';
+import { Calendar, MapPin, Users, PlusCircle, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+export interface EventPost {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  description: string;
+  registered_count: number;
+}
 
 const Events: React.FC = () => {
   const navigate = useNavigate();
-  // Read user from localStorage to determine if admin
-  const mockEmail = localStorage.getItem('mockUserEmail') || '';
-  const isAdmin = mockEmail.includes('admin');
-
-  const [events, setEvents] = useState(mockEvents);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [events, setEvents] = useState<EventPost[]>([]);
   const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
-  const handleRegister = (eventId: string) => {
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('user_type').eq('id', session.user.id).single();
+        if (profile?.user_type === 'admin') setIsAdmin(true);
+      }
+
+      const { data, error } = await supabase.from('events').select('*').order('date', { ascending: true });
+      if (!error && data) {
+        setEvents(data as EventPost[]);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  const handleRegister = async (eventId: string) => {
     if (registeredEvents.has(eventId)) return;
     
+    // In a real app we'd insert into an event_registrations table. 
+    // Here we just increment the counter optimistically.
     setRegisteredEvents(prev => new Set(prev).add(eventId));
     setEvents(events.map(ev => 
-      ev.id === eventId ? { ...ev, registeredCount: ev.registeredCount + 1 } : ev
+      ev.id === eventId ? { ...ev, registered_count: ev.registered_count + 1 } : ev
     ));
     alert('Successfully registered for this event!');
   };
@@ -52,29 +78,36 @@ const Events: React.FC = () => {
           )}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {events.map((event) => {
-            const isRegistered = registeredEvents.has(event.id);
-            return (
-              <div key={event.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-secondary)', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>
-                  <Calendar size={16} /> {event.date}
-                </div>
-                
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>{event.title}</h3>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-                  <MapPin size={16} /> {event.location}
-                </div>
-                
-                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9375rem', marginBottom: '1.5rem', flexGrow: 1 }}>
-                  {event.description}
-                </p>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: 'auto' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                    <Users size={16} /> {event.registeredCount} attending
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+            <Loader2 className="animate-spin" size={32} color="var(--brand-primary)" />
+          </div>
+        ) : events.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+            <Calendar size={48} style={{ opacity: 0.5, margin: '0 auto 1rem auto' }} />
+            <p>No upcoming events at the moment.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            {events.map((event) => {
+              const isRegistered = registeredEvents.has(event.id);
+              return (
+                <div key={event.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-secondary)', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>
+                    <Calendar size={16} /> 
+                    {new Date(event.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                   </div>
+                  <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{event.title}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                    <MapPin size={16} /> {event.location}
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', lineHeight: 1.5, flex: 1, marginBottom: '1.5rem' }}>
+                    {event.description}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
+                      <Users size={16} /> {event.registered_count} registered
+                    </div>
                   {!isAdmin && (
                     <button 
                       className={isRegistered ? "btn btn-outline" : "btn btn-primary"}
@@ -95,6 +128,7 @@ const Events: React.FC = () => {
             );
           })}
         </div>
+        )}
       </main>
     </div>
   );

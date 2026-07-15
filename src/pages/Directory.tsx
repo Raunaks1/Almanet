@@ -1,17 +1,52 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, GraduationCap, ArrowLeft, Filter, BadgeCheck } from 'lucide-react';
-import { mockUsers, industries, years } from '../lib/mockData';
-import type { UserProfile } from '../lib/mockData';
+import { Search, MapPin, GraduationCap, ArrowLeft, Filter, BadgeCheck, Loader2, Users } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+// Define the type locally since we are removing mockData
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  user_type: 'alumni' | 'student' | 'admin';
+  college?: string;
+  degree?: string;
+  branch?: string;
+  graduation_year?: number;
+  industry?: string;
+  location?: string;
+  skills: string[];
+  verification_status: 'pending' | 'approved' | 'rejected';
+  bio?: string;
+}
+
+// Temporary hardcoded options until we build dynamic filters
+const industries = ['Software Engineering', 'Data Science', 'Product Management', 'Design', 'Finance'];
+const years = [2026, 2025, 2024, 2023, 2022, 2021];
 
 const Directory: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
+  const [alumni, setAlumni] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filter only Alumni for the directory (or both depending on use case, but usually it's Alumni directory)
-  const alumni = mockUsers.filter(u => u.user_type === 'alumni');
+  React.useEffect(() => {
+    const fetchAlumni = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_type', 'alumni')
+        .eq('verification_status', 'approved'); // Only show approved alumni
+      
+      if (!error && data) {
+        setAlumni(data as UserProfile[]);
+      }
+      setLoading(false);
+    };
+    fetchAlumni();
+  }, []);
 
   const filteredAlumni = alumni.filter(user => {
     const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -93,20 +128,26 @@ const Directory: React.FC = () => {
           </div>
         </aside>
 
-        {/* Results Grid */}
-        <div style={{ flex: 1 }}>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-            Showing {filteredAlumni.length} result{filteredAlumni.length !== 1 && 's'}
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            {filteredAlumni.map((user: UserProfile) => (
+        {/* Directory Grid */}
+        <section style={{ flex: 1 }}>
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+              <Loader2 className="animate-spin" size={32} color="var(--brand-primary)" />
+            </div>
+          ) : filteredAlumni.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <Users size={48} style={{ opacity: 0.5, margin: '0 auto 1rem auto' }} />
+              <p>No alumni found matching your criteria.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              {filteredAlumni.map((user: UserProfile) => (
               <div key={user.id} className="glass-card animate-fade-in" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
                   <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600 }}>
                     {user.full_name.charAt(0)}
                   </div>
-                  {user.is_verified && (
+                  {user.verification_status === 'approved' && (
                     <div title="Institute Verified" style={{ color: 'var(--brand-primary)', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem', borderRadius: '50%' }}>
                       <BadgeCheck size={20} />
                     </div>
@@ -152,8 +193,9 @@ const Directory: React.FC = () => {
                 <p style={{ color: 'var(--text-secondary)' }}>Try adjusting your search or filters.</p>
               </div>
             )}
-          </div>
-        </div>
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );

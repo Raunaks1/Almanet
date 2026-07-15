@@ -1,17 +1,48 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Briefcase, MapPin, Building, PlusCircle, CheckCircle } from 'lucide-react';
-import { mockJobs, mockUsers } from '../lib/mockData';
-import type { JobPost } from '../lib/mockData';
+import { ArrowLeft, Search, Briefcase, MapPin, Building, PlusCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+export interface JobPost {
+  id: string;
+  author_id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: 'Full-time' | 'Part-time' | 'Internship' | 'Contract';
+  description: string;
+  requirements: string[];
+  tags: string[];
+  created_at: string;
+  profiles?: { full_name: string };
+}
 
 const Jobs: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('All');
   
+  const [jobs, setJobs] = useState<JobPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchJobs = async () => {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*, profiles(full_name)')
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) {
+        setJobs(data as JobPost[]);
+      }
+      setLoading(false);
+    };
+    fetchJobs();
+  }, []);
+
   const jobTypes = ['All', 'Full-time', 'Part-time', 'Internship', 'Contract'];
 
-  const filteredJobs = mockJobs.filter(job => {
+  const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           job.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -21,8 +52,8 @@ const Jobs: React.FC = () => {
     return matchesSearch && matchesType;
   });
 
-  const getAuthorName = (authorId: string) => {
-    return mockUsers.find(u => u.id === authorId)?.full_name || 'Unknown User';
+  const getAuthorName = (job: JobPost) => {
+    return job.profiles?.full_name || 'Unknown User';
   };
 
   return (
@@ -83,54 +114,65 @@ const Jobs: React.FC = () => {
 
         {/* Jobs List */}
         <div style={{ flex: 1 }}>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-            Showing {filteredJobs.length} job{filteredJobs.length !== 1 && 's'}
-          </p>
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+              <Loader2 className="animate-spin" size={32} color="var(--brand-primary)" />
+            </div>
+          ) : filteredJobs.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <Briefcase size={48} style={{ opacity: 0.5, margin: '0 auto 1rem auto' }} />
+              <p>No jobs found matching your criteria.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {filteredJobs.map(job => (
+                <div key={job.id} className="glass-panel animate-fade-in" style={{ padding: '2rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                    <div>
+                      <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{job.title}</h2>
+                      <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building size={16} /> {job.company}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={16} /> {job.location}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Briefcase size={16} /> {job.type}</span>
+                      </div>
+                    </div>
+                    <button className="btn btn-primary" onClick={() => alert('Application flow would trigger here (Mock)')}>
+                      Apply Now
+                    </button>
+                  </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {filteredJobs.map((job: JobPost) => (
-              <div key={job.id} className="glass-card animate-fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{job.title}</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.9375rem', flexWrap: 'wrap' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building size={16} /> {job.company}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={16} /> {job.location}</span>
-                      {job.salary && <span style={{ color: 'var(--brand-primary)', fontWeight: 500 }}>{job.salary}</span>}
+                  <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                    {job.description}
+                  </p>
+
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <h4 style={{ fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <CheckCircle size={16} color="var(--accent-success)" /> Requirements
+                    </h4>
+                    <ul style={{ color: 'var(--text-secondary)', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      {job.requirements && job.requirements.map((req, i) => (
+                        <li key={i}>{req}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {job.tags && job.tags.map(tag => (
+                        <span key={tag} style={{ fontSize: '0.75rem', padding: '0.25rem 0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', borderRadius: '9999px', color: 'var(--text-secondary)' }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
+                      Posted by {getAuthorName(job)} • {new Date(job.created_at).toLocaleDateString()}
                     </div>
                   </div>
-                  <button className="btn btn-primary" onClick={() => alert(`Applied to ${job.title} at ${job.company}! Your AlmaNET profile has been shared. (Mock)`)}>
-                    <CheckCircle size={18} /> Apply Now
-                  </button>
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                  <span style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--brand-primary)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-xl)', fontSize: '0.75rem', fontWeight: 500 }}>
-                    {job.type}
-                  </span>
-                  {job.tags.map(tag => (
-                    <span key={tag} style={{ background: 'var(--bg-tertiary)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-xl)', fontSize: '0.75rem', border: '1px solid var(--border-color)' }}>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
-                  <span>Posted by <strong style={{ color: 'var(--text-secondary)' }}>{getAuthorName(job.postedBy)}</strong></span>
-                  <span>{job.createdAt}</span>
-                </div>
-              </div>
-            ))}
-
-            {filteredJobs.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--glass-bg)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)' }}>
-                <Briefcase size={48} color="var(--text-secondary)" style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No jobs found</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>Try adjusting your filters or search term.</p>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </main>

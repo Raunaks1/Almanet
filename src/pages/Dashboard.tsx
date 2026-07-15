@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase, isMock } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { LogOut, User, LayoutDashboard, Users, Briefcase, MessageSquare, Calendar, ShieldAlert } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -10,20 +10,34 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      if (isMock) {
-        const mockEmail = localStorage.getItem('mockUserEmail') || 'mockuser@example.com';
-        const userType = mockEmail.includes('admin') ? 'admin' : 'student';
-        const fullName = mockEmail.includes('admin') ? 'Dr. College Admin' : 'Mock User';
-        setUser({ email: mockEmail, user_metadata: { full_name: fullName, user_type: userType } });
-        setLoading(false);
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error || !session) {
+        navigate('/auth');
         return;
       }
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/auth');
-      } else {
+
+      // Fetch the full user profile from the profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError || !profile) {
+        console.error('Error fetching profile:', profileError);
+        // Fallback to auth metadata if profile fetch fails
         setUser(session.user);
+      } else {
+        // Merge the profile data with the user object to mimic the metadata structure we had
+        setUser({
+          ...session.user,
+          user_metadata: {
+            ...session.user.user_metadata,
+            user_type: profile.user_type,
+            full_name: profile.full_name
+          }
+        });
       }
       setLoading(false);
     };
@@ -31,7 +45,7 @@ const Dashboard: React.FC = () => {
   }, [navigate]);
 
   const handleSignOut = async () => {
-    if (!isMock) await supabase.auth.signOut();
+    await supabase.auth.signOut();
     navigate('/');
   };
 

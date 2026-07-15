@@ -1,44 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, ShieldAlert, GraduationCap, Building } from 'lucide-react';
-import { mockUsers } from '../lib/mockData';
-import type { UserProfile } from '../lib/mockData';
+import { CheckCircle, XCircle, ShieldAlert, GraduationCap, Building, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import type { UserProfile } from './Directory';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  // In a real app, this would fetch from Supabase:
-  // supabase.from('profiles').select('*').eq('verification_status', 'pending')
   const [pendingUsers, setPendingUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock fetch pending users
-    const pending = mockUsers.filter(u => u.verification_status === 'pending');
-    setPendingUsers(pending);
+    fetchPendingUsers();
   }, []);
 
-  const handleVerify = (userId: string, status: 'approved' | 'rejected') => {
-    // In a real app: await supabase.from('profiles').update({ verification_status: status }).eq('id', userId)
-    setPendingUsers(prev => prev.filter(u => u.id !== userId));
-    alert(`User ${status} successfully.`);
+  const fetchPendingUsers = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('verification_status', 'pending')
+      .order('created_at', { ascending: false });
+    
+    if (!error && data) {
+      setPendingUsers(data as UserProfile[]);
+    }
+    setLoading(false);
+  };
+
+  const handleApprove = async (id: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ verification_status: 'approved' })
+      .eq('id', id);
+      
+    if (!error) {
+      setPendingUsers(prev => prev.filter(u => u.id !== id));
+      alert('User has been approved and verified.');
+    } else {
+      alert('Error updating user.');
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ verification_status: 'rejected' })
+      .eq('id', id);
+      
+    if (!error) {
+      setPendingUsers(prev => prev.filter(u => u.id !== id));
+      alert('User has been rejected.');
+    } else {
+      alert('Error updating user.');
+    }
   };
 
   return (
-    <div className="animate-fade-in">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <ShieldAlert color="var(--accent-warning)" />
-            Verification Queue
-          </h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Review and approve candidates claiming affiliation with your institute.</p>
-        </div>
-      </div>
+    <main className="container animate-fade-in" style={{ padding: '2rem 1.5rem', maxWidth: '1000px', width: '100%' }}>
+      <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Pending Verifications</h2>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Review and verify student and alumni registrations to grant them full access to the network.</p>
 
       <div style={{ display: 'grid', gap: '1rem' }}>
-        {pendingUsers.length === 0 ? (
-          <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <CheckCircle size={48} style={{ margin: '0 auto 1rem', opacity: 0.5, color: 'var(--accent-success)' }} />
-            <p>All caught up! No pending verifications at the moment.</p>
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+            <Loader2 className="animate-spin" size={32} color="var(--brand-primary)" />
+          </div>
+        ) : pendingUsers.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+            <CheckCircle size={48} style={{ opacity: 0.5, margin: '0 auto 1rem auto', color: 'var(--accent-success)' }} />
+            <p>All caught up! There are no pending users in the queue.</p>
           </div>
         ) : (
           pendingUsers.map(user => (
@@ -66,14 +96,14 @@ const AdminDashboard: React.FC = () => {
 
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <button 
-                  onClick={() => handleVerify(user.id, 'rejected')}
+                  onClick={() => handleReject(user.id)}
                   className="btn btn-outline"
                   style={{ color: 'var(--accent-danger)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
                 >
                   <XCircle size={18} /> Reject
                 </button>
                 <button 
-                  onClick={() => handleVerify(user.id, 'approved')}
+                  onClick={() => handleApprove(user.id)}
                   className="btn btn-primary"
                   style={{ background: 'var(--accent-success)', color: '#000' }}
                 >
@@ -84,7 +114,7 @@ const AdminDashboard: React.FC = () => {
           ))
         )}
       </div>
-    </div>
+    </main>
   );
 };
 

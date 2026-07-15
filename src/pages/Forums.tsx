@@ -1,29 +1,61 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageSquare, PlusCircle, MessageCircle } from 'lucide-react';
-import { mockForumPosts, forumCategories, mockUsers } from '../lib/mockData';
-import type { ForumPost } from '../lib/mockData';
+import { ArrowLeft, MessageSquare, PlusCircle, MessageCircle, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import type { UserProfile } from './Directory';
+
+export interface ForumPost {
+  id: string;
+  author_id: string;
+  title: string;
+  content: string;
+  category: string;
+  replies_count: number;
+  created_at: string;
+  profiles?: { full_name: string };
+}
+
+const forumCategories = ['General Discussion', 'Career Advice', 'Tech & Engineering', 'Startups & Entrepreneurship'];
 
 const Forums: React.FC = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
-  // Mock current user (John Smith, Student, Pending Verification)
-  // To test Admin/Approved state, change to mockUsers[0] (Jane Doe, Approved)
-  const currentUser = mockUsers[1]; 
-  const isApproved = currentUser.verification_status === 'approved';
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [posts, setPosts] = useState<ForumPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        if (profile) setCurrentUser(profile as UserProfile);
+      }
+
+      const { data: postsData } = await supabase
+        .from('forum_posts')
+        .select('*, profiles(full_name)')
+        .order('created_at', { ascending: false });
+        
+      if (postsData) setPosts(postsData as ForumPost[]);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
   
-  const gradYearStr = currentUser.graduation_year ? currentUser.graduation_year.toString().slice(-2) : 'N/A';
-  const batchName = `My Batch (${currentUser.branch || 'Unknown'} '${gradYearStr})`;
+  const isApproved = currentUser?.verification_status === 'approved';
+  const gradYearStr = currentUser?.graduation_year ? currentUser.graduation_year.toString().slice(-2) : 'N/A';
+  const batchName = `My Batch (${currentUser?.branch || 'Unknown'} '${gradYearStr})`;
 
   const filteredPosts = selectedCategory === 'All' 
-    ? mockForumPosts 
+    ? posts 
     : selectedCategory === batchName
-      ? [] // Mock empty batch community for now
-      : mockForumPosts.filter(post => post.category === selectedCategory);
+      ? posts.filter(post => post.category === batchName)
+      : posts.filter(post => post.category === selectedCategory);
 
-  const getAuthorName = (authorId: string) => {
-    return mockUsers.find(u => u.id === authorId)?.full_name || 'Unknown User';
+  const getAuthorName = (post: ForumPost) => {
+    return post.profiles?.full_name || 'Unknown User';
   };
 
   return (
@@ -100,46 +132,51 @@ const Forums: React.FC = () => {
 
         {/* Posts List */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {filteredPosts.map((post: ForumPost) => (
-            <div key={post.id} className="glass-card animate-fade-in" style={{ padding: '1.5rem', cursor: 'pointer' }} onClick={() => alert(`Opening post: ${post.title}`)}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '0.25rem 0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', color: 'var(--brand-secondary)' }}>
-                  {post.category}
-                </span>
-                <span style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>{post.createdAt}</span>
+          {/* Post Feed */}
+          <div style={{ flex: 1 }}>
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+                <Loader2 className="animate-spin" size={32} color="var(--brand-primary)" />
               </div>
-              
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{post.title}</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {post.content}
-              </p>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600 }}>
-                    {getAuthorName(post.authorId).charAt(0)}
+            ) : filteredPosts.length === 0 ? (
+              <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <MessageCircle size={48} style={{ opacity: 0.5, margin: '0 auto 1rem auto' }} />
+                <p>No posts in this category yet. Be the first to start a discussion!</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {filteredPosts.map(post => (
+                  <div key={post.id} className="glass-panel animate-fade-in" style={{ padding: '1.5rem', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      <span style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', color: 'var(--brand-secondary)' }}>
+                        {post.category}
+                      </span>
+                    </div>
+                    
+                    <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{post.title}</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {post.content}
+                    </p>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <span>Posted by <strong style={{ color: 'var(--text-primary)' }}>{getAuthorName(post)}</strong></span>
+                        <span>•</span>
+                        <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-secondary)' }}>
+                        <MessageCircle size={16} /> {post.replies_count} Replies
+                      </div>
+                    </div>
                   </div>
-                  <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{getAuthorName(post.authorId)}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  <MessageCircle size={16} /> {post.repliesCount} replies
-                </div>
+                ))}
               </div>
-            </div>
-          ))}
-
-          {filteredPosts.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--glass-bg)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)' }}>
-              <MessageSquare size={48} color="var(--text-secondary)" style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No discussions yet</h3>
-              <p style={{ color: 'var(--text-secondary)' }}>Be the first to start a conversation in {selectedCategory}!</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-
-      </main>
-    </div>
+    </main>
+  </div>
   );
 };
 

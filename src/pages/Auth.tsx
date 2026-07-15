@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { supabase, isMock } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { GraduationCap, ArrowLeft, Loader2 } from 'lucide-react';
 
 const Auth: React.FC = () => {
@@ -32,29 +32,13 @@ const Auth: React.FC = () => {
     setError(null);
 
     try {
-      if (isMock) {
-        // Mock authentication for preview purposes
-        setTimeout(() => {
-          if (mode === 'register') {
-            if (userType === 'admin' && adminPassphrase !== 'admin123') {
-              setError('Invalid admin pass-phrase.');
-              setLoading(false);
-              return;
-            }
-            alert('Mock Registration successful! Your account is pending admin verification. Redirecting to login...');
-            setMode('login');
-          } else {
-            // For mock login, we can't easily check verification status without a real backend, 
-            // but in a real app, we'd check it here and maybe redirect to a "Pending" page.
-            localStorage.setItem('mockUserEmail', email);
-            navigate('/dashboard');
-          }
-          setLoading(false);
-        }, 1000);
-        return;
-      }
-
       if (mode === 'register') {
+        // Enforce admin pass-phrase for admin registrations
+        if (userType === 'admin' && adminPassphrase !== 'admin123') {
+          setError('Invalid admin pass-phrase.');
+          setLoading(false);
+          return;
+        }
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -62,11 +46,11 @@ const Auth: React.FC = () => {
             data: {
               full_name: fullName,
               user_type: userType,
-              college,
-              degree,
-              branch,
-              graduation_year: graduationYear,
-              verification_status: 'pending'
+              college: college || null,
+              degree: userType === 'admin' ? null : (degree || null),
+              branch: userType === 'admin' ? null : (branch || null),
+              graduation_year: userType === 'admin' ? null : (graduationYear ? parseInt(graduationYear) : null),
+              verification_status: userType === 'admin' ? 'approved' : 'pending'
             }
           }
         });
