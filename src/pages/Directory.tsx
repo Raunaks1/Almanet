@@ -18,6 +18,14 @@ export interface UserProfile {
   skills: string[];
   verification_status: 'pending' | 'approved' | 'rejected';
   bio?: string;
+  phone?: string;
+  visibility?: 'public' | 'private' | 'alumni-only';
+  linkedin?: string;
+  twitter?: string;
+  employer?: string;
+  job_title?: string;
+  years_of_experience?: number;
+  mission_statement?: string;
 }
 
 // Temporary hardcoded options until we build dynamic filters

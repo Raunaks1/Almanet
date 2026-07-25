@@ -49,22 +49,6 @@ const Dashboard: React.FC = () => {
     navigate('/');
   };
 
-  const handleDeleteAccount = async () => {
-    if (window.confirm('Are you sure you want to permanently delete your account? This action cannot be undone and will erase all your profile data, posts, and jobs.')) {
-      setLoading(true);
-      try {
-        const { error } = await supabase.rpc('delete_user_account');
-        if (error) throw error;
-        await supabase.auth.signOut();
-        navigate('/');
-      } catch (err: any) {
-        console.error('Error deleting account:', err);
-        alert('Failed to delete account. Please ensure the delete_user_account SQL function is set up in Supabase.');
-        setLoading(false);
-      }
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex-center" style={{ minHeight: '100vh' }}>
@@ -108,24 +92,37 @@ const Dashboard: React.FC = () => {
         </nav>
 
         <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <User size={20} color="var(--text-secondary)" />
+          <Link 
+            to={user?.id ? `/profile/${user.id}` : '#'} 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem', 
+              marginBottom: '1rem', 
+              padding: '0.5rem', 
+              borderRadius: 'var(--radius-md)', 
+              textDecoration: 'none', 
+              color: 'inherit',
+              transition: 'background 0.2s',
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+            title="View Profile"
+          >
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
+              {(user?.user_metadata?.full_name || 'U').charAt(0)}
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <p style={{ fontWeight: 500, fontSize: '0.875rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+              <p style={{ fontWeight: 500, fontSize: '0.875rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', margin: 0 }}>
                 {user?.user_metadata?.full_name || 'User'}
               </p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', margin: 0 }}>
                 {user?.email}
               </p>
             </div>
-          </div>
+          </Link>
           <button onClick={handleSignOut} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
             <LogOut size={16} /> Sign Out
-          </button>
-          <button onClick={handleDeleteAccount} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem', color: 'var(--accent-danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-            <Trash2 size={16} /> Delete Account
           </button>
         </div>
       </aside>
