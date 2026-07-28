@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Briefcase, GraduationCap, Mail, MessageSquare, BadgeCheck, Loader2, Edit2, Save, Trash2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from './Directory';
+import { COLLEGE_NAMES, getBranchesForCollege } from '../lib/colleges';
 
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -93,14 +94,14 @@ const Profile: React.FC = () => {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Loader2 className="animate-spin" size={32} color="var(--brand-primary)" />
+        <Loader2 className="animate-spin" size={28} color="var(--brand-primary)" />
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex-center" style={{ minHeight: '100vh', flexDirection: 'column', gap: '1rem' }}>
+      <div className="flex-center" style={{ minHeight: '100vh', flexDirection: 'column', gap: '1rem', background: 'var(--bg-primary)' }}>
         <h2>Profile not found</h2>
         <Link to="/directory" className="btn btn-primary">Back to Directory</Link>
       </div>
@@ -110,49 +111,70 @@ const Profile: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       {/* Header */}
-      <header style={{ padding: '1.5rem 2rem', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '1rem', position: 'sticky', top: 0, zIndex: 10 }}>
-        <button onClick={() => navigate(-1)} className="btn btn-outline" style={{ padding: '0.5rem 1rem' }}>
+      <header style={{
+        padding: '1rem 1.5rem',
+        background: 'var(--bg-primary)',
+        borderBottom: '1px solid var(--border-color)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <button onClick={() => navigate(-1)} className="btn btn-ghost" style={{ padding: '0.5rem 0.75rem' }}>
           <ArrowLeft size={18} /> Back
         </button>
-        <h1 style={{ fontSize: '1.5rem', margin: 0 }}>{isEditing ? 'Edit Profile' : 'Profile Details'}</h1>
+        <h1 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600 }}>{isEditing ? 'Edit Profile' : 'Profile Details'}</h1>
         
         {/* Action Buttons for Own Profile */}
         {isOwnProfile && !isEditing && (
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-            <button onClick={() => setIsEditing(true)} className="btn btn-primary" style={{ padding: '0.5rem 1rem' }}>
-              <Edit2 size={18} style={{ marginRight: '0.25rem' }} /> Edit Profile
+            <button onClick={() => setIsEditing(true)} className="btn btn-primary" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem' }}>
+              <Edit2 size={16} /> Edit Profile
             </button>
-            <button onClick={handleDeleteAccount} className="btn btn-outline" style={{ padding: '0.5rem 1rem', color: 'var(--accent-danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-              <Trash2 size={18} style={{ marginRight: '0.25rem' }} /> Delete Account
+            <button onClick={handleDeleteAccount} className="btn btn-outline" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem', color: 'var(--accent-danger)', borderColor: 'var(--accent-danger)' }}>
+              <Trash2 size={16} /> Delete Account
             </button>
           </div>
         )}
         {isEditing && (
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-            <button onClick={() => setIsEditing(false)} className="btn btn-outline" style={{ padding: '0.5rem 1rem' }} disabled={isSaving}>
-              <X size={18} style={{ marginRight: '0.25rem' }} /> Cancel
+            <button onClick={() => setIsEditing(false)} className="btn btn-outline" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem' }} disabled={isSaving}>
+              <X size={16} /> Cancel
             </button>
-            <button onClick={handleSave} className="btn btn-primary" style={{ padding: '0.5rem 1rem' }} disabled={isSaving}>
-              {isSaving ? <Loader2 size={18} className="animate-spin" style={{ marginRight: '0.25rem' }} /> : <Save size={18} style={{ marginRight: '0.25rem' }} />} Save Changes
+            <button onClick={handleSave} className="btn btn-primary" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem' }} disabled={isSaving}>
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
             </button>
           </div>
         )}
       </header>
 
-      <main className="container" style={{ padding: '2rem 1.5rem', maxWidth: '900px' }}>
+      <main className="container" style={{ padding: '1.5rem', maxWidth: '900px' }}>
         
         {/* Profile Card */}
-        <div className="glass-panel animate-fade-in" style={{ padding: '2.5rem', display: 'flex', gap: '2.5rem', flexDirection: 'row', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div className="card animate-fade-in" style={{ padding: '2rem', display: 'flex', gap: '2rem', flexDirection: 'row', alignItems: 'flex-start', flexWrap: 'wrap' }}>
           
           {/* Avatar Section */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', minWidth: '150px' }}>
-            <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand-primary), var(--brand-secondary))', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', fontWeight: 600, boxShadow: '0 8px 24px rgba(59, 130, 246, 0.25)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', minWidth: '140px' }}>
+            <div style={{
+              width: '100px',
+              height: '100px',
+              borderRadius: '50%',
+              background: 'var(--brand-primary)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '2.5rem',
+              fontWeight: 600,
+            }}>
               {(editForm.full_name || profile.full_name || '?').charAt(0)}
             </div>
             {!isEditing && !isOwnProfile && (
-              <button className="btn btn-primary" style={{ width: '100%' }}>
-                <MessageSquare size={18} /> Message
-              </button>
+              <Link to={`/chat?dm=${profile.id}`} className="btn btn-primary" style={{ width: '100%', fontSize: '0.8125rem', textDecoration: 'none' }}>
+                <MessageSquare size={16} /> Message
+              </Link>
             )}
           </div>
 
@@ -161,67 +183,74 @@ const Profile: React.FC = () => {
             {!isEditing ? (
               // VIEW MODE
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                  <h1 style={{ fontSize: '2.5rem', margin: 0 }}>{profile.full_name}</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem' }}>
+                  <h1 style={{ fontSize: '2rem', margin: 0, fontWeight: 700 }}>{profile.full_name}</h1>
                   {profile.verification_status === 'approved' && (
-                    <div title="Institute Verified" style={{ color: 'var(--brand-primary)', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem', borderRadius: '50%' }}>
-                      <BadgeCheck size={24} />
+                    <div title="Institute Verified" style={{ color: 'var(--brand-primary)' }}>
+                      <BadgeCheck size={22} />
                     </div>
                   )}
                 </div>
                 
-                <p style={{ fontSize: '1.25rem', color: 'var(--brand-primary)', fontWeight: 500, marginBottom: '1.5rem' }}>
+                <p style={{ fontSize: '1rem', color: 'var(--brand-primary)', fontWeight: 500, marginBottom: '1.25rem' }}>
                   {profile.user_type === 'alumni' ? (profile.job_title ? `${profile.job_title} at ${profile.employer || profile.industry}` : profile.industry) : profile.user_type === 'student' ? (profile.degree ? `${profile.degree} Student` : 'Student') : 'Admin'}
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1.75rem' }}>
                   {(profile.user_type === 'student' || profile.user_type === 'alumni') && profile.graduation_year && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)' }}>
-                      <GraduationCap size={20} /> 
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                      <GraduationCap size={18} /> 
                       <span>Class of {profile.graduation_year}</span>
                     </div>
                   )}
                   {profile.location && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)' }}>
-                      <MapPin size={20} /> 
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                      <MapPin size={18} /> 
                       <span>{profile.location}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)' }}>
-                    <Mail size={20} /> 
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                    <Mail size={18} /> 
                     <span>{profile.email}</span>
                   </div>
                   {profile.phone && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)' }}>
-                      <span style={{ fontSize: '1.25rem' }}>📞</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                      <span style={{ fontSize: '1.125rem' }}>📞</span>
                       <span>{profile.phone}</span>
                     </div>
                   )}
                 </div>
 
-                <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>About</h3>
-                  <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                <div style={{ marginBottom: '1.75rem' }}>
+                  <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', fontWeight: 600 }}>About</h3>
+                  <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap', fontSize: '0.9375rem' }}>
                     {profile.bio || 'This user hasn\'t added a bio yet.'}
                   </p>
                 </div>
 
                 {profile.user_type !== 'admin' && (
                   <div>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Skills & Expertise</h3>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', fontWeight: 600 }}>Skills & Expertise</h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
                       {profile.skills && profile.skills.length > 0 ? profile.skills.map((skill, index) => (
-                        <span key={index} style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--border-color)', padding: '0.5rem 1rem', borderRadius: '9999px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                        <span key={index} style={{
+                          background: 'var(--bg-tertiary)',
+                          padding: '0.375rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.8125rem',
+                          color: 'var(--text-secondary)',
+                          fontWeight: 500,
+                        }}>
                           {skill}
                         </span>
-                      )) : <span style={{ color: 'var(--text-tertiary)' }}>No skills listed.</span>}
+                      )) : <span style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>No skills listed.</span>}
                     </div>
                   </div>
                 )}
               </>
             ) : (
               // EDIT MODE
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease-out' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', animation: 'fadeIn 0.3s ease-out' }}>
                 
                 <div className="input-group">
                   <label className="input-label">Full Name</label>
@@ -257,7 +286,7 @@ const Profile: React.FC = () => {
 
                 <div className="input-group" style={{ maxWidth: '300px' }}>
                   <label className="input-label">Profile Visibility</label>
-                  <select name="visibility" className="input-field" value={editForm.visibility || 'public'} onChange={handleInputChange} style={{ appearance: 'none', backgroundColor: 'var(--bg-tertiary)' }}>
+                  <select name="visibility" className="input-field" value={editForm.visibility || 'public'} onChange={handleInputChange} style={{ appearance: 'none' }}>
                     <option value="public">Public (Visible to everyone)</option>
                     <option value="private">Private (Only you)</option>
                     <option value="alumni-only">Alumni Only (Visible to verified members)</option>
@@ -266,12 +295,23 @@ const Profile: React.FC = () => {
 
                 {/* Role Specific Fields */}
                 {profile.user_type === 'student' && (
-                  <div style={{ marginTop: '1rem', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.125rem', color: 'var(--brand-primary)' }}>Student Details</h3>
+                  <div style={{ marginTop: '0.5rem', padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
+                    <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--brand-primary)', fontWeight: 600 }}>Student Details</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                       <div className="input-group">
                         <label className="input-label">College / University</label>
-                        <input type="text" name="college" className="input-field" value={editForm.college || ''} onChange={handleInputChange} />
+                        <select
+                          name="college"
+                          className="input-field"
+                          value={editForm.college || ''}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, college: e.target.value, branch: '' }))}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <option value="">— Select college —</option>
+                          {COLLEGE_NAMES.map(name => (
+                            <option key={name} value={name}>{name}</option>
+                          ))}
+                        </select>
                       </div>
                       <div className="input-group">
                         <label className="input-label">Graduation Year</label>
@@ -283,15 +323,27 @@ const Profile: React.FC = () => {
                       </div>
                       <div className="input-group">
                         <label className="input-label">Branch / Major</label>
-                        <input type="text" name="branch" className="input-field" value={editForm.branch || ''} onChange={handleInputChange} />
+                        <select
+                          name="branch"
+                          className="input-field"
+                          value={editForm.branch || ''}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, branch: e.target.value }))}
+                          disabled={!editForm.college}
+                          style={{ cursor: editForm.college ? 'pointer' : 'not-allowed', opacity: editForm.college ? 1 : 0.6 }}
+                        >
+                          <option value="">{editForm.college ? '— Select branch —' : '— Select college first —'}</option>
+                          {getBranchesForCollege(editForm.college || '').map(b => (
+                            <option key={b} value={b}>{b}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {profile.user_type === 'alumni' && (
-                  <div style={{ marginTop: '1rem', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.125rem', color: 'var(--brand-primary)' }}>Alumni Details</h3>
+                  <div style={{ marginTop: '0.5rem', padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
+                    <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--brand-primary)', fontWeight: 600 }}>Alumni Details</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                       <div className="input-group">
                         <label className="input-label">Current Employer</label>
@@ -322,8 +374,8 @@ const Profile: React.FC = () => {
                 )}
 
                 {profile.user_type === 'admin' && (
-                  <div style={{ marginTop: '1rem', padding: '1.5rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.125rem', color: 'var(--brand-primary)' }}>Institution Details</h3>
+                  <div style={{ marginTop: '0.5rem', padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
+                    <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--brand-primary)', fontWeight: 600 }}>Institution Details</h3>
                     <div className="input-group">
                       <label className="input-label">Mission Statement</label>
                       <textarea name="mission_statement" className="input-field" rows={3} value={editForm.mission_statement || ''} onChange={handleInputChange}></textarea>

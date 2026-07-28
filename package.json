@@ -12,6 +12,8 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@chatscope/chat-ui-kit-react": "^2.1.1",
+    "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@supabase/supabase-js": "^2.110.5",
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, GraduationCap, ArrowLeft, Filter, BadgeCheck, Loader2, Users } from 'lucide-react';
+import { Search, MapPin, GraduationCap, ArrowLeft, Filter, BadgeCheck, Loader2, Users, MessageCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 // Define the type locally since we are removing mockData
@@ -69,31 +69,41 @@ const Directory: React.FC = () => {
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
       
       {/* Header */}
-      <header style={{ padding: '1.5rem 2rem', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '1rem', position: 'sticky', top: 0, zIndex: 10 }}>
-        <button onClick={() => navigate('/dashboard')} className="btn btn-outline" style={{ padding: '0.5rem 1rem' }}>
+      <header style={{
+        padding: '1rem 1.5rem',
+        background: 'var(--bg-primary)',
+        borderBottom: '1px solid var(--border-color)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <button onClick={() => navigate('/dashboard')} className="btn btn-ghost" style={{ padding: '0.5rem 0.75rem' }}>
           <ArrowLeft size={18} /> Back
         </button>
-        <h1 style={{ fontSize: '1.5rem', margin: 0 }}>Alumni Directory</h1>
+        <h1 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600 }}>Alumni Directory</h1>
       </header>
 
-      <main style={{ flex: 1, padding: '2rem', display: 'flex', gap: '2rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: '1.5rem', display: 'flex', gap: '1.5rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
         
         {/* Filters Sidebar */}
-        <aside style={{ width: '280px', flexShrink: 0 }}>
-          <div className="glass-panel" style={{ padding: '1.5rem', position: 'sticky', top: '100px' }}>
-            <h2 style={{ fontSize: '1.125rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Filter size={18} /> Filters
+        <aside style={{ width: '260px', flexShrink: 0 }}>
+          <div className="card" style={{ padding: '1.25rem', position: 'sticky', top: '80px' }}>
+            <h2 style={{ fontSize: '1rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+              <Filter size={16} /> Filters
             </h2>
 
             <div className="input-group">
               <label className="input-label">Search</label>
               <div style={{ position: 'relative' }}>
-                <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                 <input 
                   type="text" 
                   className="input-field" 
                   placeholder="Name or skill..." 
-                  style={{ width: '100%', paddingLeft: '2.5rem' }}
+                  style={{ width: '100%', paddingLeft: '2.25rem' }}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -106,7 +116,7 @@ const Directory: React.FC = () => {
                 className="input-field" 
                 value={selectedIndustry}
                 onChange={(e) => setSelectedIndustry(e.target.value)}
-                style={{ appearance: 'none', backgroundColor: 'var(--bg-tertiary)' }}
+                style={{ appearance: 'none' }}
               >
                 <option value="">All Industries</option>
                 {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
@@ -119,7 +129,7 @@ const Directory: React.FC = () => {
                 className="input-field" 
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                style={{ appearance: 'none', backgroundColor: 'var(--bg-tertiary)' }}
+                style={{ appearance: 'none' }}
               >
                 <option value="">All Years</option>
                 {years.map(yr => <option key={yr} value={yr.toString()}>{yr}</option>)}
@@ -128,7 +138,7 @@ const Directory: React.FC = () => {
 
             <button 
               className="btn btn-outline" 
-              style={{ width: '100%', marginTop: '1rem' }}
+              style={{ width: '100%', marginTop: '0.5rem', fontSize: '0.8125rem' }}
               onClick={() => { setSearchTerm(''); setSelectedIndustry(''); setSelectedYear(''); }}
             >
               Clear Filters
@@ -140,67 +150,77 @@ const Directory: React.FC = () => {
         <section style={{ flex: 1 }}>
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-              <Loader2 className="animate-spin" size={32} color="var(--brand-primary)" />
+              <Loader2 className="animate-spin" size={28} color="var(--brand-primary)" />
             </div>
           ) : filteredAlumni.length === 0 ? (
-            <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-              <Users size={48} style={{ opacity: 0.5, margin: '0 auto 1rem auto' }} />
+            <div className="card" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <Users size={40} style={{ opacity: 0.4, margin: '0 auto 0.75rem auto' }} />
               <p>No alumni found matching your criteria.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
               {filteredAlumni.map((user: UserProfile) => (
-              <div key={user.id} className="glass-card animate-fade-in" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--brand-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600 }}>
+              <div key={user.id} className="card-elevated animate-fade-in" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                  <div style={{
+                    width: '52px',
+                    height: '52px',
+                    borderRadius: '50%',
+                    background: 'var(--brand-primary)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                  }}>
                     {user.full_name.charAt(0)}
                   </div>
                   {user.verification_status === 'approved' && (
-                    <div title="Institute Verified" style={{ color: 'var(--brand-primary)', background: 'rgba(59, 130, 246, 0.1)', padding: '0.25rem', borderRadius: '50%' }}>
-                      <BadgeCheck size={20} />
+                    <div title="Institute Verified" style={{ color: 'var(--brand-primary)' }}>
+                      <BadgeCheck size={18} />
                     </div>
                   )}
                 </div>
                 
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>{user.full_name}</h3>
-                <p style={{ color: 'var(--brand-primary)', fontSize: '0.875rem', marginBottom: '1rem', fontWeight: 500 }}>
+                <h3 style={{ fontSize: '1.0625rem', marginBottom: '0.125rem', fontWeight: 600 }}>{user.full_name}</h3>
+                <p style={{ color: 'var(--brand-primary)', fontSize: '0.8125rem', marginBottom: '0.75rem', fontWeight: 500 }}>
                   {user.industry}
                 </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <GraduationCap size={16} /> Class of {user.graduation_year}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem', marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                    <GraduationCap size={14} /> Class of {user.graduation_year}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <MapPin size={16} /> {user.location}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                    <MapPin size={14} /> {user.location}
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1.25rem' }}>
                   {user.skills.slice(0, 3).map(skill => (
-                    <span key={skill} style={{ background: 'var(--bg-tertiary)', padding: '0.25rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', border: '1px solid var(--border-color)' }}>
+                    <span key={skill} style={{
+                      background: 'var(--bg-tertiary)',
+                      padding: '0.1875rem 0.5rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.6875rem',
+                      color: 'var(--text-secondary)',
+                      fontWeight: 500,
+                    }}>
                       {skill}
                     </span>
                   ))}
                   {user.skills.length > 3 && (
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', alignSelf: 'center' }}>+{user.skills.length - 3} more</span>
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--text-tertiary)', alignSelf: 'center' }}>+{user.skills.length - 3} more</span>
                   )}
                 </div>
 
                 <div style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem' }}>
-                  <Link to={`/profile/${user.id}`} className="btn btn-outline" style={{ flex: 1, padding: '0.5rem' }}>View Profile</Link>
-                  <button className="btn btn-primary" style={{ flex: 1, padding: '0.5rem' }}>Connect</button>
+                  <Link to={`/profile/${user.id}`} className="btn btn-outline" style={{ flex: 1, padding: '0.5rem', fontSize: '0.8125rem' }}>View Profile</Link>
+                  <Link to={`/chat?dm=${user.id}`} className="btn btn-primary" style={{ flex: 1, padding: '0.5rem', fontSize: '0.8125rem', textDecoration: 'none' }}><MessageCircle size={14} /> Message</Link>
                 </div>
               </div>
             ))}
-
-            {filteredAlumni.length === 0 && (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', background: 'var(--glass-bg)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)' }}>
-                <Search size={48} color="var(--text-secondary)" style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No alumni found</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>Try adjusting your search or filters.</p>
-              </div>
-            )}
             </div>
           )}
         </section>

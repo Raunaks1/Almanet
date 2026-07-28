@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { GraduationCap, ArrowLeft, Loader2 } from 'lucide-react';
+import { GraduationCap, ArrowLeft, Loader2, Sun, Moon, Search, X } from 'lucide-react';
+import { useTheme } from '../ThemeContext';
+import { COLLEGE_NAMES, getBranchesForCollege } from '../lib/colleges';
 
 const Auth: React.FC = () => {
+  const { theme, toggleTheme } = useTheme();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
@@ -20,6 +23,24 @@ const Auth: React.FC = () => {
   
   // Cohort & Verification Fields
   const [college, setCollege] = useState('');
+  const [collegeSearch, setCollegeSearch] = useState('');
+  const [showCollegeList, setShowCollegeList] = useState(false);
+  const collegeRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (collegeRef.current && !collegeRef.current.contains(e.target as Node)) {
+        setShowCollegeList(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filteredColleges = COLLEGE_NAMES.filter(name =>
+    name.toLowerCase().includes(collegeSearch.toLowerCase())
+  );
   const [degree, setDegree] = useState('');
   const [branch, setBranch] = useState('');
   const [graduationYear, setGraduationYear] = useState('');
@@ -63,7 +84,7 @@ const Auth: React.FC = () => {
           password
         });
         if (signInError) throw signInError;
-        navigate('/dashboard'); // Will be created later
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during authentication.');
@@ -72,26 +93,54 @@ const Auth: React.FC = () => {
     }
   };
 
+  const userTypeOptions: Array<{ value: 'alumni' | 'student' | 'admin'; label: string }> = [
+    { value: 'alumni', label: 'Alumni' },
+    { value: 'student', label: 'Student' },
+    { value: 'admin', label: 'Admin' },
+  ];
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: 'radial-gradient(circle at top, var(--bg-tertiary), var(--bg-primary))' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: 'var(--bg-secondary)' }}>
       
-      <button 
-        onClick={() => navigate('/')} 
-        style={{ position: 'absolute', top: '2rem', left: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}
+      <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', display: 'flex', gap: '0.75rem' }}>
+        <button 
+          onClick={() => navigate('/')} 
+          className="btn btn-ghost"
+          style={{ padding: '0.5rem 0.75rem' }}
+        >
+          <ArrowLeft size={18} /> Back
+        </button>
+      </div>
+
+      <button
+        onClick={toggleTheme}
+        className="theme-toggle"
+        aria-label="Toggle theme"
+        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem' }}
       >
-        <ArrowLeft size={20} /> Back to Home
+        {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
       </button>
 
-      <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '2.5rem' }}>
+      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '2.5rem' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-            <GraduationCap size={48} color="var(--brand-primary)" />
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--brand-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <GraduationCap size={28} color="var(--brand-primary)" />
+            </div>
           </div>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.375rem' }}>
             {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
           </h2>
-          <p style={{ color: 'var(--text-secondary)' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>
             {mode === 'login' 
               ? 'Enter your credentials to access the network' 
               : 'Join the AlmaNET community today'
@@ -100,7 +149,15 @@ const Auth: React.FC = () => {
         </div>
 
         {error && (
-          <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--accent-danger)', color: 'var(--accent-danger)', padding: '0.75rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+          <div style={{
+            background: 'var(--accent-danger-subtle)',
+            border: '1px solid var(--accent-danger)',
+            color: 'var(--accent-danger)',
+            padding: '0.75rem 1rem',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '1.5rem',
+            fontSize: '0.875rem',
+          }}>
             {error}
           </div>
         )}
@@ -110,31 +167,28 @@ const Auth: React.FC = () => {
             <>
               <div className="input-group">
                 <label className="input-label">I am a</label>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <button 
-                    type="button" 
-                    className={`btn ${userType === 'alumni' ? 'btn-primary' : 'btn-outline'}`} 
-                    style={{ flex: 1, padding: '0.5rem' }}
-                    onClick={() => setUserType('alumni')}
-                  >
-                    Alumni
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`btn ${userType === 'student' ? 'btn-primary' : 'btn-outline'}`} 
-                    style={{ flex: 1, padding: '0.5rem' }}
-                    onClick={() => setUserType('student')}
-                  >
-                    Student
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`btn ${userType === 'admin' ? 'btn-primary' : 'btn-outline'}`} 
-                    style={{ flex: 1, padding: '0.5rem' }}
-                    onClick={() => setUserType('admin')}
-                  >
-                    Admin
-                  </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {userTypeOptions.map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setUserType(opt.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.5rem',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                        border: `1px solid ${userType === opt.value ? 'var(--brand-primary)' : 'var(--border-color)'}`,
+                        background: userType === opt.value ? 'var(--brand-subtle)' : 'transparent',
+                        color: userType === opt.value ? 'var(--brand-primary)' : 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -151,17 +205,104 @@ const Auth: React.FC = () => {
                 />
               </div>
 
-              <div className="input-group">
-                <label className="input-label" htmlFor="college">College / Institute Name</label>
-                <input 
-                  type="text" 
-                  id="college" 
-                  className="input-field" 
-                  placeholder="e.g. Engineering College"
-                  value={college}
-                  onChange={(e) => setCollege(e.target.value)}
-                  required 
-                />
+              <div className="input-group" ref={collegeRef} style={{ position: 'relative' }}>
+                <label className="input-label" htmlFor="collegeSearch">College / Institute Name</label>
+
+                {/* Show selected college as a chip, or the search input */}
+                {college ? (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.5rem 0.875rem',
+                    background: 'var(--brand-subtle)',
+                    border: '1px solid var(--brand-primary)',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '0.9rem',
+                    color: 'var(--brand-primary)',
+                    fontWeight: 500,
+                  }}>
+                    <GraduationCap size={15} style={{ flexShrink: 0 }} />
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{college}</span>
+                    <button
+                      type="button"
+                      onClick={() => { setCollege(''); setCollegeSearch(''); setBranch(''); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand-primary)', padding: '0', display: 'flex' }}
+                      aria-label="Clear college selection"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ position: 'relative' }}>
+                    <Search size={15} style={{
+                      position: 'absolute', left: '0.75rem', top: '50%',
+                      transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none',
+                    }} />
+                    <input
+                      id="collegeSearch"
+                      type="text"
+                      className="input-field"
+                      placeholder="Search your college..."
+                      value={collegeSearch}
+                      onChange={(e) => { setCollegeSearch(e.target.value); setShowCollegeList(true); }}
+                      onFocus={() => setShowCollegeList(true)}
+                      autoComplete="off"
+                      style={{ paddingLeft: '2.25rem' }}
+                    />
+                  </div>
+                )}
+
+                {/* Hidden input to satisfy form required validation */}
+                <input type="hidden" value={college} required />
+
+                {/* Dropdown list */}
+                {showCollegeList && !college && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 4px)',
+                    left: 0,
+                    right: 0,
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 200,
+                    maxHeight: '220px',
+                    overflowY: 'auto',
+                  }}>
+                    {filteredColleges.length === 0 ? (
+                      <div style={{ padding: '0.875rem 1rem', color: 'var(--text-tertiary)', fontSize: '0.875rem', textAlign: 'center' }}>
+                        No colleges found
+                      </div>
+                    ) : (
+                      filteredColleges.map(name => (
+                        <button
+                          key={name}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => { setCollege(name); setCollegeSearch(''); setShowCollegeList(false); setBranch(''); }}
+                          style={{
+                            display: 'block',
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '0.6rem 1rem',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            color: 'var(--text-primary)',
+                            transition: 'background 0.15s',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                        >
+                          {name}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
 
               {userType === 'admin' ? (
@@ -176,11 +317,11 @@ const Auth: React.FC = () => {
                     onChange={(e) => setAdminPassphrase(e.target.value)}
                     required 
                   />
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Hint: Use 'admin123' for this prototype.</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Hint: Use 'admin123' for this prototype.</p>
                 </div>
               ) : (
                 <>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <div className="input-group" style={{ flex: 1 }}>
                       <label className="input-label" htmlFor="degree">Degree</label>
                       <input 
@@ -209,15 +350,23 @@ const Auth: React.FC = () => {
 
                   <div className="input-group">
                     <label className="input-label" htmlFor="branch">Branch / Major</label>
-                    <input 
-                      type="text" 
-                      id="branch" 
-                      className="input-field" 
-                      placeholder="e.g. Computer Science"
+                    <select
+                      id="branch"
+                      className="input-field"
                       value={branch}
                       onChange={(e) => setBranch(e.target.value)}
-                      required 
-                    />
+                      required
+                      disabled={!college}
+                      style={{ cursor: college ? 'pointer' : 'not-allowed', opacity: college ? 1 : 0.6 }}
+                    >
+                      <option value="">{college ? '— Select your branch —' : '— Select college first —'}</option>
+                      {getBranchesForCollege(college).map(b => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                    {!college && (
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Please select a college first to see available branches.</p>
+                    )}
                   </div>
 
                   <div className="input-group">
@@ -231,7 +380,7 @@ const Auth: React.FC = () => {
                       onChange={(e) => setIdDocument(e.target.files ? e.target.files[0] : null)}
                       required
                     />
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Upload a valid college ID or degree certificate for admin review.</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Upload a valid college ID or degree certificate for admin review.</p>
                   </div>
                 </>
               )}
@@ -267,14 +416,14 @@ const Auth: React.FC = () => {
           <button 
             type="submit" 
             className="btn btn-primary" 
-            style={{ width: '100%', marginTop: '1rem' }}
+            style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem' }}
             disabled={loading}
           >
-            {loading ? <Loader2 className="animate-spin" /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
+            {loading ? <Loader2 className="animate-spin" size={18} /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
           </button>
         </form>
 
-        <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+        <div style={{ marginTop: '1.75rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           {mode === 'login' ? (
             <p>
               Don't have an account?{' '}
