@@ -91,7 +91,25 @@ const Chat: React.FC = () => {
       }
 
       // Fetch all channels
-      const userChannels = await fetchChannelsForUser(session.user.id);
+      let userChannels = await fetchChannelsForUser(session.user.id);
+
+      // Deduplicate channels based on channel ID
+      const seen = new Set();
+      userChannels = userChannels.filter(ch => {
+        const duplicate = seen.has(ch.id);
+        seen.add(ch.id);
+        return !duplicate;
+      });
+      
+      // Additional deduplication for batch year / branch if duplicates exist in DB
+      const nameSeen = new Set();
+      userChannels = userChannels.filter(ch => {
+        if (ch.type === 'dm') return true;
+        const duplicate = nameSeen.has(ch.name);
+        nameSeen.add(ch.name);
+        return !duplicate;
+      });
+
       setChannels(userChannels);
       setChannelsLoading(false);
 

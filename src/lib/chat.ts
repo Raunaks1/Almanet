@@ -93,9 +93,16 @@ async function findOrCreateChannel(params: {
     .from('channels')
     .select('*')
     .eq('type', params.type)
-    .eq('name', params.name);
+    .eq('name', params.name)
+    .order('created_at', { ascending: true })
+    .limit(1);
 
-  const { data: existing } = await query.maybeSingle();
+  const { data: existing, error: selectError } = await query.maybeSingle();
+  
+  if (selectError) {
+    console.error("Error finding existing channel:", selectError);
+  }
+
   if (existing) return existing as Channel;
 
   // Create new
@@ -111,12 +118,18 @@ async function findOrCreateChannel(params: {
     .single();
 
   if (error) {
+    console.error('Error in findOrCreateChannel:', error);
+    if (error.code !== '23505') { // If not a unique constraint violation, it's likely an RLS error
+      alert(`Failed to create group channel: ${error.message}`);
+    }
     // Race condition — another user created it first. Try to fetch again.
     const { data: retry } = await supabase
       .from('channels')
       .select('*')
       .eq('type', params.type)
       .eq('name', params.name)
+      .order('created_at', { ascending: true })
+      .limit(1)
       .maybeSingle();
     return retry as Channel | null;
   }
@@ -124,9 +137,13 @@ async function findOrCreateChannel(params: {
 }
 
 async function joinChannel(channelId: string, userId: string) {
-  await supabase
+  const { error } = await supabase
     .from('channel_members')
     .upsert({ channel_id: channelId, user_id: userId }, { onConflict: 'channel_id,user_id' });
+  if (error) {
+    console.error('Error joining channel:', error);
+    alert(`Failed to join group channel: ${error.message}`);
+  }
 }
 
 // ─── DM Channels ───
@@ -179,13 +196,22 @@ export async function getOrCreateDMChannel(
     .select()
     .single();
 
-  if (error || !newChannel) return null;
+  if (error || !newChannel) {
+    console.error('Error creating DM channel:', error);
+    alert(`Failed to create DM channel: ${error?.message || 'Unknown error'}`);
+    return null;
+  }
 
   // Add both users as members
-  await supabase.from('channel_members').insert([
+  const { error: memberError } = await supabase.from('channel_members').insert([
     { channel_id: newChannel.id, user_id: currentUserId },
     { channel_id: newChannel.id, user_id: otherUserId },
   ]);
+
+  if (memberError) {
+    console.error('Error adding DM channel members:', memberError);
+    alert(`Failed to add users to DM: ${memberError.message}`);
+  }
 
   return newChannel as Channel;
 }
