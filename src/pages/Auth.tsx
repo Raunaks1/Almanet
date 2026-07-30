@@ -141,7 +141,7 @@ const Auth: React.FC = () => {
         {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
       </button>
 
-      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '440px', padding: '2.5rem' }}>
+      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '560px', padding: '2.5rem' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
@@ -421,20 +421,23 @@ const Auth: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <div className="input-group" style={{ flex: 1 }}>
+                    <div className="input-group">
                       <label className="input-label" htmlFor="degree">Degree</label>
-                      <input 
-                        type="text" 
+                      <select 
                         id="degree" 
                         className="input-field" 
-                        placeholder="e.g. B.Tech"
                         value={degree}
                         onChange={(e) => setDegree(e.target.value)}
-                        required 
-                      />
+                        required
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="">— Select Degree —</option>
+                        <option value="B.Tech / B.E. (Bachelor of Technology / Engineering)">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
+                        <option value="M.Tech / M.E. (Master of Technology / Engineering)">M.Tech / M.E. (Master of Technology / Engineering)</option>
+                        <option value="Ph.D.">Ph.D.</option>
+                      </select>
                     </div>
-                    <div className="input-group" style={{ flex: 1 }}>
+                    <div className="input-group">
                       <label className="input-label" htmlFor="graduationYear">Graduation Year</label>
                       <input 
                         type="number" 
@@ -446,7 +449,6 @@ const Auth: React.FC = () => {
                         required 
                       />
                     </div>
-                  </div>
 
                   <div className="input-group">
                     <label className="input-label" htmlFor="branch">Branch / Major</label>

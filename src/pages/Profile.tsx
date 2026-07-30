@@ -434,8 +434,19 @@ const Profile: React.FC = () => {
                         <input type="number" name="graduation_year" className="input-field" value={editForm.graduation_year || ''} onChange={handleInputChange} />
                       </div>
                       <div className="input-group">
-                        <label className="input-label">Degree (e.g. B.Tech, MS)</label>
-                        <input type="text" name="degree" className="input-field" value={editForm.degree || ''} onChange={handleInputChange} />
+                        <label className="input-label">Degree</label>
+                        <select
+                          name="degree"
+                          className="input-field"
+                          value={editForm.degree || ''}
+                          onChange={handleInputChange}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <option value="">— Select Degree —</option>
+                          <option value="B.Tech / B.E. (Bachelor of Technology / Engineering)">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
+                          <option value="M.Tech / M.E. (Master of Technology / Engineering)">M.Tech / M.E. (Master of Technology / Engineering)</option>
+                          <option value="Ph.D.">Ph.D.</option>
+                        </select>
                       </div>
                       <div className="input-group">
                         <label className="input-label">Branch / Major</label>
