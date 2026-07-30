@@ -26,6 +26,7 @@ export interface UserProfile {
   job_title?: string;
   years_of_experience?: number;
   mission_statement?: string;
+  avatar_url?: string;
 }
 
 // Temporary hardcoded options until we build dynamic filters
@@ -166,7 +167,9 @@ const Directory: React.FC = () => {
                     width: '52px',
                     height: '52px',
                     borderRadius: '50%',
-                    background: 'var(--brand-primary)',
+                    background: user.avatar_url
+                      ? `url(${user.avatar_url}) center/cover no-repeat`
+                      : 'var(--brand-primary)',
                     color: 'white',
                     display: 'flex',
                     alignItems: 'center',
@@ -174,7 +177,7 @@ const Directory: React.FC = () => {
                     fontSize: '1.25rem',
                     fontWeight: 600,
                   }}>
-                    {user.full_name.charAt(0)}
+                    {!user.avatar_url && user.full_name.charAt(0)}
                   </div>
                   {user.verification_status === 'approved' && (
                     <div title="Institute Verified" style={{ color: 'var(--brand-primary)' }}>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { GraduationCap, ArrowLeft, Loader2, Sun, Moon, Search, X } from 'lucide-react';
+import { GraduationCap, ArrowLeft, Loader2, Sun, Moon, Search, X, Camera } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { COLLEGE_NAMES, getBranchesForCollege } from '../lib/colleges';
 
@@ -46,6 +46,9 @@ const Auth: React.FC = () => {
   const [graduationYear, setGraduationYear] = useState('');
   const [adminPassphrase, setAdminPassphrase] = useState('');
   const [idDocument, setIdDocument] = useState<File | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null);
+  const profilePhotoRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +63,22 @@ const Auth: React.FC = () => {
           setLoading(false);
           return;
         }
+        // Upload profile photo if provided (student/alumni only)
+        let avatarUrl: string | null = null;
+        if (profilePhoto && userType !== 'admin') {
+          const fileExt = profilePhoto.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, profilePhoto, { upsert: true });
+          if (uploadError) {
+            console.warn('Avatar upload failed:', uploadError.message);
+          } else if (uploadData) {
+            const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(uploadData.path);
+            avatarUrl = urlData.publicUrl;
+          }
+        }
+
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -71,7 +90,8 @@ const Auth: React.FC = () => {
               degree: userType === 'admin' ? null : (degree || null),
               branch: userType === 'admin' ? null : (branch || null),
               graduation_year: userType === 'admin' ? null : (graduationYear ? parseInt(graduationYear) : null),
-              verification_status: userType === 'admin' ? 'approved' : 'pending'
+              verification_status: userType === 'admin' ? 'approved' : 'pending',
+              avatar_url: avatarUrl,
             }
           }
         });
@@ -191,6 +211,86 @@ const Auth: React.FC = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Profile Photo Picker – student & alumni only */}
+              {userType !== 'admin' && (
+                <div className="input-group" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                  <label className="input-label" style={{ alignSelf: 'flex-start' }}>Profile Photo <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>(Optional)</span></label>
+                  <div
+                    onClick={() => profilePhotoRef.current?.click()}
+                    style={{
+                      width: '88px',
+                      height: '88px',
+                      borderRadius: '50%',
+                      background: profilePhotoPreview ? `url(${profilePhotoPreview}) center/cover no-repeat` : 'var(--bg-tertiary)',
+                      border: `2px dashed ${profilePhotoPreview ? 'var(--brand-primary)' : 'var(--border-color)'}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      transition: 'all 0.2s ease',
+                      overflow: 'hidden',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand-primary)'; e.currentTarget.style.transform = 'scale(1.03)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = profilePhotoPreview ? 'var(--brand-primary)' : 'var(--border-color)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                  >
+                    {!profilePhotoPreview && (
+                      <Camera size={24} color="var(--text-tertiary)" />
+                    )}
+                    {profilePhotoPreview && (
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.35)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0,
+                        transition: 'opacity 0.2s ease',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                        onMouseLeave={e => e.currentTarget.style.opacity = '0'}
+                      >
+                        <Camera size={20} color="#fff" />
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    ref={profilePhotoRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setProfilePhoto(file);
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => setProfilePhotoPreview(reader.result as string);
+                        reader.readAsDataURL(file);
+                      } else {
+                        setProfilePhotoPreview(null);
+                      }
+                    }}
+                  />
+                  {profilePhotoPreview && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setProfilePhoto(null); setProfilePhotoPreview(null); }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--accent-danger)',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div className="input-group">
                 <label className="input-label" htmlFor="fullName">Full Name</label>

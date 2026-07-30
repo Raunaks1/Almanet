@@ -207,11 +207,14 @@ const Dashboard: React.FC = () => {
           >
             <div style={{
               width: '36px', height: '36px', borderRadius: '50%',
-              background: 'var(--brand-primary)', color: 'white', flexShrink: 0,
+              background: profile?.avatar_url
+                ? `url(${profile.avatar_url}) center/cover no-repeat`
+                : 'var(--brand-primary)',
+              color: 'white', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 600, fontSize: '0.875rem',
             }}>
-              {fullName.charAt(0).toUpperCase()}
+              {!profile?.avatar_url && fullName.charAt(0).toUpperCase()}
             </div>
             <div style={{ overflow: 'hidden' }}>
               <p style={{ fontWeight: 500, fontSize: '0.8125rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0, color: 'var(--text-primary)' }}>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Briefcase, GraduationCap, Mail, MessageSquare, BadgeCheck, Loader2, Edit2, Save, Trash2, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Briefcase, GraduationCap, Mail, MessageSquare, BadgeCheck, Loader2, Edit2, Save, Trash2, X, Camera } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from './Directory';
 import { COLLEGE_NAMES, getBranchesForCollege } from '../lib/colleges';
@@ -18,6 +18,11 @@ const Profile: React.FC = () => {
   
   // Current user auth
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Profile photo state
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchProfileAndUser = async () => {
@@ -58,15 +63,34 @@ const Profile: React.FC = () => {
     setIsSaving(true);
     
     try {
+      // Upload avatar if a new file was selected
+      let avatarUrl = editForm.avatar_url || null;
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, avatarFile, { upsert: true });
+        if (uploadError) {
+          console.warn('Avatar upload failed:', uploadError.message);
+        } else if (uploadData) {
+          const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(uploadData.path);
+          avatarUrl = urlData.publicUrl;
+        }
+      }
+
+      const updatedForm = { ...editForm, avatar_url: avatarUrl };
       const { error } = await supabase
         .from('profiles')
-        .update(editForm)
+        .update(updatedForm)
         .eq('id', profile.id);
         
       if (error) throw error;
       
-      setProfile(editForm as UserProfile);
+      setProfile(updatedForm as UserProfile);
       setIsEditing(false);
+      setAvatarFile(null);
+      setAvatarPreview(null);
     } catch (err) {
       console.error('Error saving profile:', err);
       alert('Failed to save profile changes.');
@@ -157,20 +181,112 @@ const Profile: React.FC = () => {
           
           {/* Avatar Section */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', minWidth: '140px' }}>
-            <div style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '50%',
-              background: 'var(--brand-primary)',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '2.5rem',
-              fontWeight: 600,
-            }}>
-              {(editForm.full_name || profile.full_name || '?').charAt(0)}
-            </div>
+            {isEditing && isOwnProfile && profile.user_type !== 'admin' ? (
+              /* Editable avatar for student/alumni */
+              <>
+                <div
+                  onClick={() => avatarInputRef.current?.click()}
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
+                    background: avatarPreview
+                      ? `url(${avatarPreview}) center/cover no-repeat`
+                      : profile.avatar_url
+                        ? `url(${profile.avatar_url}) center/cover no-repeat`
+                        : 'var(--brand-primary)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '2.5rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    border: '2px dashed var(--brand-primary)',
+                    transition: 'transform 0.2s ease',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  {!avatarPreview && !profile.avatar_url && (
+                    <span>{(editForm.full_name || profile.full_name || '?').charAt(0)}</span>
+                  )}
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0,
+                    transition: 'opacity 0.2s ease',
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '0'}
+                  >
+                    <Camera size={22} color="#fff" />
+                  </div>
+                </div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setAvatarFile(file);
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => setAvatarPreview(reader.result as string);
+                      reader.readAsDataURL(file);
+                    } else {
+                      setAvatarPreview(null);
+                    }
+                  }}
+                />
+                {(avatarPreview || profile.avatar_url) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAvatarFile(null);
+                      setAvatarPreview(null);
+                      setEditForm(prev => ({ ...prev, avatar_url: null }));
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent-danger)',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Remove photo
+                  </button>
+                )}
+                <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', textAlign: 'center', margin: 0 }}>Click to change photo</p>
+              </>
+            ) : (
+              /* Read-only avatar */
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                background: profile.avatar_url
+                  ? `url(${profile.avatar_url}) center/cover no-repeat`
+                  : 'var(--brand-primary)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2.5rem',
+                fontWeight: 600,
+              }}>
+                {!profile.avatar_url && (editForm.full_name || profile.full_name || '?').charAt(0)}
+              </div>
+            )}
             {!isEditing && !isOwnProfile && (
               <Link to={`/chat?dm=${profile.id}`} className="btn btn-primary" style={{ width: '100%', fontSize: '0.8125rem', textDecoration: 'none' }}>
                 <MessageSquare size={16} /> Message
