@@ -252,7 +252,7 @@ const Profile: React.FC = () => {
                     onClick={() => {
                       setAvatarFile(null);
                       setAvatarPreview(null);
-                      setEditForm(prev => ({ ...prev, avatar_url: null }));
+                      setEditForm(prev => ({ ...prev, avatar_url: undefined }));
                     }}
                     style={{
                       background: 'none',
