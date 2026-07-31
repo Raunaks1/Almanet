@@ -1,224 +1,316 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {
-  GraduationCap, Briefcase, Users, Sun, Moon,
-  Network, BookOpen, Heart, ArrowRight, MessageSquare,
-} from 'lucide-react';
-import { useTheme } from '../ThemeContext';
+import { ArrowRight, CheckCircle2, Users, Briefcase, GraduationCap, ArrowUpRight } from 'lucide-react';
 
-const featureCards = [
-  {
-    icon: <Users size={22} />,
-    title: 'Alumni Directory',
-    description: 'Connect with graduates across various industries, graduation years, and specializations.',
-    accentColor: 'var(--brand-primary)',
-    bg: 'var(--brand-subtle)',
-    link: '/directory',
-  },
-  {
-    icon: <Briefcase size={22} />,
-    title: 'Job Portal',
-    description: 'Explore exclusive career opportunities and post job openings within the network.',
-    accentColor: 'var(--accent-success)',
-    bg: 'var(--accent-success-subtle)',
-    link: '/jobs',
-  },
-  {
-    icon: <Network size={22} />,
-    title: 'Networking Hub',
-    description: 'Build meaningful connections with fellow alumni across industries and batches.',
-    accentColor: 'var(--brand-secondary)',
-    bg: 'rgba(124, 58, 237, 0.08)',
-    link: '/dashboard',
-  },
-  {
-    icon: <BookOpen size={22} />,
-    title: 'Mentorship',
-    description: 'Get personalised career guidance from senior alumni mentors ready to elevate your journey.',
-    accentColor: 'var(--accent-warning)',
-    bg: 'var(--accent-warning-subtle)',
-    link: '/dashboard',
-  },
-  {
-    icon: <MessageSquare size={22} />,
-    title: 'Community Chat',
-    description: 'Engage in real-time conversations with batch channels, branch groups, and direct messages.',
-    accentColor: 'var(--brand-primary)',
-    bg: 'var(--brand-subtle)',
-    link: '/chat',
-  },
-  {
-    icon: <Heart size={22} />,
-    title: 'Donation',
-    description: 'Support scholarships and college programs — ignite a legacy of generosity.',
-    accentColor: 'var(--accent-danger)',
-    bg: 'var(--accent-danger-subtle)',
-    link: '/dashboard',
-  },
-];
-
-const Home: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-
-      {/* ── Navbar ── */}
-      <nav style={{
-        padding: '1rem 2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderBottom: '1px solid var(--border-color)',
-        background: 'var(--bg-primary)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <GraduationCap size={28} color="var(--brand-primary)" />
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>AlmaNET</h2>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
-            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
-          <Link to="/auth" className="btn btn-outline">Login</Link>
-          <Link to="/auth?mode=register" className="btn btn-primary">Join Network</Link>
-        </div>
-      </nav>
-
-      {/* ── Hero ── */}
-      <main className="container" style={{ paddingTop: '5rem', paddingBottom: '4rem', textAlign: 'center' }}>
-        <div style={{
-          display: 'inline-block',
-          padding: '0.375rem 1rem',
-          background: 'var(--brand-subtle)',
-          borderRadius: '9999px',
-          fontSize: '0.8125rem',
-          fontWeight: 500,
-          color: 'var(--brand-primary)',
-          marginBottom: '1.5rem',
-        }}>
-          Technical Education Department
-        </div>
-
-        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', marginBottom: '1.25rem', fontWeight: 800, lineHeight: 1.15 }}>
-          Bridge the Gap Between{' '}
-          <span style={{ color: 'var(--brand-primary)' }}>Alumni &amp; Students</span>
-        </h1>
-
-        <p style={{
-          fontSize: '1.125rem',
-          color: 'var(--text-secondary)',
-          maxWidth: '560px',
-          margin: '0 auto 2.5rem auto',
-          lineHeight: 1.7,
-        }}>
-          The official platform to foster lifelong connections, mentorship, and professional growth within the network.
-        </p>
-
-        <div className="flex-center" style={{ gap: '0.75rem' }}>
-          <Link to="/auth?mode=register" className="btn btn-primary" style={{ fontSize: '0.9375rem', padding: '0.75rem 1.75rem' }}>
-            Get Started
-          </Link>
-        </div>
-      </main>
-
-      {/* ── Section label ── */}
-      <div className="container" style={{ paddingBottom: '1.25rem' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          marginBottom: '0.25rem',
-        }}>
-          <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-          <span style={{
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            color: 'var(--text-tertiary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            whiteSpace: 'nowrap',
-          }}>
-            What you get
-          </span>
-          <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-        </div>
-      </div>
-
-      {/* ── Features Grid ── */}
-      <section className="container" style={{ paddingBottom: '5rem' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1.25rem',
-        }}>
-          {featureCards.map((card) => (
-            <Link
-              key={card.title}
-              to={card.link}
-              style={{ textDecoration: 'none' }}
-            >
-              <div
-                className="card-elevated"
-                style={{
-                  padding: '1.75rem',
-                  height: '100%',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0',
-                }}
-              >
-                {/* Icon */}
-                <div style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: 'var(--radius-md)',
-                  background: card.bg,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: card.accentColor,
-                  marginBottom: '1.125rem',
-                  flexShrink: 0,
-                }}>
-                  {card.icon}
-                </div>
-
-                <h3 style={{ fontSize: '1.0625rem', marginBottom: '0.4rem', fontWeight: 600 }}>
-                  {card.title}
-                </h3>
-
-                <p style={{
-                  color: 'var(--text-secondary)',
-                  fontSize: '0.875rem',
-                  lineHeight: 1.65,
-                  margin: '0 0 1.25rem 0',
-                  flex: 1,
-                }}>
-                  {card.description}
-                </p>
-
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  fontSize: '0.8125rem',
-                  fontWeight: 600,
-                  color: card.accentColor,
-                }}>
-                  Learn more <ArrowRight size={13} strokeWidth={2.5} />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
+const COLORS = {
+  bg: '#FBFBF9',
+  text: '#0D1E14',
+  textMuted: '#4A5D53',
+  sage: '#CCDAC6',
+  lavender: '#D9CFF5',
+  blue: '#C7E4F2',
+  terracotta: '#8A4A38',
+  white: '#FFFFFF',
+  border: '#0D1E14',
 };
 
-export default Home;
+const Header = () => (
+  <nav style={{
+    padding: '1.25rem 3rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    background: COLORS.bg,
+    borderBottom: `1px solid ${COLORS.border}`,
+    position: 'sticky',
+    top: 0,
+    zIndex: 50,
+  }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <GraduationCap size={32} color={COLORS.text} strokeWidth={2.5} />
+      <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: COLORS.text, letterSpacing: '-0.02em' }}>AlmaNET</h2>
+    </div>
+    
+
+
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <Link to="/auth" style={{ 
+        textDecoration: 'none', 
+        color: COLORS.text, 
+        fontWeight: 600,
+        fontSize: '0.9375rem'
+      }}>
+        Log in
+      </Link>
+      <Link to="/auth?mode=register" style={{ 
+        background: COLORS.text,
+        color: COLORS.white,
+        padding: '0.625rem 1.25rem',
+        borderRadius: '99px',
+        textDecoration: 'none',
+        fontWeight: 600,
+        fontSize: '0.9375rem',
+        border: `1.5px solid ${COLORS.text}`,
+        transition: 'all 0.2s ease',
+      }}>
+        Join Network
+      </Link>
+    </div>
+  </nav>
+);
+
+const Hero = () => (
+  <header style={{ padding: '6rem 2rem 4rem 2rem', textAlign: 'center', background: COLORS.bg }}>
+
+
+    <h1 style={{ 
+      fontSize: 'clamp(3rem, 7vw, 5.5rem)', 
+      fontWeight: 900, 
+      color: COLORS.text,
+      lineHeight: 1.05,
+      maxWidth: '1000px',
+      margin: '0 auto 1.5rem auto',
+      letterSpacing: '-0.03em',
+      textTransform: 'uppercase'
+    }}>
+      FINALLY, A BETTER WAY TO CONNECT ALUMNI & STUDENTS
+    </h1>
+
+    <p style={{
+      fontSize: '1.25rem',
+      color: COLORS.textMuted,
+      maxWidth: '600px',
+      margin: '0 auto 3rem auto',
+      lineHeight: 1.6,
+      fontWeight: 500,
+    }}>
+      The official platform to foster lifelong connections, mentorship, and professional growth. Stop losing touch.
+    </p>
+
+    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', alignItems: 'center' }}>
+
+      <Link to="/auth?mode=register" style={{ 
+        background: COLORS.text,
+        color: COLORS.white,
+        padding: '1rem 2rem',
+        borderRadius: '99px',
+        textDecoration: 'none',
+        fontWeight: 700,
+        fontSize: '1rem',
+        border: `2px solid ${COLORS.text}`,
+        boxShadow: '4px 4px 0px rgba(13,30,20,0.2)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}>
+        Get Started <ArrowRight size={18} />
+      </Link>
+    </div>
+
+    {/* Hero Image / Mockup */}
+    <div style={{ marginTop: '5rem', position: 'relative', maxWidth: '1200px', margin: '5rem auto 0 auto' }}>
+      <img 
+        src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2850&auto=format&fit=crop" 
+        alt="Students collaborating" 
+        style={{
+          width: '100%',
+          height: '600px',
+          objectFit: 'cover',
+          borderRadius: '32px',
+          border: `2px solid ${COLORS.border}`,
+          boxShadow: '8px 8px 0px rgba(13,30,20,1)',
+        }}
+      />
+      {/* Floating Mockup Card */}
+      <div style={{
+        position: 'absolute',
+        bottom: '-2rem',
+        right: '4rem',
+        background: COLORS.white,
+        padding: '1.5rem',
+        borderRadius: '16px',
+        border: `2px solid ${COLORS.border}`,
+        boxShadow: '8px 8px 0px rgba(13,30,20,1)',
+        width: '320px',
+        textAlign: 'left'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+          <img 
+            src="/profile.png" 
+            alt="Raunak Shaikh"
+            style={{ width: 40, height: 40, borderRadius: '50%', border: `1.5px solid ${COLORS.border}`, objectFit: 'cover', background: COLORS.lavender }} 
+          />
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: COLORS.text }}>Raunak Shaikh</div>
+            <div style={{ fontWeight: 600, fontSize: '0.75rem', color: COLORS.textMuted }}>Software Engineer @ Google</div>
+          </div>
+        </div>
+        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: COLORS.text, background: COLORS.bg, padding: '0.75rem', borderRadius: '8px', border: `1px solid ${COLORS.border}` }}>
+          "Hey everyone! I'm happy to review resumes for the upcoming fall recruitment."
+        </div>
+      </div>
+    </div>
+  </header>
+);
+
+
+
+const FeatureBlock = ({ title, desc, tag, color, reverse, img }: any) => (
+  <section style={{ padding: '6rem 2rem', background: COLORS.bg, borderTop: `1px solid ${COLORS.border}` }}>
+    <div style={{ 
+      maxWidth: '1200px', 
+      margin: '0 auto', 
+      display: 'flex', 
+      flexDirection: reverse ? 'row-reverse' : 'row',
+      alignItems: 'center',
+      gap: '4rem'
+    }}>
+      <div style={{ flex: 1 }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '0.375rem 0.875rem',
+          background: color,
+          border: `1.5px solid ${COLORS.border}`,
+          borderRadius: '99px',
+          fontSize: '0.8125rem',
+          fontWeight: 700,
+          color: COLORS.text,
+          marginBottom: '1.5rem',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em'
+        }}>
+          {tag}
+        </div>
+        <h2 style={{ 
+          fontSize: 'clamp(2rem, 3.5vw, 3.5rem)', 
+          fontWeight: 900, 
+          color: COLORS.text,
+          lineHeight: 1.1,
+          marginBottom: '1.5rem',
+          textTransform: 'uppercase',
+          letterSpacing: '-0.02em',
+        }}>
+          {title}
+        </h2>
+        <p style={{
+          fontSize: '1.125rem',
+          color: COLORS.textMuted,
+          lineHeight: 1.6,
+          fontWeight: 500,
+          marginBottom: '2.5rem',
+          maxWidth: '480px'
+        }}>
+          {desc}
+        </p>
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {['Access exclusive directory', 'Direct messaging capabilities', 'Advanced search filters'].map(item => (
+            <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 700, color: COLORS.text }}>
+              <CheckCircle2 size={20} color={color} fill={COLORS.border} stroke={COLORS.bg} />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      
+      <div style={{ flex: 1, display: 'flex', justifyContent: reverse ? 'flex-start' : 'flex-end' }}>
+        <div style={{
+          width: '100%',
+          maxWidth: '500px',
+          height: '500px',
+          background: color,
+          borderRadius: '32px',
+          border: `2px solid ${COLORS.border}`,
+          boxShadow: '12px 12px 0px rgba(13,30,20,1)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <img src={img} alt="Feature visual" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9, mixBlendMode: 'multiply' }} />
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const Footer = () => (
+  <footer style={{ 
+    background: COLORS.text, 
+    padding: '6rem 2rem 4rem 2rem', 
+    color: COLORS.bg 
+  }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6rem' }}>
+        <div>
+          <h2 style={{ fontSize: '3rem', fontWeight: 900, margin: '0 0 1rem 0', textTransform: 'uppercase' }}>Ready to Grow?</h2>
+          <Link to="/auth?mode=register" style={{ 
+            background: COLORS.sage,
+            color: COLORS.text,
+            padding: '1rem 2rem',
+            borderRadius: '99px',
+            textDecoration: 'none',
+            fontWeight: 800,
+            fontSize: '1rem',
+            border: `2px solid ${COLORS.bg}`,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            textTransform: 'uppercase'
+          }}>
+            Create your account <ArrowUpRight size={20} />
+          </Link>
+        </div>
+        <div style={{ display: 'flex', gap: '4rem', fontWeight: 600 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ color: COLORS.sage, textTransform: 'uppercase', fontSize: '0.875rem' }}>Platform</div>
+            <Link to="/directory" style={{ color: 'inherit', textDecoration: 'none' }}>Directory</Link>
+            <Link to="/jobs" style={{ color: 'inherit', textDecoration: 'none' }}>Jobs</Link>
+            <Link to="/events" style={{ color: 'inherit', textDecoration: 'none' }}>Events</Link>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ color: COLORS.sage, textTransform: 'uppercase', fontSize: '0.875rem' }}>Company</div>
+            <Link to="/about" style={{ color: 'inherit', textDecoration: 'none' }}>About Us</Link>
+            <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy Policy</Link>
+            <Link to="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>Terms of Service</Link>
+          </div>
+        </div>
+      </div>
+      <div style={{ borderTop: `1px solid rgba(255,255,255,0.1)`, paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>
+        <div>© 2026 AlmaNET. All rights reserved.</div>
+        <div style={{ display: 'flex', gap: '1.5rem' }}>
+          <span>Twitter</span>
+          <span>LinkedIn</span>
+          <span>Instagram</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+);
+
+export default function Home() {
+  return (
+    <div style={{ minHeight: '100vh', background: COLORS.bg, fontFamily: '"Inter", sans-serif' }}>
+      <Header />
+      <Hero />
+
+      
+      <FeatureBlock 
+        tag="Directory"
+        title="Find people who hate wasting time"
+        desc="Search through thousands of verified alumni. Filter by industry, graduation year, and company to find exactly who you need to connect with."
+        color={COLORS.sage}
+        img="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2000&auto=format&fit=crop"
+      />
+      
+      <FeatureBlock 
+        tag="Career Board"
+        title="Opportunities you won't find on LinkedIn"
+        desc="Exclusive job postings, internships, and referral opportunities shared directly by alumni working at top-tier companies."
+        color={COLORS.lavender}
+        reverse={true}
+        img="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2000&auto=format&fit=crop"
+      />
+
+      <Footer />
+    </div>
+  );
+}

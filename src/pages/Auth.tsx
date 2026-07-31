@@ -1,12 +1,48 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { GraduationCap, ArrowLeft, Loader2, Sun, Moon, Search, X, Camera } from 'lucide-react';
-import { useTheme } from '../ThemeContext';
+import { GraduationCap, ArrowLeft, Loader2, Search, X, Camera } from 'lucide-react';
 import { COLLEGE_NAMES, getBranchesForCollege } from '../lib/colleges';
 
+const COLORS = {
+  bg: '#FBFBF9',
+  text: '#0D1E14',
+  textMuted: '#4A5D53',
+  sage: '#CCDAC6',
+  lavender: '#D9CFF5',
+  blue: '#C7E4F2',
+  white: '#FFFFFF',
+  border: '#0D1E14',
+  danger: '#ff4444',
+  dangerSubtle: '#ffecec'
+};
+
+const inputStyles = {
+  padding: '0.875rem 1.25rem',
+  borderRadius: '99px',
+  border: `2px solid ${COLORS.border}`,
+  fontSize: '0.9375rem',
+  fontWeight: 500,
+  outline: 'none',
+  width: '100%',
+  boxShadow: '4px 4px 0px rgba(13,30,20,1)',
+  backgroundColor: COLORS.white,
+  color: COLORS.text,
+  transition: 'all 0.2s ease',
+  boxSizing: 'border-box' as const,
+};
+
+const labelStyles = {
+  fontWeight: 700, 
+  color: COLORS.text, 
+  marginBottom: '0.5rem', 
+  display: 'block',
+  fontSize: '0.875rem',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.05em'
+};
+
 const Auth: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
@@ -41,6 +77,7 @@ const Auth: React.FC = () => {
   const filteredColleges = COLLEGE_NAMES.filter(name =>
     name.toLowerCase().includes(collegeSearch.toLowerCase())
   );
+  
   const [degree, setDegree] = useState('');
   const [branch, setBranch] = useState('');
   const [graduationYear, setGraduationYear] = useState('');
@@ -113,81 +150,95 @@ const Auth: React.FC = () => {
     }
   };
 
-  const userTypeOptions: Array<{ value: 'alumni' | 'student' | 'admin'; label: string }> = [
-    { value: 'alumni', label: 'Alumni' },
-    { value: 'student', label: 'Student' },
-    { value: 'admin', label: 'Admin' },
+  const userTypeOptions: Array<{ value: 'alumni' | 'student' | 'admin'; label: string; color: string }> = [
+    { value: 'alumni', label: 'Alumni', color: COLORS.lavender },
+    { value: 'student', label: 'Student', color: COLORS.sage },
+    { value: 'admin', label: 'Admin', color: COLORS.blue },
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: 'var(--bg-secondary)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: COLORS.bg, fontFamily: '"Inter", sans-serif' }}>
       
-      <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', display: 'flex', gap: '0.75rem' }}>
+      <div style={{ position: 'absolute', top: '2rem', left: '2rem', display: 'flex', gap: '0.75rem' }}>
         <button 
           onClick={() => navigate('/')} 
-          className="btn btn-ghost"
-          style={{ padding: '0.5rem 0.75rem' }}
+          style={{ 
+            padding: '0.5rem 1rem', 
+            background: COLORS.white, 
+            border: `1.5px solid ${COLORS.border}`, 
+            borderRadius: '99px', 
+            fontWeight: 700, 
+            color: COLORS.text, 
+            boxShadow: '4px 4px 0px rgba(13,30,20,1)', 
+            cursor: 'pointer',
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem' 
+          }}
         >
           <ArrowLeft size={18} /> Back
         </button>
       </div>
 
-      <button
-        onClick={toggleTheme}
-        className="theme-toggle"
-        aria-label="Toggle theme"
-        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem' }}
-      >
-        {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-      </button>
-
-      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '560px', padding: '2.5rem' }}>
+      <div style={{ 
+        width: '100%', 
+        maxWidth: '560px', 
+        padding: '3rem',
+        background: COLORS.white,
+        borderRadius: '32px',
+        border: `2px solid ${COLORS.border}`,
+        boxShadow: '12px 12px 0px rgba(13,30,20,1)',
+      }}>
         
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
             <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: 'var(--radius-lg)',
-              background: 'var(--brand-subtle)',
+              width: '56px',
+              height: '56px',
+              borderRadius: '16px',
+              background: COLORS.sage,
+              border: `2px solid ${COLORS.border}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: '4px 4px 0px rgba(13,30,20,1)',
             }}>
-              <GraduationCap size={28} color="var(--brand-primary)" />
+              <GraduationCap size={32} color={COLORS.text} strokeWidth={2.5} />
             </div>
           </div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.375rem' }}>
-            {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
+          <h2 style={{ fontSize: '2rem', fontWeight: 900, color: COLORS.text, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
+            {mode === 'login' ? 'Welcome Back' : 'Join AlmaNET'}
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>
+          <p style={{ color: COLORS.textMuted, fontSize: '1rem', fontWeight: 500 }}>
             {mode === 'login' 
               ? 'Enter your credentials to access the network' 
-              : 'Join the AlmaNET community today'
+              : 'The official platform for professional growth'
             }
           </p>
         </div>
 
         {error && (
           <div style={{
-            background: 'var(--accent-danger-subtle)',
-            border: '1px solid var(--accent-danger)',
-            color: 'var(--accent-danger)',
-            padding: '0.75rem 1rem',
-            borderRadius: 'var(--radius-md)',
-            marginBottom: '1.5rem',
-            fontSize: '0.875rem',
+            background: COLORS.dangerSubtle,
+            border: `2px solid ${COLORS.danger}`,
+            color: COLORS.danger,
+            padding: '1rem',
+            borderRadius: '16px',
+            marginBottom: '2rem',
+            fontSize: '0.9375rem',
+            fontWeight: 600,
+            boxShadow: `4px 4px 0px ${COLORS.danger}`,
           }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {mode === 'register' && (
             <>
-              <div className="input-group">
-                <label className="input-label">I am a</label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div>
+                <label style={labelStyles}>I am a</label>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
                   {userTypeOptions.map(opt => (
                     <button
                       key={opt.value}
@@ -195,15 +246,18 @@ const Auth: React.FC = () => {
                       onClick={() => setUserType(opt.value)}
                       style={{
                         flex: 1,
-                        padding: '0.5rem',
-                        borderRadius: 'var(--radius-md)',
+                        padding: '0.75rem',
+                        borderRadius: '99px',
                         fontSize: '0.875rem',
-                        fontWeight: 500,
-                        border: `1px solid ${userType === opt.value ? 'var(--brand-primary)' : 'var(--border-color)'}`,
-                        background: userType === opt.value ? 'var(--brand-subtle)' : 'transparent',
-                        color: userType === opt.value ? 'var(--brand-primary)' : 'var(--text-secondary)',
+                        fontWeight: 800,
+                        border: `2px solid ${COLORS.border}`,
+                        background: userType === opt.value ? opt.color : COLORS.white,
+                        color: COLORS.text,
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease',
+                        boxShadow: userType === opt.value ? 'none' : '4px 4px 0px rgba(13,30,20,1)',
+                        transform: userType === opt.value ? 'translate(4px, 4px)' : 'none',
+                        transition: 'all 0.1s ease',
+                        textTransform: 'uppercase'
                       }}
                     >
                       {opt.label}
@@ -214,16 +268,16 @@ const Auth: React.FC = () => {
 
               {/* Profile Photo Picker – student & alumni only */}
               {userType !== 'admin' && (
-                <div className="input-group" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                  <label className="input-label" style={{ alignSelf: 'flex-start' }}>Profile Photo <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>(Optional)</span></label>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                  <label style={{...labelStyles, alignSelf: 'flex-start'}}>Profile Photo <span style={{ color: COLORS.textMuted, fontWeight: 500, textTransform: 'none' }}>(Optional)</span></label>
                   <div
                     onClick={() => profilePhotoRef.current?.click()}
                     style={{
-                      width: '88px',
-                      height: '88px',
+                      width: '100px',
+                      height: '100px',
                       borderRadius: '50%',
-                      background: profilePhotoPreview ? `url(${profilePhotoPreview}) center/cover no-repeat` : 'var(--bg-tertiary)',
-                      border: `2px dashed ${profilePhotoPreview ? 'var(--brand-primary)' : 'var(--border-color)'}`,
+                      background: profilePhotoPreview ? `url(${profilePhotoPreview}) center/cover no-repeat` : COLORS.bg,
+                      border: `2px dashed ${COLORS.border}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -232,17 +286,15 @@ const Auth: React.FC = () => {
                       transition: 'all 0.2s ease',
                       overflow: 'hidden',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand-primary)'; e.currentTarget.style.transform = 'scale(1.03)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = profilePhotoPreview ? 'var(--brand-primary)' : 'var(--border-color)'; e.currentTarget.style.transform = 'scale(1)'; }}
                   >
                     {!profilePhotoPreview && (
-                      <Camera size={24} color="var(--text-tertiary)" />
+                      <Camera size={28} color={COLORS.textMuted} />
                     )}
                     {profilePhotoPreview && (
                       <div style={{
                         position: 'absolute',
                         inset: 0,
-                        background: 'rgba(0,0,0,0.35)',
+                        background: 'rgba(13,30,20,0.5)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -252,7 +304,7 @@ const Auth: React.FC = () => {
                         onMouseEnter={e => e.currentTarget.style.opacity = '1'}
                         onMouseLeave={e => e.currentTarget.style.opacity = '0'}
                       >
-                        <Camera size={20} color="#fff" />
+                        <Camera size={24} color={COLORS.white} />
                       </div>
                     )}
                   </div>
@@ -280,75 +332,76 @@ const Auth: React.FC = () => {
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: 'var(--accent-danger)',
-                        fontSize: '0.75rem',
+                        color: COLORS.danger,
+                        fontSize: '0.8125rem',
                         cursor: 'pointer',
-                        fontWeight: 500,
+                        fontWeight: 700,
+                        textTransform: 'uppercase'
                       }}
                     >
-                      Remove photo
+                      Remove
                     </button>
                   )}
                 </div>
               )}
 
-              <div className="input-group">
-                <label className="input-label" htmlFor="fullName">Full Name</label>
+              <div>
+                <label style={labelStyles} htmlFor="fullName">Full Name</label>
                 <input 
                   type="text" 
                   id="fullName" 
-                  className="input-field" 
-                  placeholder="John Doe"
+                  style={inputStyles}
+                  placeholder="e.g. Jane Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required 
                 />
               </div>
 
-              <div className="input-group" ref={collegeRef} style={{ position: 'relative' }}>
-                <label className="input-label" htmlFor="collegeSearch">College / Institute Name</label>
+              <div ref={collegeRef} style={{ position: 'relative' }}>
+                <label style={labelStyles} htmlFor="collegeSearch">College / Institute Name</label>
 
                 {/* Show selected college as a chip, or the search input */}
                 {college ? (
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.5rem 0.875rem',
-                    background: 'var(--brand-subtle)',
-                    border: '1px solid var(--brand-primary)',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: '0.9rem',
-                    color: 'var(--brand-primary)',
-                    fontWeight: 500,
+                    gap: '0.75rem',
+                    padding: '0.875rem 1.25rem',
+                    background: COLORS.lavender,
+                    border: `2px solid ${COLORS.border}`,
+                    borderRadius: '99px',
+                    fontSize: '0.9375rem',
+                    color: COLORS.text,
+                    fontWeight: 700,
+                    boxShadow: '4px 4px 0px rgba(13,30,20,1)',
                   }}>
-                    <GraduationCap size={15} style={{ flexShrink: 0 }} />
+                    <GraduationCap size={18} style={{ flexShrink: 0 }} />
                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{college}</span>
                     <button
                       type="button"
                       onClick={() => { setCollege(''); setCollegeSearch(''); setBranch(''); }}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand-primary)', padding: '0', display: 'flex' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: COLORS.text, padding: '0', display: 'flex' }}
                       aria-label="Clear college selection"
                     >
-                      <X size={15} />
+                      <X size={18} />
                     </button>
                   </div>
                 ) : (
                   <div style={{ position: 'relative' }}>
-                    <Search size={15} style={{
-                      position: 'absolute', left: '0.75rem', top: '50%',
-                      transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none',
+                    <Search size={18} style={{
+                      position: 'absolute', left: '1.25rem', top: '50%',
+                      transform: 'translateY(-50%)', color: COLORS.textMuted, pointerEvents: 'none',
                     }} />
                     <input
                       id="collegeSearch"
                       type="text"
-                      className="input-field"
+                      style={{ ...inputStyles, paddingLeft: '3rem' }}
                       placeholder="Search your college..."
                       value={collegeSearch}
                       onChange={(e) => { setCollegeSearch(e.target.value); setShowCollegeList(true); }}
                       onFocus={() => setShowCollegeList(true)}
                       autoComplete="off"
-                      style={{ paddingLeft: '2.25rem' }}
                     />
                   </div>
                 )}
@@ -360,19 +413,20 @@ const Auth: React.FC = () => {
                 {showCollegeList && !college && (
                   <div style={{
                     position: 'absolute',
-                    top: 'calc(100% + 4px)',
+                    top: 'calc(100% + 8px)',
                     left: 0,
                     right: 0,
-                    background: 'var(--bg-primary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    boxShadow: 'var(--shadow-lg)',
+                    background: COLORS.white,
+                    border: `2px solid ${COLORS.border}`,
+                    borderRadius: '16px',
+                    boxShadow: '8px 8px 0px rgba(13,30,20,1)',
                     zIndex: 200,
                     maxHeight: '220px',
                     overflowY: 'auto',
+                    padding: '0.5rem'
                   }}>
                     {filteredColleges.length === 0 ? (
-                      <div style={{ padding: '0.875rem 1rem', color: 'var(--text-tertiary)', fontSize: '0.875rem', textAlign: 'center' }}>
+                      <div style={{ padding: '1rem', color: COLORS.textMuted, fontSize: '0.9375rem', textAlign: 'center', fontWeight: 500 }}>
                         No colleges found
                       </div>
                     ) : (
@@ -386,15 +440,17 @@ const Auth: React.FC = () => {
                             display: 'block',
                             width: '100%',
                             textAlign: 'left',
-                            padding: '0.6rem 1rem',
+                            padding: '0.75rem 1rem',
                             background: 'none',
                             border: 'none',
                             cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            color: 'var(--text-primary)',
+                            fontSize: '0.9375rem',
+                            fontWeight: 600,
+                            color: COLORS.text,
+                            borderRadius: '8px',
                             transition: 'background 0.15s',
                           }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                          onMouseEnter={e => (e.currentTarget.style.background = COLORS.bg)}
                           onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                         >
                           {name}
@@ -406,95 +462,98 @@ const Auth: React.FC = () => {
               </div>
 
               {userType === 'admin' ? (
-                <div className="input-group">
-                  <label className="input-label" htmlFor="adminPassphrase">Admin Verification Pass-phrase</label>
+                <div>
+                  <label style={labelStyles} htmlFor="adminPassphrase">Admin Pass-phrase</label>
                   <input 
                     type="password" 
                     id="adminPassphrase" 
-                    className="input-field" 
+                    style={inputStyles}
                     placeholder="Enter college admin code"
                     value={adminPassphrase}
                     onChange={(e) => setAdminPassphrase(e.target.value)}
                     required 
                   />
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Hint: Use 'admin123' for this prototype.</p>
+                  <p style={{ fontSize: '0.75rem', color: COLORS.textMuted, marginTop: '0.5rem', fontWeight: 500 }}>Hint: Use 'admin123' for this prototype.</p>
                 </div>
               ) : (
                 <>
-                    <div className="input-group">
-                      <label className="input-label" htmlFor="degree">Degree</label>
-                      <select 
-                        id="degree" 
-                        className="input-field" 
-                        value={degree}
-                        onChange={(e) => setDegree(e.target.value)}
-                        required
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <option value="">— Select Degree —</option>
-                        <option value="B.Tech / B.E. (Bachelor of Technology / Engineering)">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
-                        <option value="M.Tech / M.E. (Master of Technology / Engineering)">M.Tech / M.E. (Master of Technology / Engineering)</option>
-                        <option value="Ph.D.">Ph.D.</option>
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label className="input-label" htmlFor="graduationYear">Graduation Year</label>
-                      <input 
-                        type="number" 
-                        id="graduationYear" 
-                        className="input-field" 
-                        placeholder="e.g. 2024"
-                        value={graduationYear}
-                        onChange={(e) => setGraduationYear(e.target.value)}
-                        required 
-                      />
-                    </div>
+                  <div>
+                    <label style={labelStyles} htmlFor="degree">Degree</label>
+                    <select 
+                      id="degree" 
+                      style={{ ...inputStyles, cursor: 'pointer', appearance: 'none', background: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230D1E14' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 1rem center/1rem`, paddingRight: '2.5rem' }}
+                      value={degree}
+                      onChange={(e) => setDegree(e.target.value)}
+                      required
+                    >
+                      <option value="">— Select Degree —</option>
+                      <option value="B.Tech / B.E. (Bachelor of Technology / Engineering)">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
+                      <option value="M.Tech / M.E. (Master of Technology / Engineering)">M.Tech / M.E. (Master of Technology / Engineering)</option>
+                      <option value="Ph.D.">Ph.D.</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label style={labelStyles} htmlFor="graduationYear">Graduation Year</label>
+                    <input 
+                      type="number" 
+                      id="graduationYear" 
+                      style={inputStyles}
+                      placeholder="e.g. 2024"
+                      value={graduationYear}
+                      onChange={(e) => setGraduationYear(e.target.value)}
+                      required 
+                    />
+                  </div>
 
-                  <div className="input-group">
-                    <label className="input-label" htmlFor="branch">Branch / Major</label>
+                  <div>
+                    <label style={labelStyles} htmlFor="branch">Branch / Major</label>
                     <select
                       id="branch"
-                      className="input-field"
+                      style={{ 
+                        ...inputStyles, 
+                        cursor: college ? 'pointer' : 'not-allowed', 
+                        opacity: college ? 1 : 0.7,
+                        appearance: 'none', 
+                        background: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230D1E14' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 1rem center/1rem`, 
+                        paddingRight: '2.5rem',
+                        backgroundColor: college ? COLORS.white : COLORS.bg
+                      }}
                       value={branch}
                       onChange={(e) => setBranch(e.target.value)}
                       required
                       disabled={!college}
-                      style={{ cursor: college ? 'pointer' : 'not-allowed', opacity: college ? 1 : 0.6 }}
                     >
                       <option value="">{college ? '— Select your branch —' : '— Select college first —'}</option>
                       {getBranchesForCollege(college).map(b => (
                         <option key={b} value={b}>{b}</option>
                       ))}
                     </select>
-                    {!college && (
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Please select a college first to see available branches.</p>
-                    )}
                   </div>
 
-                  <div className="input-group">
-                    <label className="input-label" htmlFor="idDocument">Upload ID / Certificate (Verification)</label>
+                  <div>
+                    <label style={labelStyles} htmlFor="idDocument">Upload ID / Certificate (Verification)</label>
                     <input 
                       type="file" 
                       id="idDocument" 
-                      className="input-field"
-                      style={{ padding: '0.5rem' }}
+                      style={{ ...inputStyles, padding: '0.625rem 1rem' }}
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={(e) => setIdDocument(e.target.files ? e.target.files[0] : null)}
                       required
                     />
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Upload a valid college ID or degree certificate for admin review.</p>
+                    <p style={{ fontSize: '0.75rem', color: COLORS.textMuted, marginTop: '0.5rem', fontWeight: 500 }}>Upload a valid college ID or degree certificate for admin review.</p>
                   </div>
                 </>
               )}
             </>
           )}
 
-          <div className="input-group">
-            <label className="input-label" htmlFor="email">Email Address</label>
+          <div>
+            <label style={labelStyles} htmlFor="email">Email Address</label>
             <input 
               type="email" 
               id="email" 
-              className="input-field" 
+              style={inputStyles}
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -502,12 +561,12 @@ const Auth: React.FC = () => {
             />
           </div>
 
-          <div className="input-group">
-            <label className="input-label" htmlFor="password">Password</label>
+          <div>
+            <label style={labelStyles} htmlFor="password">Password</label>
             <input 
               type="password" 
               id="password" 
-              className="input-field" 
+              style={inputStyles}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -517,26 +576,49 @@ const Auth: React.FC = () => {
 
           <button 
             type="submit" 
-            className="btn btn-primary" 
-            style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem' }}
+            style={{ 
+              width: '100%', 
+              marginTop: '1rem', 
+              padding: '1rem',
+              background: COLORS.text,
+              color: COLORS.white,
+              border: `2px solid ${COLORS.text}`,
+              borderRadius: '99px',
+              fontSize: '1rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: '4px 4px 0px rgba(13,30,20,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: loading ? 0.8 : 1
+            }}
             disabled={loading}
           >
-            {loading ? <Loader2 className="animate-spin" size={18} /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : (mode === 'login' ? 'Sign In' : 'Create Account')}
           </button>
         </form>
 
-        <div style={{ marginTop: '1.75rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+        <div style={{ marginTop: '2.5rem', textAlign: 'center', fontSize: '0.9375rem', color: COLORS.textMuted, fontWeight: 600 }}>
           {mode === 'login' ? (
             <p>
               Don't have an account?{' '}
-              <button onClick={() => setMode('register')} style={{ color: 'var(--brand-primary)', fontWeight: 500 }}>
+              <button 
+                onClick={() => setMode('register')} 
+                style={{ color: COLORS.text, fontWeight: 800, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+              >
                 Sign up
               </button>
             </p>
           ) : (
             <p>
               Already have an account?{' '}
-              <button onClick={() => setMode('login')} style={{ color: 'var(--brand-primary)', fontWeight: 500 }}>
+              <button 
+                onClick={() => setMode('login')} 
+                style={{ color: COLORS.text, fontWeight: 800, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+              >
                 Sign in
               </button>
             </p>
