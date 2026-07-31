@@ -6,19 +6,30 @@ import type { JobPost } from '../pages/Jobs';
 interface NewJobModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentUser: any; // We'll just use any here or import UserProfile if needed
+  currentUser: any;
   onSuccess: (newJob: JobPost) => void;
 }
 
+const COLORS = {
+  bg: '#FBFBF9',
+  text: '#0D1E14',
+  textMuted: '#4A5D53',
+  sage: '#CCDAC6',
+  lavender: '#D9CFF5',
+  blue: '#C7E4F2',
+  warning: '#FFD166',
+  white: '#FFFFFF',
+  border: '#0D1E14',
+};
+
 export const NewJobModal: React.FC<NewJobModalProps> = ({ isOpen, onClose, currentUser, onSuccess }) => {
-  // State for all the form fields
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [expFrom, setExpFrom] = useState('-- From --');
   const [expTo, setExpTo] = useState('-- To --');
   const [location, setLocation] = useState('');
-  const [receiveApp, setReceiveApp] = useState('email'); // 'email' or 'url'
+  const [receiveApp, setReceiveApp] = useState('email');
   const [contactEmail, setContactEmail] = useState(currentUser?.email || '');
   const [jobArea, setJobArea] = useState('');
   const [skills, setSkills] = useState('');
@@ -36,7 +47,6 @@ export const NewJobModal: React.FC<NewJobModalProps> = ({ isOpen, onClose, curre
     
     setIsSubmitting(true);
     
-    // Convert to JobPost format (we'll save extra fields in description for now since they might not be in DB)
     const extraDetails = `
 Experience: ${expFrom !== '-- From --' ? expFrom : ''} to ${expTo !== '-- To --' ? expTo : ''} Years
 Website: ${companyWebsite}
@@ -53,9 +63,9 @@ ${description}
       title: jobTitle,
       company: companyName,
       location: location,
-      type: 'Full-time' as const, // Hardcoded or we could add a selector if needed
+      type: 'Full-time' as const,
       description: extraDetails,
-      requirements: [], // Would parse from description if we had a dedicated field
+      requirements: [],
       tags: skills.split(',').map(s => s.trim()).filter(Boolean),
     };
 
@@ -73,7 +83,6 @@ ${description}
     } else if (data) {
       onSuccess(data as JobPost);
       onClose();
-      // Reset form
       setJobTitle('');
       setCompanyName('');
       setCompanyWebsite('');
@@ -83,55 +92,52 @@ ${description}
     }
   };
 
-  const labelStyle = { width: '250px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)' };
-  const inputStyle = { flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '0.625rem', borderRadius: '4px', outline: 'none', fontSize: '0.875rem' };
-  const rowStyle = { display: 'flex', marginBottom: '1.25rem', alignItems: 'flex-start' };
+  const labelStyle = { width: '250px', fontSize: '0.875rem', fontWeight: 800, color: COLORS.text, textTransform: 'uppercase' as const };
+  const inputStyle = { 
+    flex: 1, background: COLORS.white, border: `2px solid ${COLORS.border}`, color: COLORS.text, 
+    padding: '0.75rem', borderRadius: '99px', outline: 'none', fontSize: '0.875rem', fontWeight: 600,
+  };
+  const rowStyle = { display: 'flex', marginBottom: '1.5rem', alignItems: 'flex-start' };
 
   return (
     <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      display: 'flex',
-      alignItems: 'flex-start',
-      justifyContent: 'center',
-      zIndex: 1000,
-      paddingTop: '5vh',
-      paddingBottom: '5vh',
-      backdropFilter: 'blur(4px)'
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(13, 30, 20, 0.8)',
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      zIndex: 1000, paddingTop: '5vh', paddingBottom: '5vh',
+      backdropFilter: 'blur(8px)', fontFamily: '"Inter", sans-serif'
     }}>
-      <div className="card" style={{
-        width: '100%',
-        maxWidth: '800px',
-        maxHeight: '90vh',
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)',
-        border: '1px solid var(--border-color)',
-        overflow: 'hidden'
+      <div style={{
+        width: '100%', maxWidth: '800px', maxHeight: '90vh',
+        backgroundColor: COLORS.bg, borderRadius: '24px',
+        display: 'flex', flexDirection: 'column',
+        boxShadow: '12px 12px 0px rgba(13,30,20,1)',
+        border: `2px solid ${COLORS.border}`, overflow: 'hidden'
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', borderBottom: `2px solid ${COLORS.border}`, background: COLORS.white }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Post a Job</h2>
-            <span style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>Create a job by filling in Job details</span>
+            <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 900, textTransform: 'uppercase', color: COLORS.text, letterSpacing: '-0.02em' }}>Post a Job</h2>
+            <span style={{ fontSize: '0.9375rem', color: COLORS.textMuted, fontWeight: 600 }}>Create a new opportunity</span>
           </div>
-          <button onClick={onClose} className="btn btn-ghost" style={{ padding: '0.5rem', borderRadius: '50%' }}>
-            <X size={20} color="var(--text-secondary)" />
+          <button 
+            onClick={onClose} 
+            style={{ 
+              padding: '0.5rem', borderRadius: '50%', background: COLORS.white, border: `2px solid ${COLORS.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              boxShadow: '2px 2px 0px rgba(13,30,20,1)'
+            }}
+          >
+            <X size={20} color={COLORS.text} strokeWidth={2.5} />
           </button>
         </div>
 
         {/* Form Body */}
-        <div style={{ padding: '2rem', overflowY: 'auto' }}>
+        <div style={{ padding: '2rem', overflowY: 'auto', background: COLORS.bg }}>
           <form id="jobForm" onSubmit={handleSubmit}>
             
             <div style={rowStyle}>
-              <div style={labelStyle}>Job Title <span style={{color: 'var(--brand-primary)'}}>*</span></div>
+              <div style={labelStyle}>Job Title <span style={{color: COLORS.warning}}>*</span></div>
               <input type="text" style={inputStyle} value={jobTitle} onChange={e => setJobTitle(e.target.value)} required />
             </div>
 
@@ -156,7 +162,7 @@ ${description}
                   <option>-- To --</option>
                   {[1,2,3,4,5,6,7,8,9,10,15,20].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
-                <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Years</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase', color: COLORS.text }}>Years</span>
               </div>
             </div>
 
@@ -164,31 +170,28 @@ ${description}
               <div style={labelStyle}>Location</div>
               <div style={{ flex: 1 }}>
                 <input type="text" style={inputStyle} value={location} onChange={e => setLocation(e.target.value)} />
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Separated locations with a Comma (,).</div>
+                <div style={{ fontSize: '0.75rem', color: COLORS.textMuted, marginTop: '0.5rem', fontWeight: 600 }}>Separated locations with a comma (,).</div>
               </div>
             </div>
 
             <div style={rowStyle}>
-              <div style={labelStyle}>How do you want to receive the application?</div>
-              <div style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.875rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="receiveApp" checked={receiveApp === 'email'} onChange={() => setReceiveApp('email')} />
+              <div style={labelStyle}>Receive App Via</div>
+              <div style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: COLORS.text }}>
+                  <input type="radio" name="receiveApp" checked={receiveApp === 'email'} onChange={() => setReceiveApp('email')} style={{ accentColor: COLORS.text }} />
                   Contact Email
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="receiveApp" checked={receiveApp === 'url'} onChange={() => setReceiveApp('url')} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: COLORS.text }}>
+                  <input type="radio" name="receiveApp" checked={receiveApp === 'url'} onChange={() => setReceiveApp('url')} style={{ accentColor: COLORS.text }} />
                   Job Apply Url
                 </label>
               </div>
             </div>
 
             <div style={rowStyle}>
-              <div style={labelStyle}>Contact Email <span style={{color: 'var(--brand-primary)'}}>*</span></div>
+              <div style={labelStyle}>Contact Email <span style={{color: COLORS.warning}}>*</span></div>
               <div style={{ flex: 1 }}>
                 <input type="email" style={inputStyle} value={contactEmail} onChange={e => setContactEmail(e.target.value)} required />
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.5rem', lineHeight: 1.4 }}>
-                  Applications to the opportunity shall be sent by email to the above address, if you are submitting the email address of a recruiter, please make sure you have the permission to do so.
-                </div>
               </div>
             </div>
 
@@ -198,7 +201,7 @@ ${description}
             </div>
 
             <div style={rowStyle}>
-              <div style={labelStyle}>Skills relevant to the Opportunity</div>
+              <div style={labelStyle}>Skills</div>
               <input type="text" style={inputStyle} value={skills} onChange={e => setSkills(e.target.value)} />
             </div>
 
@@ -214,36 +217,12 @@ ${description}
 
             <div style={rowStyle}>
               <div style={labelStyle}>Job Description</div>
-              <div style={{ flex: 1, border: '1px solid var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-                {/* Mock rich text toolbar */}
-                <div style={{ display: 'flex', gap: '0.75rem', padding: '0.5rem', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '0.875rem', alignItems: 'center' }}>
-                  <select style={{ background: 'transparent', border: 'none', color: 'inherit', outline: 'none' }}>
-                    <option>Formats</option>
-                  </select>
-                  <span style={{ fontWeight: 'bold', cursor: 'pointer' }}>B</span>
-                  <span style={{ fontStyle: 'italic', cursor: 'pointer' }}>I</span>
-                  <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>U</span>
-                  <span>|</span>
-                  <span style={{ cursor: 'pointer' }}>≡</span>
-                  <span style={{ cursor: 'pointer' }}>=</span>
-                  <span style={{ cursor: 'pointer' }}>🔗</span>
-                </div>
+              <div style={{ flex: 1, border: `2px solid ${COLORS.border}`, borderRadius: '16px', overflow: 'hidden', background: COLORS.white }}>
                 <textarea 
-                  style={{ width: '100%', minHeight: '150px', background: 'transparent', border: 'none', outline: 'none', resize: 'vertical', color: 'var(--text-primary)', padding: '0.75rem', fontFamily: 'inherit', fontSize: '0.875rem' }} 
+                  style={{ width: '100%', minHeight: '150px', background: 'transparent', border: 'none', outline: 'none', resize: 'vertical', color: COLORS.text, padding: '1rem', fontFamily: 'inherit', fontSize: '0.875rem', fontWeight: 500 }} 
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                 />
-              </div>
-            </div>
-
-            <div style={rowStyle}>
-              <div style={labelStyle}>Attach file</div>
-              <div style={{ flex: 1 }}>
-                <input type="file" style={{ fontSize: '0.875rem' }} />
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>
-                  (Allowed file types: doc, docx, ppt, pptx, xls, xlsx, zip, pdf)<br/>
-                  <span style={{color: 'var(--brand-primary)'}}>*</span>Before attaching a pdf document, please compress it using <strong>smallpdf.com</strong>
-                </div>
               </div>
             </div>
             
@@ -251,12 +230,16 @@ ${description}
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '1.25rem', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '1rem', background: 'var(--bg-secondary)' }}>
+        <div style={{ padding: '1.5rem 2rem', borderTop: `2px solid ${COLORS.border}`, display: 'flex', gap: '1rem', background: COLORS.white }}>
           <button 
             type="submit" 
             form="jobForm"
-            className="btn btn-primary" 
-            style={{ padding: '0.5rem 1.5rem', fontWeight: 600, background: '#4CAF50', color: 'white', border: 'none' }}
+            style={{ 
+              padding: '0.875rem 2rem', fontWeight: 900, background: COLORS.lavender, color: COLORS.text, 
+              border: `2px solid ${COLORS.border}`, borderRadius: '99px', cursor: 'pointer',
+              boxShadow: '4px 4px 0px rgba(13,30,20,1)', textTransform: 'uppercase', fontSize: '0.875rem',
+              opacity: isSubmitting ? 0.7 : 1
+            }}
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Posting...' : 'Post Job'}
@@ -264,8 +247,11 @@ ${description}
           <button 
             type="button" 
             onClick={onClose}
-            className="btn btn-ghost" 
-            style={{ padding: '0.5rem 1.5rem', fontWeight: 600 }}
+            style={{ 
+              padding: '0.875rem 2rem', fontWeight: 900, background: COLORS.white, color: COLORS.text, 
+              border: `2px solid ${COLORS.border}`, borderRadius: '99px', cursor: 'pointer',
+              textTransform: 'uppercase', fontSize: '0.875rem'
+            }}
           >
             Cancel
           </button>

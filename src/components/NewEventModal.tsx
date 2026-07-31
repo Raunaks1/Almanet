@@ -9,8 +9,20 @@ interface NewEventModalProps {
   onSuccess: (newEvent: EventPost) => void;
 }
 
+const COLORS = {
+  bg: '#FBFBF9',
+  text: '#0D1E14',
+  textMuted: '#4A5D53',
+  sage: '#CCDAC6',
+  lavender: '#D9CFF5',
+  blue: '#C7E4F2',
+  warning: '#FFD166',
+  white: '#FFFFFF',
+  border: '#0D1E14',
+};
+
 export const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [audience, setAudience] = useState('All Events');
+  const [audience, setAudience] = useState('All');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('All Events');
   const [startDate, setStartDate] = useState('');
@@ -33,9 +45,7 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, o
     
     setIsSubmitting(true);
     
-    // Package extra data into description to avoid schema errors if not present
     const extraDetails = `
-Audience: ${audience}
 Category: ${category}
 Venue: ${venue}
 Address: ${address}
@@ -47,13 +57,13 @@ ${description}
 ${instructions ? `Instructions: ${instructions}` : ''}
     `.trim();
 
-    // Map to EventPost structure
     const newEvent = {
       title,
       date: startDate,
       location: venue || address || 'Online',
       description: extraDetails,
-      registered_count: 0
+      registered_count: 0,
+      audience: audience as 'All' | 'Student' | 'Alumni'
     };
 
     const { data, error } = await supabase
@@ -70,7 +80,6 @@ ${instructions ? `Instructions: ${instructions}` : ''}
     } else if (data) {
       onSuccess(data as EventPost);
       onClose();
-      // Reset form
       setTitle('');
       setVenue('');
       setAddress('');
@@ -81,66 +90,68 @@ ${instructions ? `Instructions: ${instructions}` : ''}
     }
   };
 
-  const labelStyle = { width: '250px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)' };
-  const inputStyle = { flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '0.625rem', borderRadius: '4px', outline: 'none', fontSize: '0.875rem' };
-  const rowStyle = { display: 'flex', marginBottom: '1.25rem', alignItems: 'flex-start' };
+  const labelStyle = { width: '250px', fontSize: '0.875rem', fontWeight: 800, color: COLORS.text, textTransform: 'uppercase' as const };
+  const inputStyle = { 
+    flex: 1, background: COLORS.white, border: `2px solid ${COLORS.border}`, color: COLORS.text, 
+    padding: '0.75rem', borderRadius: '99px', outline: 'none', fontSize: '0.875rem', fontWeight: 600,
+  };
+  const rowStyle = { display: 'flex', marginBottom: '1.5rem', alignItems: 'flex-start' };
 
   return (
     <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      display: 'flex',
-      alignItems: 'flex-start',
-      justifyContent: 'center',
-      zIndex: 1000,
-      paddingTop: '5vh',
-      paddingBottom: '5vh',
-      backdropFilter: 'blur(4px)'
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(13, 30, 20, 0.8)',
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      zIndex: 1000, paddingTop: '5vh', paddingBottom: '5vh',
+      backdropFilter: 'blur(8px)', fontFamily: '"Inter", sans-serif'
     }}>
-      <div className="card" style={{
-        width: '100%',
-        maxWidth: '800px',
-        maxHeight: '90vh',
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)',
-        border: '1px solid var(--border-color)',
-        overflow: 'hidden'
+      <div style={{
+        width: '100%', maxWidth: '800px', maxHeight: '90vh',
+        backgroundColor: COLORS.bg, borderRadius: '24px',
+        display: 'flex', flexDirection: 'column',
+        boxShadow: '12px 12px 0px rgba(13,30,20,1)',
+        border: `2px solid ${COLORS.border}`, overflow: 'hidden'
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 2rem', borderBottom: `2px solid ${COLORS.border}`, background: COLORS.white }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Create Event</h2>
-            <span style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>Create an event by filling in event details</span>
+            <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 900, textTransform: 'uppercase', color: COLORS.text, letterSpacing: '-0.02em' }}>Create Event</h2>
+            <span style={{ fontSize: '0.9375rem', color: COLORS.textMuted, fontWeight: 600 }}>Create a new event</span>
           </div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <select 
               value={audience} 
               onChange={e => setAudience(e.target.value)}
-              style={{ padding: '0.375rem 0.75rem', borderRadius: '16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.8125rem' }}
+              style={{ 
+                padding: '0.5rem 1rem', borderRadius: '99px', 
+                background: COLORS.white, border: `2px solid ${COLORS.border}`, 
+                color: COLORS.text, fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase',
+                boxShadow: '2px 2px 0px rgba(13,30,20,1)', outline: 'none'
+              }}
             >
-              <option value="All">All Events / Everyone</option>
-              <option value="Students">Students Only</option>
+              <option value="All">All / Everyone</option>
+              <option value="Student">Students Only</option>
               <option value="Alumni">Alumni Only</option>
             </select>
-            <button onClick={onClose} className="btn btn-ghost" style={{ padding: '0.5rem', borderRadius: '50%' }}>
-              <X size={20} color="var(--text-secondary)" />
+            <button 
+              onClick={onClose} 
+              style={{ 
+                padding: '0.5rem', borderRadius: '50%', background: COLORS.white, border: `2px solid ${COLORS.border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                boxShadow: '2px 2px 0px rgba(13,30,20,1)'
+              }}
+            >
+              <X size={20} color={COLORS.text} strokeWidth={2.5} />
             </button>
           </div>
         </div>
 
         {/* Form Body */}
-        <div style={{ padding: '2rem', overflowY: 'auto' }}>
+        <div style={{ padding: '2rem', overflowY: 'auto', background: COLORS.bg }}>
           <form id="eventForm" onSubmit={handleSubmit}>
             
             <div style={rowStyle}>
-              <div style={labelStyle}>Title <span style={{color: 'var(--accent-warning)'}}>*</span></div>
+              <div style={labelStyle}>Title <span style={{color: COLORS.warning}}>*</span></div>
               <input type="text" style={inputStyle} value={title} onChange={e => setTitle(e.target.value)} required />
             </div>
 
@@ -155,11 +166,10 @@ ${instructions ? `Instructions: ${instructions}` : ''}
             </div>
 
             <div style={rowStyle}>
-              <div style={labelStyle}>Start Date <span style={{color: 'var(--accent-warning)'}}>*</span></div>
+              <div style={labelStyle}>Start Date <span style={{color: COLORS.warning}}>*</span></div>
               <div style={{ flex: 1, display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <input type="date" style={inputStyle} value={startDate} onChange={e => setStartDate(e.target.value)} required />
                 <input type="time" style={inputStyle} value={startTime} onChange={e => setStartTime(e.target.value)} />
-                <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', textDecoration: 'underline', cursor: 'pointer', whiteSpace: 'nowrap' }}>Add End Time</span>
               </div>
             </div>
 
@@ -177,15 +187,14 @@ ${instructions ? `Instructions: ${instructions}` : ''}
               <div style={labelStyle}>Webinar Link</div>
               <div style={{ flex: 1 }}>
                 <input type="text" placeholder="Add a webinar link" style={inputStyle} value={webinarLink} onChange={e => setWebinarLink(e.target.value)} />
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>If there is a webinar link available, then add it here.</div>
               </div>
             </div>
 
             <div style={rowStyle}>
-              <div style={labelStyle}>Visibility <span style={{color: 'var(--accent-warning)'}}>*</span></div>
-              <div style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.875rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" checked readOnly />
+              <div style={labelStyle}>Visibility <span style={{color: COLORS.warning}}>*</span></div>
+              <div style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: COLORS.text }}>
+                  <input type="radio" checked readOnly style={{ accentColor: COLORS.text }} />
                   Only registered members
                 </label>
               </div>
@@ -194,15 +203,15 @@ ${instructions ? `Instructions: ${instructions}` : ''}
             <div style={rowStyle}>
               <div style={labelStyle}>
                 Disable Registrations?<br/>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Note: Users would be not able to register if Yes is selected.</span>
+                <span style={{ fontSize: '0.75rem', color: COLORS.textMuted, fontStyle: 'italic', fontWeight: 600, textTransform: 'none' }}>Users won't be able to register if Yes.</span>
               </div>
-              <div style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.875rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="disableReg" checked={disableRegistrations === 'Yes'} onChange={() => setDisableRegistrations('Yes')} />
+              <div style={{ flex: 1, display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: COLORS.text }}>
+                  <input type="radio" name="disableReg" checked={disableRegistrations === 'Yes'} onChange={() => setDisableRegistrations('Yes')} style={{ accentColor: COLORS.text }} />
                   Yes
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="disableReg" checked={disableRegistrations === 'No'} onChange={() => setDisableRegistrations('No')} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: COLORS.text }}>
+                  <input type="radio" name="disableReg" checked={disableRegistrations === 'No'} onChange={() => setDisableRegistrations('No')} style={{ accentColor: COLORS.text }} />
                   No
                 </label>
               </div>
@@ -215,20 +224,9 @@ ${instructions ? `Instructions: ${instructions}` : ''}
 
             <div style={rowStyle}>
               <div style={labelStyle}>Description</div>
-              <div style={{ flex: 1, border: '1px solid var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', gap: '0.75rem', padding: '0.5rem', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '0.875rem', alignItems: 'center' }}>
-                  <select style={{ background: 'transparent', border: 'none', color: 'inherit', outline: 'none' }}>
-                    <option>Formats</option>
-                  </select>
-                  <select style={{ background: 'transparent', border: 'none', color: 'inherit', outline: 'none' }}>
-                    <option>Font Sizes</option>
-                  </select>
-                  <span style={{ fontWeight: 'bold', cursor: 'pointer' }}>B</span>
-                  <span style={{ fontStyle: 'italic', cursor: 'pointer' }}>I</span>
-                  <span style={{ cursor: 'pointer' }}>≡</span>
-                </div>
+              <div style={{ flex: 1, border: `2px solid ${COLORS.border}`, borderRadius: '16px', overflow: 'hidden', background: COLORS.white }}>
                 <textarea 
-                  style={{ width: '100%', minHeight: '150px', background: 'transparent', border: 'none', outline: 'none', resize: 'vertical', color: 'var(--text-primary)', padding: '0.75rem', fontFamily: 'inherit', fontSize: '0.875rem' }} 
+                  style={{ width: '100%', minHeight: '150px', background: 'transparent', border: 'none', outline: 'none', resize: 'vertical', color: COLORS.text, padding: '1rem', fontFamily: 'inherit', fontSize: '0.875rem', fontWeight: 500 }} 
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                 />
@@ -236,17 +234,9 @@ ${instructions ? `Instructions: ${instructions}` : ''}
             </div>
 
             <div style={rowStyle}>
-              <div style={labelStyle}>Event Image</div>
-              <div style={{ flex: 1 }}>
-                <input type="file" style={{ fontSize: '0.875rem' }} />
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Image size of 1000px width and 250px height will look perfect</div>
-              </div>
-            </div>
-
-            <div style={rowStyle}>
-              <div style={labelStyle}>Content/Instructions that appear on top of the registration form</div>
+              <div style={labelStyle}>Instructions above form</div>
               <textarea 
-                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                style={{ ...inputStyle, minHeight: '100px', resize: 'vertical', borderRadius: '16px' }}
                 value={instructions}
                 onChange={e => setInstructions(e.target.value)}
               />
@@ -256,12 +246,16 @@ ${instructions ? `Instructions: ${instructions}` : ''}
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '1.25rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', background: 'var(--bg-secondary)' }}>
+        <div style={{ padding: '1.5rem 2rem', borderTop: `2px solid ${COLORS.border}`, display: 'flex', gap: '1rem', background: COLORS.white }}>
           <button 
             type="submit" 
             form="eventForm"
-            className="btn btn-primary" 
-            style={{ padding: '0.5rem 1.5rem', fontWeight: 600, background: '#4CAF50', color: 'white', border: 'none' }}
+            style={{ 
+              padding: '0.875rem 2rem', fontWeight: 900, background: COLORS.sage, color: COLORS.text, 
+              border: `2px solid ${COLORS.border}`, borderRadius: '99px', cursor: 'pointer',
+              boxShadow: '4px 4px 0px rgba(13,30,20,1)', textTransform: 'uppercase', fontSize: '0.875rem',
+              opacity: isSubmitting ? 0.7 : 1
+            }}
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Creating...' : 'Create Event'}
@@ -269,8 +263,11 @@ ${instructions ? `Instructions: ${instructions}` : ''}
           <button 
             type="button" 
             onClick={onClose}
-            className="btn btn-outline" 
-            style={{ padding: '0.5rem 1.5rem', fontWeight: 600, borderColor: '#F44336', color: '#F44336' }}
+            style={{ 
+              padding: '0.875rem 2rem', fontWeight: 900, background: COLORS.white, color: COLORS.text, 
+              border: `2px solid ${COLORS.border}`, borderRadius: '99px', cursor: 'pointer',
+              textTransform: 'uppercase', fontSize: '0.875rem'
+            }}
           >
             Cancel
           </button>

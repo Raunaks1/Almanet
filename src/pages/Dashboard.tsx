@@ -3,16 +3,27 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   LogOut, LayoutDashboard, Users, Briefcase, MessageSquare,
-  MessageCircle, Calendar, ShieldAlert, Sun, Moon,
-  GraduationCap, Newspaper, Star, Tag, Lock, Clock,
+  MessageCircle, Calendar, ShieldAlert,
+  GraduationCap, Newspaper, Star, Tag, Lock,
 } from 'lucide-react';
-import { useTheme } from '../ThemeContext';
 import { getStoriesForCollege } from '../lib/collegeNews';
 import type { CollegeStory } from '../lib/collegeNews';
 
+const COLORS = {
+  bg: '#FBFBF9',
+  text: '#0D1E14',
+  textMuted: '#4A5D53',
+  sage: '#CCDAC6',
+  lavender: '#D9CFF5',
+  blue: '#C7E4F2',
+  terracotta: '#8A4A38',
+  white: '#FFFFFF',
+  border: '#0D1E14',
+  warning: '#FFD166',
+};
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +39,6 @@ const Dashboard: React.FC = () => {
           return;
         }
 
-        // Use select('*') — safest across any schema
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
@@ -39,7 +49,6 @@ const Dashboard: React.FC = () => {
           setProfile(profileData);
         }
 
-        // Always set user — merge profile fields on top of auth metadata
         setUser({
           ...session.user,
           user_metadata: {
@@ -70,23 +79,15 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex-center" style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-        <div
-          className="animate-spin"
-          style={{ width: '36px', height: '36px', border: '3px solid var(--border-color)', borderTopColor: 'var(--brand-primary)', borderRadius: '50%' }}
-        />
+      <div style={{ minHeight: '100vh', background: COLORS.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '36px', height: '36px', border: `4px solid ${COLORS.border}`, borderTopColor: COLORS.sage, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
-  // College name: from merged metadata → profile direct → auth metadata
   const meta = user?.user_metadata || {};
-  const collegeName: string =
-    meta.college ||
-    profile?.college ||
-    meta.college_name ||
-    '';
-
+  const collegeName: string = meta.college || profile?.college || meta.college_name || '';
   const branch: string = meta.branch || profile?.branch || '';
   const degree: string = meta.degree || profile?.degree || '';
   const gradYear: string | number = meta.graduation_year || profile?.graduation_year || '';
@@ -108,36 +109,33 @@ const Dashboard: React.FC = () => {
     { to: '/events', icon: <Calendar size={18} />, label: 'Campus Events', restricted: true },
   ];
 
-  const tagColors: Record<string, { bg: string; text: string }> = {
-    Placement:      { bg: 'var(--accent-success-subtle)',  text: 'var(--accent-success)' },
-    Research:       { bg: 'var(--brand-subtle)',           text: 'var(--brand-primary)' },
-    Startup:        { bg: 'var(--accent-warning-subtle)', text: 'var(--accent-warning)' },
-    Event:          { bg: 'rgba(124,58,237,0.08)',         text: 'var(--brand-secondary)' },
-    Infrastructure: { bg: 'rgba(124,58,237,0.08)',         text: 'var(--brand-secondary)' },
-    Workshop:       { bg: 'var(--accent-warning-subtle)', text: 'var(--accent-warning)' },
+  const tagColors: Record<string, string> = {
+    Placement: COLORS.sage,
+    Research: COLORS.blue,
+    Startup: COLORS.warning,
+    Event: COLORS.lavender,
+    Infrastructure: COLORS.lavender,
+    Workshop: COLORS.warning,
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-
+    <div style={{ display: 'flex', minHeight: '100vh', background: COLORS.bg, fontFamily: '"Inter", sans-serif' }}>
       {/* ── Sidebar ── */}
       <aside style={{
-        width: '256px',
-        background: 'var(--bg-secondary)',
-        borderRight: '1px solid var(--border-color)',
-        padding: '1.25rem',
+        width: '280px',
+        background: COLORS.white,
+        borderRight: `2px solid ${COLORS.border}`,
+        padding: '1.5rem',
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem', padding: '0 0.25rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>AlmaNET</h2>
-          <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme" style={{ width: '32px', height: '32px' }}>
-            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem', padding: '0 0.5rem' }}>
+          <GraduationCap size={28} color={COLORS.text} strokeWidth={2.5} />
+          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: COLORS.text, letterSpacing: '-0.02em', textTransform: 'uppercase' }}>AlmaNET</h2>
         </div>
 
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {navItems.map(item => {
             const locked = item.restricted && !isVerified;
             return (
@@ -148,42 +146,41 @@ const Dashboard: React.FC = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.625rem',
-                  padding: '0.625rem 0.75rem',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: '0.875rem',
-                  fontWeight: item.active ? 500 : 400,
-                  color: locked ? 'var(--text-tertiary)' : item.active ? 'var(--brand-primary)' : 'var(--text-secondary)',
-                  background: item.active ? 'var(--brand-subtle)' : 'transparent',
+                  gap: '0.75rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '99px',
+                  fontSize: '0.9375rem',
+                  fontWeight: item.active ? 800 : 600,
+                  color: COLORS.text,
+                  background: item.active ? COLORS.sage : 'transparent',
+                  border: item.active ? `2px solid ${COLORS.border}` : '2px solid transparent',
+                  boxShadow: item.active ? '4px 4px 0px rgba(13,30,20,1)' : 'none',
                   textDecoration: 'none',
                   transition: 'all 0.15s ease',
-                  opacity: locked ? 0.55 : 1,
+                  opacity: locked ? 0.5 : 1,
                   cursor: locked ? 'not-allowed' : 'pointer',
                 }}
-                onMouseOver={e => { if (!item.active && !locked) e.currentTarget.style.background = 'var(--bg-tertiary)'; }}
-                onMouseOut={e => { if (!item.active && !locked) e.currentTarget.style.background = 'transparent'; }}
                 title={locked ? 'Verification required' : item.label}
               >
                 {item.icon}
                 <span style={{ flex: 1 }}>{item.label}</span>
-                {locked && <Lock size={13} strokeWidth={2.5} />}
+                {locked && <Lock size={14} strokeWidth={2.5} />}
               </Link>
             );
           })}
 
           {userType === 'admin' && (
             <>
-              <div style={{ height: '1px', background: 'var(--border-color)', margin: '0.5rem 0' }} />
+              <div style={{ height: '2px', background: COLORS.border, margin: '1rem 0' }} />
               <Link
                 to="/admin"
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '0.625rem',
-                  padding: '0.625rem 0.75rem', borderRadius: 'var(--radius-md)',
-                  fontSize: '0.875rem', color: 'var(--accent-warning)',
-                  textDecoration: 'none', transition: 'all 0.15s ease',
+                  display: 'flex', alignItems: 'center', gap: '0.75rem',
+                  padding: '0.75rem 1rem', borderRadius: '99px',
+                  fontSize: '0.9375rem', fontWeight: 800, color: COLORS.text,
+                  background: COLORS.warning, border: `2px solid ${COLORS.border}`,
+                  boxShadow: '4px 4px 0px rgba(13,30,20,1)', textDecoration: 'none',
                 }}
-                onMouseOver={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-                onMouseOut={e => e.currentTarget.style.background = 'transparent'}
               >
                 <ShieldAlert size={18} /> Verification Queue
               </Link>
@@ -192,81 +189,96 @@ const Dashboard: React.FC = () => {
         </nav>
 
         {/* Profile footer */}
-        <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
+        <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: `2px solid ${COLORS.border}` }}>
           <Link
             to={user?.id ? `/profile/${user.id}` : '#'}
             style={{
-              display: 'flex', alignItems: 'center', gap: '0.625rem',
-              marginBottom: '0.75rem', padding: '0.5rem',
-              borderRadius: 'var(--radius-md)', textDecoration: 'none',
-              color: 'inherit', transition: 'background 0.15s ease',
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+              marginBottom: '1rem', padding: '0.5rem',
+              borderRadius: '16px', textDecoration: 'none',
+              color: COLORS.text, transition: 'background 0.15s ease',
             }}
-            onMouseOver={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-            onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-            title="View Profile"
           >
             <div style={{
-              width: '36px', height: '36px', borderRadius: '50%',
+              width: '44px', height: '44px', borderRadius: '50%',
               background: profile?.avatar_url
                 ? `url(${profile.avatar_url}) center/cover no-repeat`
-                : 'var(--brand-primary)',
-              color: 'white', flexShrink: 0,
+                : COLORS.lavender,
+              border: `2px solid ${COLORS.border}`,
+              color: COLORS.text, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 600, fontSize: '0.875rem',
+              fontWeight: 800, fontSize: '1rem',
             }}>
               {!profile?.avatar_url && fullName.charAt(0).toUpperCase()}
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <p style={{ fontWeight: 500, fontSize: '0.8125rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0, color: 'var(--text-primary)' }}>
+              <p style={{ fontWeight: 800, fontSize: '0.875rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0, color: COLORS.text }}>
                 {fullName}
               </p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0 }}>
+              <p style={{ fontSize: '0.75rem', fontWeight: 600, color: COLORS.textMuted, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0 }}>
                 {user?.email}
               </p>
             </div>
           </Link>
-          <button onClick={handleSignOut} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8125rem' }}>
-            <LogOut size={16} /> Sign Out
+          <button 
+            onClick={handleSignOut} 
+            style={{ 
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+              padding: '0.75rem', borderRadius: '99px', background: COLORS.white, border: `2px solid ${COLORS.border}`,
+              fontWeight: 800, color: COLORS.text, cursor: 'pointer', boxShadow: '4px 4px 0px rgba(13,30,20,1)',
+              fontSize: '0.875rem', textTransform: 'uppercase'
+            }}
+          >
+            <LogOut size={16} strokeWidth={2.5} /> Sign Out
           </button>
         </div>
       </aside>
 
       {/* ── Main Content ── */}
-      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+      <main style={{ flex: 1, padding: '3rem', overflowY: 'auto' }}>
+
+        {/* Welcome */}
+        <header style={{ marginBottom: '2.5rem' }}>
+          <h1 style={{ fontSize: 'clamp(2rem, 3vw, 2.5rem)', fontWeight: 900, color: COLORS.text, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
+            Welcome back, {fullName.split(' ')[0]}! 👋
+          </h1>
+          <p style={{ color: COLORS.textMuted, fontSize: '1.125rem', fontWeight: 500, margin: 0 }}>
+            Here's what's happening in your network today.
+          </p>
+        </header>
 
         {/* ── College Banner ── */}
         {collegeName ? (
           <div style={{
-            background: 'linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '1.5rem 2rem',
-            marginBottom: '2rem',
+            background: COLORS.lavender,
+            border: `2px solid ${COLORS.border}`,
+            borderRadius: '24px',
+            padding: '2rem 2.5rem',
+            marginBottom: '3rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '1.25rem',
+            gap: '1.5rem',
             position: 'relative',
-            overflow: 'hidden',
+            boxShadow: '12px 12px 0px rgba(13,30,20,1)',
           }}>
-            <div style={{ position: 'absolute', right: '-40px', top: '-40px', width: '160px', height: '160px', borderRadius: '50%', background: 'rgba(255,255,255,0.07)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', right: '80px', bottom: '-60px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
-
             <div style={{
-              width: '52px', height: '52px', borderRadius: 'var(--radius-lg)',
-              background: 'rgba(255,255,255,0.15)',
+              width: '64px', height: '64px', borderRadius: '16px',
+              background: COLORS.white, border: `2px solid ${COLORS.border}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              boxShadow: '4px 4px 0px rgba(13,30,20,1)'
             }}>
-              <GraduationCap size={26} color="#fff" />
+              <GraduationCap size={32} color={COLORS.text} strokeWidth={2.5} />
             </div>
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 0.25rem 0' }}>
+              <p style={{ color: COLORS.text, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', margin: '0 0 0.5rem 0' }}>
                 Your Institution
               </p>
-              <h2 style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 700, margin: 0, lineHeight: 1.3, fontFamily: 'Outfit, sans-serif' }}>
+              <h2 style={{ color: COLORS.text, fontSize: '1.5rem', fontWeight: 900, margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
                 {collegeName}
               </h2>
               {(degree || branch || gradYear) && (
-                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem', margin: '0.3rem 0 0 0' }}>
+                <p style={{ color: COLORS.textMuted, fontSize: '0.9375rem', fontWeight: 600, margin: '0.5rem 0 0 0' }}>
                   {[degree, branch].filter(Boolean).join(' · ')}
                   {gradYear ? ` · Batch of ${gradYear}` : ''}
                 </p>
@@ -274,32 +286,34 @@ const Dashboard: React.FC = () => {
             </div>
 
             <div style={{
-              padding: '0.4rem 1rem',
-              background: 'rgba(255,255,255,0.15)',
+              padding: '0.75rem 1.5rem',
+              background: COLORS.white,
+              border: `2px solid ${COLORS.border}`,
+              boxShadow: '4px 4px 0px rgba(13,30,20,1)',
               borderRadius: '9999px',
-              fontSize: '0.8rem',
-              color: '#fff',
-              fontWeight: 500,
+              fontSize: '0.875rem',
+              color: COLORS.text,
+              fontWeight: 800,
               flexShrink: 0,
               whiteSpace: 'nowrap',
+              textTransform: 'uppercase'
             }}>
               {userType === 'alumni' ? '🎓 Alumni' : userType === 'student' ? '📚 Student' : '🛡 Admin'}
             </div>
           </div>
         ) : (
-          /* Soft prompt if college not set */
           <div style={{
-            border: '1px dashed var(--border-color)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '1.25rem 2rem',
-            marginBottom: '2rem',
+            background: COLORS.white,
+            border: `2px dashed ${COLORS.border}`,
+            borderRadius: '24px',
+            padding: '2rem 2.5rem',
+            marginBottom: '3rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '1rem',
-            background: 'var(--bg-secondary)',
+            gap: '1.25rem',
           }}>
-            <GraduationCap size={22} color="var(--text-tertiary)" />
-            <p style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem', margin: 0 }}>
+            <GraduationCap size={28} color={COLORS.textMuted} />
+            <p style={{ color: COLORS.textMuted, fontSize: '1rem', fontWeight: 600, margin: 0 }}>
               No college linked to your profile yet. Update your profile to see college news &amp; stories.
             </p>
           </div>
@@ -308,21 +322,22 @@ const Dashboard: React.FC = () => {
         {/* ── Unverified Banner ── */}
         {!isVerified && (
           <div style={{
-            background: 'var(--accent-warning-subtle)',
-            border: '1px solid var(--accent-warning)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.25rem 1.5rem',
-            marginBottom: '2rem',
+            background: COLORS.warning,
+            border: `2px solid ${COLORS.border}`,
+            boxShadow: '8px 8px 0px rgba(13,30,20,1)',
+            borderRadius: '16px',
+            padding: '1.5rem 2rem',
+            marginBottom: '3rem',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '1rem',
+            gap: '1.25rem',
           }}>
-            <ShieldAlert size={24} color="var(--accent-warning)" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <ShieldAlert size={28} color={COLORS.text} style={{ flexShrink: 0 }} />
             <div>
-              <h3 style={{ color: 'var(--accent-warning)', fontSize: '1rem', fontWeight: 600, margin: '0 0 0.25rem 0' }}>
+              <h3 style={{ color: COLORS.text, fontSize: '1.125rem', fontWeight: 900, margin: '0 0 0.5rem 0', textTransform: 'uppercase' }}>
                 Account Pending Verification
               </h3>
-              <p style={{ color: 'var(--text-primary)', fontSize: '0.875rem', margin: 0, lineHeight: 1.5 }}>
+              <p style={{ color: COLORS.text, fontSize: '0.9375rem', fontWeight: 500, margin: 0, lineHeight: 1.5 }}>
                 Your account is currently being reviewed by the admin. 
                 You can browse the dashboard, but you won't be able to access restricted features like the Alumni Directory, Job Portal, or Discussion Forums until your account is verified.
               </p>
@@ -330,44 +345,36 @@ const Dashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Welcome */}
-        <header style={{ marginBottom: '1.75rem' }}>
-          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.375rem' }}>
-            Welcome back, {fullName.split(' ')[0]}! 👋
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>
-            Here's what's happening in your network today.
-          </p>
-        </header>
-
-        {/* ── News & Stories ── always show with generic content */}
+        {/* ── News & Stories ── */}
         <section>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, fontFamily: 'Outfit, sans-serif' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, textTransform: 'uppercase', color: COLORS.text, letterSpacing: '-0.02em' }}>
                 {collegeName ? 'College News & Success Stories' : 'Network News & Success Stories'}
               </h2>
-              <p style={{ color: 'var(--text-tertiary)', fontSize: '0.82rem', margin: '0.2rem 0 0 0' }}>
+              <p style={{ color: COLORS.textMuted, fontSize: '0.9375rem', fontWeight: 600, margin: '0.5rem 0 0 0' }}>
                 {collegeName ? `Latest updates from ${collegeName}` : 'Highlights from the AlmaNET community'}
               </p>
             </div>
 
             {/* Tab filters */}
-            <div style={{ display: 'flex', gap: '0.375rem', background: 'var(--bg-secondary)', padding: '0.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               {(['all', 'news', 'success'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   style={{
-                    padding: '0.35rem 0.875rem',
-                    borderRadius: 'calc(var(--radius-md) - 2px)',
-                    fontSize: '0.8125rem',
-                    fontWeight: 500,
-                    border: 'none',
+                    padding: '0.625rem 1.25rem',
+                    borderRadius: '99px',
+                    fontSize: '0.875rem',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    border: `2px solid ${COLORS.border}`,
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
-                    background: activeTab === tab ? 'var(--brand-primary)' : 'transparent',
-                    color: activeTab === tab ? '#fff' : 'var(--text-secondary)',
+                    background: activeTab === tab ? COLORS.text : COLORS.white,
+                    color: activeTab === tab ? COLORS.white : COLORS.text,
+                    boxShadow: activeTab === tab ? '4px 4px 0px rgba(13,30,20,0.3)' : '4px 4px 0px rgba(13,30,20,1)',
                   }}
                 >
                   {tab === 'all' ? 'All' : tab === 'news' ? '📰 News' : '⭐ Success'}
@@ -379,55 +386,69 @@ const Dashboard: React.FC = () => {
           {filtered.length === 0 ? (
             <div style={{
               textAlign: 'center',
-              padding: '3rem 1rem',
-              border: '1px dashed var(--border-color)',
-              borderRadius: 'var(--radius-xl)',
-              background: 'var(--bg-secondary)',
+              padding: '4rem 2rem',
+              border: `2px dashed ${COLORS.border}`,
+              borderRadius: '24px',
+              background: COLORS.white,
             }}>
               <div style={{
-                width: '52px', height: '52px', borderRadius: '50%',
-                background: 'var(--brand-subtle)',
+                width: '64px', height: '64px', borderRadius: '16px',
+                background: COLORS.blue, border: `2px solid ${COLORS.border}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 1rem',
+                margin: '0 auto 1.5rem', boxShadow: '4px 4px 0px rgba(13,30,20,1)'
               }}>
-                <Newspaper size={22} color="var(--brand-primary)" />
+                <Newspaper size={28} color={COLORS.text} />
               </div>
-              <p style={{ fontWeight: 600, fontSize: '0.9375rem', margin: '0 0 0.375rem 0', color: 'var(--text-primary)' }}>
+              <p style={{ fontWeight: 900, fontSize: '1.25rem', margin: '0 0 0.5rem 0', color: COLORS.text, textTransform: 'uppercase' }}>
                 No stories yet
               </p>
-              <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', margin: 0 }}>
+              <p style={{ color: COLORS.textMuted, fontSize: '0.9375rem', fontWeight: 500, margin: 0 }}>
                 News and success stories from your college will appear here once published.
               </p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
               {filtered.map((story: CollegeStory) => {
-                const tc = tagColors[story.tag] || { bg: 'var(--bg-tertiary)', text: 'var(--text-secondary)' };
+                const tagColor = tagColors[story.tag] || COLORS.blue;
                 return (
                   <div
                     key={story.id}
-                    className="card-elevated"
-                    style={{ padding: '1.375rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}
+                    style={{ 
+                      padding: '1.5rem', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '1rem',
+                      background: COLORS.white,
+                      border: `2px solid ${COLORS.border}`,
+                      borderRadius: '16px',
+                      boxShadow: '6px 6px 0px rgba(13,30,20,1)'
+                    }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: story.type === 'success' ? 'var(--accent-warning)' : 'var(--brand-primary)' }}>
-                        {story.type === 'success' ? <Star size={13} strokeWidth={2} /> : <Newspaper size={13} strokeWidth={2} />}
-                        <span style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: COLORS.text }}>
+                        {story.type === 'success' ? <Star size={16} strokeWidth={2.5} /> : <Newspaper size={16} strokeWidth={2.5} />}
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           {story.type === 'success' ? 'Success Story' : 'News'}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.18rem 0.55rem', borderRadius: '9999px', background: tc.bg, color: tc.text, fontSize: '0.7rem', fontWeight: 600 }}>
-                        <Tag size={9} />
+                      <div style={{ 
+                        display: 'flex', alignItems: 'center', gap: '0.375rem', 
+                        padding: '0.25rem 0.75rem', borderRadius: '9999px', 
+                        background: tagColor, color: COLORS.text, 
+                        fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase',
+                        border: `1.5px solid ${COLORS.border}`
+                      }}>
+                        <Tag size={12} strokeWidth={2.5} />
                         {story.tag}
                       </div>
                     </div>
-                    <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, margin: 0, lineHeight: 1.35, color: 'var(--text-primary)' }}>
+                    <h3 style={{ fontSize: '1.125rem', fontWeight: 900, margin: 0, lineHeight: 1.3, color: COLORS.text }}>
                       {story.title}
                     </h3>
-                    <p style={{ fontSize: '0.845rem', color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0, flex: 1 }}>
+                    <p style={{ fontSize: '0.9375rem', color: COLORS.textMuted, lineHeight: 1.6, margin: 0, flex: 1, fontWeight: 500 }}>
                       {story.summary}
                     </p>
-                    <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', margin: 0, borderTop: '1px solid var(--border-color)', paddingTop: '0.625rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: COLORS.text, fontWeight: 700, margin: 0, borderTop: `2px solid ${COLORS.border}`, paddingTop: '1rem', textTransform: 'uppercase' }}>
                       {new Date(story.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                   </div>

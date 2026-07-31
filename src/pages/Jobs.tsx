@@ -4,6 +4,19 @@ import { ArrowLeft, Search, Briefcase, MapPin, Building, PlusCircle, CheckCircle
 import { supabase } from '../lib/supabase';
 import { NewJobModal } from '../components/NewJobModal';
 
+const COLORS = {
+  bg: '#FBFBF9',
+  text: '#0D1E14',
+  textMuted: '#4A5D53',
+  sage: '#CCDAC6',
+  lavender: '#D9CFF5',
+  blue: '#C7E4F2',
+  terracotta: '#8A4A38',
+  white: '#FFFFFF',
+  border: '#0D1E14',
+  warning: '#FFD166',
+};
+
 export interface JobPost {
   id: string;
   author_id: string;
@@ -66,70 +79,103 @@ const Jobs: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: COLORS.bg, display: 'flex', flexDirection: 'column', fontFamily: '"Inter", sans-serif' }}>
       
       {/* Header */}
       <header style={{
-        padding: '1rem 1.5rem',
-        background: 'var(--bg-primary)',
-        borderBottom: '1px solid var(--border-color)',
+        padding: '1.25rem 2rem',
+        background: COLORS.white,
+        borderBottom: `2px solid ${COLORS.border}`,
         display: 'flex',
         alignItems: 'center',
-        gap: '0.75rem',
+        gap: '1rem',
         position: 'sticky',
         top: 0,
         zIndex: 10,
       }}>
-        <button onClick={() => navigate('/dashboard')} className="btn btn-ghost" style={{ padding: '0.5rem 0.75rem' }}>
-          <ArrowLeft size={18} /> Back
+        <button 
+          onClick={() => navigate('/dashboard')} 
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.5rem 1rem', borderRadius: '99px',
+            background: COLORS.white, border: `2px solid ${COLORS.border}`,
+            color: COLORS.text, fontWeight: 800, cursor: 'pointer',
+            boxShadow: '4px 4px 0px rgba(13,30,20,1)', textTransform: 'uppercase', fontSize: '0.8125rem'
+          }}
+        >
+          <ArrowLeft size={16} strokeWidth={2.5} /> Back
         </button>
-        <h1 style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-          <Briefcase size={20} color="var(--brand-primary)" /> Job Portal
+        <h1 style={{ fontSize: '1.5rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 900, color: COLORS.text, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
+          <Briefcase size={24} strokeWidth={2.5} color={COLORS.text} /> Job Portal
         </h1>
       </header>
 
-      <main className="container" style={{ padding: '1.5rem', maxWidth: '1200px', width: '100%', display: 'flex', gap: '1.5rem' }}>
+      <main style={{ flex: 1, padding: '2.5rem', maxWidth: '1400px', margin: '0 auto', width: '100%', display: 'flex', gap: '2rem' }}>
         
         {/* Sidebar Filters */}
-        <aside style={{ width: '260px', flexShrink: 0 }}>
-          <div className="card" style={{ padding: '1.25rem', position: 'sticky', top: '80px' }}>
-            <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.5rem' }} onClick={() => setIsModalOpen(true)}>
-              <PlusCircle size={16} /> Post a Job
+        <aside style={{ width: '280px', flexShrink: 0 }}>
+          <div style={{ 
+            background: COLORS.white, padding: '1.5rem', borderRadius: '16px',
+            border: `2px solid ${COLORS.border}`, boxShadow: '8px 8px 0px rgba(13,30,20,1)',
+            position: 'sticky', top: '100px' 
+          }}>
+            <button 
+              style={{ 
+                width: '100%', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                padding: '0.875rem', borderRadius: '99px',
+                background: COLORS.lavender, border: `2px solid ${COLORS.border}`,
+                color: COLORS.text, fontWeight: 900, cursor: 'pointer',
+                boxShadow: '4px 4px 0px rgba(13,30,20,1)', textTransform: 'uppercase', fontSize: '0.9375rem',
+                transition: 'transform 0.1s'
+              }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = 'translate(2px, 2px)'; e.currentTarget.style.boxShadow = '2px 2px 0px rgba(13,30,20,1)'; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = 'translate(0, 0)'; e.currentTarget.style.boxShadow = '4px 4px 0px rgba(13,30,20,1)'; }}
+              onClick={() => setIsModalOpen(true)}
+            >
+              <PlusCircle size={20} strokeWidth={2.5} /> Post a Job
             </button>
             
-            <h3 style={{ fontSize: '1rem', marginBottom: '1.25rem', fontWeight: 600 }}>Filters</h3>
+            <h3 style={{ fontSize: '1.125rem', marginBottom: '1.5rem', fontWeight: 900, textTransform: 'uppercase', color: COLORS.text }}>Filters</h3>
             
-            <div className="input-group">
-              <label className="input-label">Search</label>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', fontWeight: 800, color: COLORS.text, marginBottom: '0.5rem', textTransform: 'uppercase', fontSize: '0.8125rem' }}>Search</label>
               <div style={{ position: 'relative' }}>
-                <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: COLORS.text }} strokeWidth={2.5} />
                 <input 
                   type="text" 
-                  className="input-field" 
                   placeholder="Role, company, skills..." 
-                  style={{ width: '100%', paddingLeft: '2.25rem' }}
+                  style={{ 
+                    width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', 
+                    borderRadius: '99px', border: `2px solid ${COLORS.border}`,
+                    background: COLORS.white, color: COLORS.text, fontWeight: 600,
+                    outline: 'none', fontSize: '0.875rem'
+                  }}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
 
-            <div className="input-group">
-              <label className="input-label">Job Type</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
+            <div>
+              <label style={{ display: 'block', fontWeight: 800, color: COLORS.text, marginBottom: '0.75rem', textTransform: 'uppercase', fontSize: '0.8125rem' }}>Job Type</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {jobTypes.map(type => (
                   <button 
                     key={type}
                     onClick={() => setSelectedType(type)}
                     style={{
                       textAlign: 'left',
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: 'var(--radius-sm)',
-                      background: selectedType === type ? 'var(--brand-subtle)' : 'transparent',
-                      color: selectedType === type ? 'var(--brand-primary)' : 'var(--text-secondary)',
-                      fontWeight: selectedType === type ? 500 : 400,
+                      padding: '0.625rem 1rem',
+                      borderRadius: '99px',
+                      background: selectedType === type ? COLORS.sage : COLORS.white,
+                      color: COLORS.text,
+                      fontWeight: selectedType === type ? 900 : 700,
                       fontSize: '0.875rem',
-                      border: 'none',
+                      border: selectedType === type ? `2px solid ${COLORS.border}` : `2px solid transparent`,
+                      boxShadow: selectedType === type ? '2px 2px 0px rgba(13,30,20,1)' : 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      textTransform: 'uppercase'
                     }}
                   >
                     {type}
@@ -144,72 +190,94 @@ const Jobs: React.FC = () => {
         <div style={{ flex: 1 }}>
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-              <Loader2 className="animate-spin" size={28} color="var(--brand-primary)" />
+              <div style={{ width: '36px', height: '36px', border: `4px solid ${COLORS.border}`, borderTopColor: COLORS.sage, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
             </div>
           ) : filteredJobs.length === 0 ? (
-            <div className="card" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-              <Briefcase size={40} style={{ opacity: 0.4, margin: '0 auto 0.75rem auto' }} />
-              <p>No jobs found matching your criteria.</p>
+            <div style={{ 
+              background: COLORS.white, padding: '4rem', textAlign: 'center', 
+              border: `2px dashed ${COLORS.border}`, borderRadius: '24px',
+              color: COLORS.textMuted 
+            }}>
+              <Briefcase size={48} style={{ opacity: 0.5, margin: '0 auto 1rem auto' }} strokeWidth={1.5} />
+              <p style={{ fontWeight: 900, fontSize: '1.25rem', color: COLORS.text, margin: 0, textTransform: 'uppercase' }}>No jobs found matching your criteria.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {filteredJobs.map(job => (
-                <div key={job.id} className="card animate-fade-in" style={{ padding: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                    <div>
-                      <h2 style={{ fontSize: '1.25rem', marginBottom: '0.375rem', fontWeight: 600 }}>{job.title}</h2>
-                      <div style={{ display: 'flex', gap: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Building size={14} /> {job.company}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={14} /> {job.location}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Briefcase size={14} /> {job.type}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {filteredJobs.map((job, idx) => {
+                const accentColors = [COLORS.sage, COLORS.lavender, COLORS.blue, COLORS.warning];
+                const cardAccent = accentColors[idx % accentColors.length];
+
+                return (
+                  <div key={job.id} style={{ 
+                    background: COLORS.white, padding: '2rem',
+                    border: `2px solid ${COLORS.border}`, borderRadius: '24px', 
+                    boxShadow: '8px 8px 0px rgba(13,30,20,1)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 900, color: COLORS.text, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>{job.title}</h2>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', color: COLORS.text, fontSize: '0.875rem', fontWeight: 700 }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Building size={16} strokeWidth={2.5} /> {job.company}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><MapPin size={16} strokeWidth={2.5} /> {job.location}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.25rem 0.75rem', background: cardAccent, border: `2px solid ${COLORS.border}`, borderRadius: '99px', textTransform: 'uppercase' }}><Briefcase size={14} strokeWidth={2.5} /> {job.type}</span>
+                        </div>
+                      </div>
+                      <button 
+                        style={{ 
+                          padding: '0.75rem 1.5rem', borderRadius: '99px',
+                          background: COLORS.text, border: `2px solid ${COLORS.border}`,
+                          color: COLORS.white, fontWeight: 900, cursor: 'pointer',
+                          boxShadow: '4px 4px 0px rgba(13,30,20,0.3)', textTransform: 'uppercase', fontSize: '0.875rem'
+                        }} 
+                        onClick={() => alert('Application flow would trigger here (Mock)')}
+                      >
+                        Apply Now
+                      </button>
+                    </div>
+
+                    <p style={{ color: COLORS.textMuted, lineHeight: 1.6, marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 500 }}>
+                      {job.description}
+                    </p>
+
+                    <div style={{ marginBottom: '1.5rem', background: COLORS.bg, padding: '1.5rem', borderRadius: '16px', border: `2px solid ${COLORS.border}` }}>
+                      <h4 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 900, color: COLORS.text, textTransform: 'uppercase' }}>
+                        <CheckCircle size={18} strokeWidth={2.5} color={COLORS.text} /> Requirements
+                      </h4>
+                      <ul style={{ color: COLORS.text, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9375rem', fontWeight: 600, margin: 0 }}>
+                        {job.requirements && job.requirements.map((req, i) => (
+                          <li key={i}>{req}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `2px solid ${COLORS.border}`, paddingTop: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {job.tags && job.tags.map(tag => (
+                          <span key={tag} style={{
+                            fontSize: '0.75rem',
+                            padding: '0.375rem 0.875rem',
+                            background: COLORS.white,
+                            border: `2px solid ${COLORS.border}`,
+                            borderRadius: '9999px',
+                            color: COLORS.text,
+                            fontWeight: 800,
+                            textTransform: 'uppercase'
+                          }}>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      <div style={{ fontSize: '0.8125rem', color: COLORS.text, fontWeight: 700, textTransform: 'uppercase' }}>
+                        Posted by {getAuthorName(job)} • {new Date(job.created_at).toLocaleDateString()}
                       </div>
                     </div>
-                    <button className="btn btn-primary" style={{ fontSize: '0.8125rem' }} onClick={() => alert('Application flow would trigger here (Mock)')}>
-                      Apply Now
-                    </button>
                   </div>
-
-                  <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem', fontSize: '0.9375rem' }}>
-                    {job.description}
-                  </p>
-
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <h4 style={{ fontSize: '0.9375rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.375rem', fontWeight: 600 }}>
-                      <CheckCircle size={14} color="var(--accent-success)" /> Requirements
-                    </h4>
-                    <ul style={{ color: 'var(--text-secondary)', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
-                      {job.requirements && job.requirements.map((req, i) => (
-                        <li key={i}>{req}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
-                    <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
-                      {job.tags && job.tags.map(tag => (
-                        <span key={tag} style={{
-                          fontSize: '0.6875rem',
-                          padding: '0.1875rem 0.625rem',
-                          background: 'var(--bg-tertiary)',
-                          borderRadius: '9999px',
-                          color: 'var(--text-secondary)',
-                          fontWeight: 500,
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    <div style={{ fontSize: '0.8125rem', color: 'var(--text-tertiary)' }}>
-                      Posted by {getAuthorName(job)} • {new Date(job.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
-
       </main>
 
       <NewJobModal
