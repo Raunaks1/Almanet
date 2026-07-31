@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Users, PlusCircle, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { NewEventModal } from '../components/NewEventModal';
 
 export interface EventPost {
   id: string;
@@ -18,6 +19,7 @@ const Events: React.FC = () => {
   const [events, setEvents] = useState<EventPost[]>([]);
   const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -49,7 +51,7 @@ const Events: React.FC = () => {
   };
 
   const handleAddEvent = () => {
-    alert('Mock: Open modal to add a new event (Admin only).');
+    setIsModalOpen(true);
   };
 
   return (
@@ -130,7 +132,6 @@ const Events: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>
                       <Users size={14} /> {event.registered_count} registered
                     </div>
-                  {!isAdmin && (
                     <button 
                       className={isRegistered ? "btn btn-outline" : "btn btn-primary"}
                       style={{
@@ -144,7 +145,6 @@ const Events: React.FC = () => {
                     >
                       {isRegistered ? <><CheckCircle size={14} /> Registered</> : 'Register'}
                     </button>
-                  )}
                   {isAdmin && (
                     <span style={{ fontSize: '0.8125rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
                       Admin View
@@ -157,6 +157,12 @@ const Events: React.FC = () => {
         </div>
         )}
       </main>
+
+      <NewEventModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={(newEvent) => setEvents([...events, newEvent])}
+      />
     </div>
   );
 };

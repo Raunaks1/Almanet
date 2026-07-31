@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, PlusCircle, MessageCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from './Directory';
+import { NewPostModal } from '../components/NewPostModal';
 
 export interface ForumPost {
   id: string;
@@ -24,6 +25,7 @@ const Forums: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +59,35 @@ const Forums: React.FC = () => {
   const getAuthorName = (post: ForumPost) => {
     return post.profiles?.full_name || 'Unknown User';
   };
+
+  const handleCreatePost = async (title: string, content: string, category: string) => {
+    if (!currentUser) return;
+    
+    const newPost = {
+      author_id: currentUser.id,
+      title,
+      content,
+      category,
+      replies_count: 0
+    };
+
+    const { data, error } = await supabase
+      .from('forum_posts')
+      .insert([newPost])
+      .select('*, profiles(full_name)')
+      .single();
+      
+    if (error) {
+      console.error('Error creating post:', error);
+      alert('Failed to create post. Please try again.');
+    } else if (data) {
+      setPosts([data as ForumPost, ...posts]);
+    }
+  };
+
+  const allCategoriesForModal = batchName !== "My Batch (Unknown 'N/A)" 
+    ? [batchName, ...forumCategories]
+    : forumCategories;
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
@@ -108,7 +139,7 @@ const Forums: React.FC = () => {
               <button 
                 className="btn btn-primary" 
                 style={{ width: '100%', marginBottom: '1.5rem', opacity: isApproved ? 1 : 0.5, cursor: isApproved ? 'pointer' : 'not-allowed' }} 
-                onClick={() => isApproved ? alert('New discussion modal would open here! (Mock)') : alert('You must be verified to post.')}
+                onClick={() => isApproved ? setIsModalOpen(true) : alert('You must be verified to post.')}
                 disabled={!isApproved}
               >
                 <PlusCircle size={16} /> New Post
@@ -237,6 +268,14 @@ const Forums: React.FC = () => {
           </div>
         </div>
       </main>
+      
+      <NewPostModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        currentUser={currentUser}
+        categories={allCategoriesForModal}
+        onSubmit={handleCreatePost}
+      />
     </div>
   );
 };

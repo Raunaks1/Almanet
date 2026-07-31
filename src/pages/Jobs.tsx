@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Briefcase, MapPin, Building, PlusCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { NewJobModal } from '../components/NewJobModal';
 
 export interface JobPost {
   id: string;
@@ -23,10 +24,18 @@ const Jobs: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('All');
   
   const [jobs, setJobs] = useState<JobPost[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   React.useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchJobsAndUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        if (profile) setCurrentUser(profile);
+      }
+
       const { data, error } = await supabase
         .from('jobs')
         .select('*, profiles(full_name)')
@@ -37,7 +46,7 @@ const Jobs: React.FC = () => {
       }
       setLoading(false);
     };
-    fetchJobs();
+    fetchJobsAndUser();
   }, []);
 
   const jobTypes = ['All', 'Full-time', 'Part-time', 'Internship', 'Contract'];
@@ -84,7 +93,7 @@ const Jobs: React.FC = () => {
         {/* Sidebar Filters */}
         <aside style={{ width: '260px', flexShrink: 0 }}>
           <div className="card" style={{ padding: '1.25rem', position: 'sticky', top: '80px' }}>
-            <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.5rem' }} onClick={() => alert('New Job Post modal would open here! (Mock)')}>
+            <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1.5rem' }} onClick={() => setIsModalOpen(true)}>
               <PlusCircle size={16} /> Post a Job
             </button>
             
@@ -202,6 +211,13 @@ const Jobs: React.FC = () => {
         </div>
 
       </main>
+
+      <NewJobModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        currentUser={currentUser}
+        onSuccess={(newJob) => setJobs([newJob, ...jobs])}
+      />
     </div>
   );
 };
