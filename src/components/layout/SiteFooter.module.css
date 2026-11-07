@@ -1,0 +1,213 @@
+/* ════════════════════════════════════════════════════════════════
+   AlmaNET site footer — public pages only. No backdrop-filter.
+   Tokens: src/styles/tokens.css (ink, page bg, secondary text,
+   hairline, accent). ═══════════════════════════════════════════════ */
+
+.footer {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--hairline);
+  background: transparent;
+  color: var(--text);
+  padding-top: clamp(56px, 8vw, 80px);
+}
+
+.wrap {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 40px) 80px;
+}
+
+/* ── Top grid ── */
+.footer > .wrap {
+  display: grid;
+  grid-template-columns: 1.2fr 2fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.brandBlock {
+  max-width: 360px;
+}
+
+.brandLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font: var(--type-headline);
+  text-decoration: none;
+  letter-spacing: var(--tracking-title);
+}
+
+.tagline {
+  margin: 16px 0 0;
+  font: 400 14px/24px var(--font);
+  color: var(--text-2);
+}
+
+.nav {
+  color: var(--text);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 40px;
+}
+
+.columnTitle {
+  margin: 0 0 14px;
+  font: 500 14px/20px var(--font);
+  color: var(--text);
+}
+
+.linkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.linkList li {
+  min-height: 44px;
+}
+
+.linkList a {
+  display: block;
+  padding: 6px 0;
+  color: var(--text-2);
+  font: 400 14px/20px var(--font);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.linkList a:hover {
+  color: var(--text);
+}
+
+/* ── Bottom bar ── */
+.bottomBar {
+  margin-top: 56px;
+  padding: 24px 0;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.copyright {
+  margin: 0;
+  font: 400 14px/20px var(--font);
+  color: var(--text-2);
+}
+
+.socials {
+  display: flex;
+  gap: 12px;
+}
+
+.socialButton {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline);
+  color: var(--text-2);
+  background: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.socialButton svg {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+
+.socialButton:hover {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+/* ── Giant wordmark ── */
+.wordmark {
+  margin-top: 56px;
+  text-align: center;
+  font: 700 clamp(72px, 20vw, 240px)/1 var(--font);
+  letter-spacing: -0.05em;
+  margin-bottom: -0.22em;
+  color: transparent;
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--text) 15%, transparent),
+    transparent
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1023px) {
+  .footer > .wrap {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .bottomBar {
+    flex-direction: row;
+    align-items: center;
+  }
+  .bottomBar .copyright,
+  .bottomBar .socials {
+    order: initial;
+  }
+}
+
+@media (max-width: 639px) {
+  .nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 40px;
+    row-gap: 24px;
+  }
+  .bottomBar {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .bottomBar .copyright {
+    order: 2;
+  }
+  .bottomBar .socials {
+    order: 1;
+    justify-content: center;
+  }
+  .copyright,
+  .linkList a {
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .wordmark {
+    margin-top: 40px;
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .footer {
+    border-top-color: var(--hairline);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .socialButton {
+    background: var(--surface);
+  }
+}

@@ -18,6 +18,7 @@ const Events = lazy(() => import('./pages/Events'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const Chat = lazy(() => import('./pages/Chat'));
 const ShellPreview = lazy(() => import('./pages/ShellPreview'));
+const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 
 function RouteTitle() {
   const { pathname } = useLocation();
@@ -69,6 +70,11 @@ function App() {
               {/* Public routes — keep their own layout */}
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/about" element={<ComingSoon title="About" />} />
+              <Route path="/contact" element={<ComingSoon title="Contact" />} />
+              <Route path="/privacy" element={<ComingSoon title="Privacy Policy" />} />
+              <Route path="/terms" element={<ComingSoon title="Terms of Use" />} />
+              <Route path="/guidelines" element={<ComingSoon title="Community Guidelines" />} />
 
               {/* Authenticated pages share the app shell */}
               <Route element={<AppShell />}>

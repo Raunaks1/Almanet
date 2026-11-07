@@ -1,3 +1,42 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+:root {
+  --background: #0a0a0d;
+  --foreground: #f5f5f7;
+  --card: #141418;
+  --card-foreground: #f5f5f7;
+  --border: #26262d;
+  --muted: #1c1c22;
+  --muted-foreground: #98989d;
+  --primary: #0a84ff;
+  --primary-foreground: #ffffff;
+  --ring: #0a84ff;
+  --chart-1: #0a84ff;
+  --chart-2: #34c759;
+  --chart-3: #ff9f0a;
+  --chart-4: #ffd60a;
+  --chart-5: #bf5af2;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    Legacy bridge — aliases + component classes still referenced by
    pages that haven't been redesigned yet (Profile, AdminDashboard,

@@ -4,10 +4,9 @@ import { motion, useReducedMotion } from 'motion/react';
 import { GraduationCap } from 'lucide-react';
 import { DURATION, EASE_REVEAL } from '../lib/motion';
 import { cx } from '../components/ui/internal';
-import { NetworkScene } from '../components/home/NetworkScene';
-import { ChatScene } from '../components/home/ChatScene';
-import { JobScene } from '../components/home/JobScene';
-import { ForumScene } from '../components/home/ForumScene';
+import { ConnectScene } from '../components/home/ConnectScene';
+import { globePeople } from '../data/globePeople';
+import SiteFooter from '../components/layout/SiteFooter';
 import styles from './Home.module.css';
 
 export default function Home() {
@@ -23,7 +22,7 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      {/* 1. Floating glass pill nav — stronger blur + hairline once scrollY > 8 */}
+      {/* Floating glass pill nav */}
       <header className={cx(styles.nav, scrolled && styles.navScrolled)}>
         <nav className={styles.navInner} aria-label="Primary">
           <Link to="/" className={styles.brand}>
@@ -41,8 +40,8 @@ export default function Home() {
         </nav>
       </header>
 
-      <main>
-        {/* 2. Hero */}
+      <main className={styles.main}>
+        {/* Hero — headline, subtitle, and CTA buttons */}
         <section className={styles.hero} aria-labelledby="home-hero-title">
           <div className={styles.container}>
             <motion.h1
@@ -78,85 +77,19 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. Network scene */}
-        <section className={styles.container} aria-label="Community network">
-          <div className={styles.sceneWrap}>
-            <NetworkScene />
-          </div>
+        {/* Continuous rotating 3D globe showcase overlapping slightly under the hero */}
+        <section className={styles.globeSection} aria-label="Global Alumni Network">
+          <ConnectScene
+            items={globePeople}
+            autoplay={true}
+            size={284}
+            layout="side-by-side"
+          />
         </section>
 
-        {/* 4. Heading */}
-        <section className={styles.container}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Everything happens in one place.</h2>
-            <p className={styles.sectionSub}>Chat, jobs, and discussions — connected through your alumni community.</p>
-          </div>
-        </section>
-
-        {/* 5. Three glass cards */}
-        <section className={styles.container} aria-label="Product scenes">
-          <div className={styles.cardsGrid}>
-            <ChatScene />
-            <JobScene />
-            <ForumScene />
-          </div>
-        </section>
-
-        {/* 6. How it works */}
-        <section className={styles.container} aria-labelledby="how-title">
-          <div className={styles.sectionHead}>
-            <h2 id="how-title" className={styles.sectionTitle}>
-              How it works
-            </h2>
-          </div>
-          <div className={styles.howRow} role="list">
-            <div className={styles.howPill} role="listitem">
-              <span className={styles.howNum} aria-hidden="true">1</span>
-              <span>Create your account</span>
-            </div>
-            <div className={styles.howPill} role="listitem">
-              <span className={styles.howNum} aria-hidden="true">2</span>
-              <span>Get verified</span>
-            </div>
-            <div className={styles.howPill} role="listitem">
-              <span className={styles.howNum} aria-hidden="true">3</span>
-              <span>Connect and contribute</span>
-            </div>
-          </div>
-        </section>
-
-        {/* 7. Final CTA glass block */}
-        <section className={styles.container} aria-labelledby="cta-title">
-          <div className={styles.ctaBlock}>
-            <h2 id="cta-title" className={styles.ctaTitle}>
-              Join your college network.
-            </h2>
-            <div className={styles.heroActions} style={{ marginTop: 18 }}>
-              <Link to="/auth" className={styles.btnPrimary}>
-                Get started
-              </Link>
-            </div>
-          </div>
-        </section>
       </main>
 
-      {/* 8. One-line footer — keep existing /about, /privacy, /terms links */}
-      <footer className={styles.footer}>
-        <div className={cx(styles.container, styles.footerInner)}>
-          <span>© 2026 AlmaNET</span>
-          <ul className={styles.footerLinks}>
-            <li>
-              <Link to="/about">About</Link>
-            </li>
-            <li>
-              <Link to="/privacy">Privacy</Link>
-            </li>
-            <li>
-              <Link to="/terms">Terms</Link>
-            </li>
-          </ul>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

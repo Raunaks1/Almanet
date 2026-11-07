@@ -1,0 +1,47 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.badge {
+  position: relative;
+  margin: 0 auto 10px;
+  z-index: 120;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #141418 72%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f5f5f7;
+  font: 600 12px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter Variable", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(10, 132, 255, 0.18) inset;
+  pointer-events: none;
+}
+
+.globeFrame {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.globe {
+  background: transparent !important;
+}
+
+.arcs {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  z-index: 90;
+  overflow: visible;
+}
