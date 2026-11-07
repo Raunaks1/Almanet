@@ -132,7 +132,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: DURATION.slow, ease: EASE_REVEAL }}
             >
-              Remember your batch? They remember you. Find them again, in any city.
+              Remember your batch? They remember you.
             </motion.h1>
             <motion.p
               className={styles.heroSub}
@@ -140,6 +140,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: DURATION.slow, ease: EASE_REVEAL, delay: reduced ? 0 : DURATION.fast * 0.4 }}
             >
+              Find people, share opportunities, and stay close to your community.
             </motion.p>
             <motion.div
               className={styles.heroActions}
