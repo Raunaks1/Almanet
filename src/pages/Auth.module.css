@@ -72,14 +72,6 @@
   color: var(--text-2);
 }
 
-.segmentWrap {
-  margin-bottom: 18px;
-}
-
-.segmentWrap :global([role="radiogroup"]) {
-  width: 100%;
-}
-
 /* Global form-level error (kept for auth errors not tied to a single field) */
 .formError {
   margin: 0 0 14px;
@@ -475,6 +467,11 @@
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--accent-text) 35%, transparent);
   text-underline-offset: 2px;
+}
+
+.switchBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

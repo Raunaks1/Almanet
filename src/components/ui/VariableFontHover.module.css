@@ -1,0 +1,46 @@
+/* VariableFontHover — plain CSS, no Tailwind, no cn(), no new dependency.
+   Stacked letters animate font-variation-settings on hover, starting from
+   the centre of the word and rippling outward. */
+
+.vfh {
+  display: inline-grid;
+}
+.vfh > * {
+  grid-area: 1 / 1;
+}
+/* Invisible bold copy reserves the final width so the navbar never jitters. */
+.vfhSizer {
+  visibility: hidden;
+  font-variation-settings: var(--vfh-to);
+  white-space: pre;
+}
+.vfhLetters {
+  white-space: pre;
+}
+.vfhLetter {
+  display: inline-block;
+  font-variation-settings: var(--vfh-from);
+  transition: font-variation-settings 250ms ease;
+}
+/* Screen-reader only copy of the label. */
+.vfhSr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Hover / focus / active: letters go from --vfh-from to --vfh-to. */
+.vfh:hover .vfhLetter,
+.vfh:focus-visible .vfhLetter,
+.vfh[aria-current="true"] .vfhLetter {
+  font-variation-settings: var(--vfh-to);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vfhLetter {
+    transition: none;
+  }
+}

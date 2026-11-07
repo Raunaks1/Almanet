@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
@@ -15,7 +15,7 @@ import { supabase } from '../lib/supabase';
 import { COLLEGE_NAMES, getBranchesForCollege } from '../lib/colleges';
 import { DURATION, EASE_REVEAL } from '../lib/motion';
 import { cx } from '../components/ui/internal';
-import { Button, Combobox, FormField, Input, SegmentedControl, Select, useToast } from '../components/ui';
+import { Button, Combobox, FormField, Input, Select, useToast } from '../components/ui';
 import type { ComboboxOption } from '../components/ui';
 import styles from './Auth.module.css';
 
@@ -51,6 +51,7 @@ const Auth: React.FC = () => {
   const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
 
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+  const isInitial = useRef(true);
   const [userType, setUserType] = useState<'student' | 'alumni' | 'admin'>('alumni');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +72,9 @@ const Auth: React.FC = () => {
   const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null);
   const profilePhotoRef = useRef<HTMLInputElement>(null);
   const idInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const fullNameInputRef = useRef<HTMLInputElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // UI-only state
   const [registerStep, setRegisterStep] = useState(1);
@@ -166,6 +170,33 @@ const Auth: React.FC = () => {
     if (panel?.dataset.step) setRegisterStep(Number(panel.dataset.step));
   };
 
+  const switchToRegister = () => {
+    setMode('register');
+    setRegisterStep(1);
+    setError(null);
+    setPassword('');
+  };
+
+  const switchToLogin = () => {
+    setMode('login');
+    setError(null);
+    setPassword('');
+  };
+
+  // Focus the first field and scroll the card into view when the mode switches.
+  useEffect(() => {
+    if (isInitial.current) {
+      isInitial.current = false;
+      return;
+    }
+    if (mode === 'login') {
+      emailInputRef.current?.focus();
+    } else {
+      fullNameInputRef.current?.focus();
+    }
+    cardRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+  }, [mode, reduced]);
+
   // "Preserve all existing state and submission": inactive panels stay in the DOM
   // (so required fields validate on submit) but are visually inert.
   const panelClass = (step: number) =>
@@ -177,7 +208,7 @@ const Auth: React.FC = () => {
         <ArrowLeft size={16} strokeWidth={1.75} aria-hidden="true" /> Back
       </button>
 
-      <div className={styles.card}>
+      <div className={styles.card} ref={cardRef}>
         <div className={styles.header}>
           <div className={styles.logoMark}>
             <GraduationCap size={26} strokeWidth={1.75} aria-hidden="true" />
@@ -188,22 +219,6 @@ const Auth: React.FC = () => {
               ? 'Enter your credentials to access the network.'
               : 'Create your account and connect with your community.'}
           </p>
-        </div>
-
-        <div className={styles.segmentWrap}>
-          <SegmentedControl
-            aria-label="Authentication mode"
-            value={mode}
-            onChange={(v) => {
-              setMode(v as 'login' | 'register');
-              setError(null);
-              if (v === 'register') setRegisterStep(1);
-            }}
-            options={[
-              { value: 'login', label: 'Login' },
-              { value: 'register', label: 'Register' },
-            ]}
-          />
         </div>
 
         {error && <p className={styles.formError} role="alert">{error}</p>}
@@ -217,10 +232,11 @@ const Auth: React.FC = () => {
                 initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
-                transition={{ duration: DURATION.reveal, ease: EASE_REVEAL }}
+                transition={{ duration: 0.25, ease: EASE_REVEAL }}
               >
                 <FormField label="Email address" required>
                   <Input
+                    ref={emailInputRef}
                     type="email"
                     id="email"
                     placeholder="you@example.com"
@@ -261,7 +277,7 @@ const Auth: React.FC = () => {
                 initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
-                transition={{ duration: DURATION.reveal, ease: EASE_REVEAL }}
+                transition={{ duration: 0.25, ease: EASE_REVEAL }}
               >
                 <div className={styles.stepMeta}>
                   <span>Step {registerStep} of {totalSteps}</span>
@@ -351,6 +367,7 @@ const Auth: React.FC = () => {
 
                   <FormField label="Full name" required>
                     <Input
+                      ref={fullNameInputRef}
                       type="text"
                       id="fullName"
                       placeholder="e.g. Jane Doe"
@@ -370,80 +387,83 @@ const Auth: React.FC = () => {
 
                 {/* Step 2: Education */}
                 <div data-step="2" className={panelClass(2)} aria-hidden={registerStep !== 2}>
-                  {userType === 'admin' ? (
-                    <FormField
-                      label="Admin pass-phrase"
-                      required
-                      hint="Hint: Use 'admin123' for this prototype."
-                      error={error === 'Invalid admin pass-phrase.' ? error : undefined}
-                    >
-                      <Input
-                        type="password"
-                        id="adminPassphrase"
-                        placeholder="Enter college admin code"
-                        value={adminPassphrase}
-                        onChange={(e) => setAdminPassphrase(e.target.value)}
-                        required={mode === 'register' && userType === 'admin'}
-                        autoComplete="off"
+                  <>
+                    {userType === 'admin' && (
+                      <FormField
+                        label="Admin pass-phrase"
+                        required
+                        hint="Hint: Use 'admin123' for this prototype."
+                        error={error === 'Invalid admin pass-phrase.' ? error : undefined}
+                      >
+                        <Input
+                          type="password"
+                          id="adminPassphrase"
+                          placeholder="Enter college admin code"
+                          value={adminPassphrase}
+                          onChange={(e) => setAdminPassphrase(e.target.value)}
+                          required={mode === 'register' && userType === 'admin'}
+                          autoComplete="off"
+                        />
+                      </FormField>
+                    )}
+                    <FormField label="College / institute" required>
+                      <Combobox
+                        options={collegeOptions}
+                        value={college || null}
+                        onChange={(v) => {
+                          setCollege(v ?? '');
+                          setBranch('');
+                        }}
+                        placeholder="Search your college..."
                       />
                     </FormField>
-                  ) : (
-                    <>
-                      <FormField label="College / institute" required>
-                        <Combobox
-                          options={collegeOptions}
-                          value={college || null}
-                          onChange={(v) => {
-                            setCollege(v ?? '');
-                            setBranch('');
-                          }}
-                          placeholder="Search your college..."
-                        />
-                      </FormField>
-                      {/* Hidden required input preserves native validation (Combobox text is a filter UI) */}
-                      <input type="hidden" value={college} required={mode === 'register'} readOnly />
+                    {/* Hidden required input preserves native validation (Combobox text is a filter UI) */}
+                    <input type="hidden" value={college} required={mode === 'register'} readOnly />
 
-                      <FormField label="Degree" required>
-                        <Select
-                          id="degree"
-                          value={degree}
-                          onChange={(e) => setDegree(e.target.value)}
-                          required={mode === 'register'}
-                        >
-                          <option value="">— Select degree —</option>
-                          <option value="B.Tech / B.E. (Bachelor of Technology / Engineering)">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
-                          <option value="M.Tech / M.E. (Master of Technology / Engineering)">M.Tech / M.E. (Master of Technology / Engineering)</option>
-                          <option value="Ph.D.">Ph.D.</option>
-                        </Select>
-                      </FormField>
+                    {userType !== 'admin' && (
+                      <>
+                        <FormField label="Degree" required>
+                          <Select
+                            id="degree"
+                            value={degree}
+                            onChange={(e) => setDegree(e.target.value)}
+                            required={mode === 'register'}
+                          >
+                            <option value="">— Select degree —</option>
+                            <option value="B.Tech / B.E. (Bachelor of Technology / Engineering)">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
+                            <option value="M.Tech / M.E. (Master of Technology / Engineering)">M.Tech / M.E. (Master of Technology / Engineering)</option>
+                            <option value="Ph.D.">Ph.D.</option>
+                          </Select>
+                        </FormField>
 
-                      <FormField label="Graduation year" required>
-                        <Input
-                          type="number"
-                          id="graduationYear"
-                          placeholder="e.g. 2024"
-                          value={graduationYear}
-                          onChange={(e) => setGraduationYear(e.target.value)}
-                          required={mode === 'register'}
-                        />
-                      </FormField>
+                        <FormField label="Graduation year" required>
+                          <Input
+                            type="number"
+                            id="graduationYear"
+                            placeholder="e.g. 2024"
+                            value={graduationYear}
+                            onChange={(e) => setGraduationYear(e.target.value)}
+                            required={mode === 'register'}
+                          />
+                        </FormField>
 
-                      <FormField label="Branch / major" required hint={!college ? 'Select a college first.' : undefined}>
-                        <Select
-                          id="branch"
-                          value={branch}
-                          onChange={(e) => setBranch(e.target.value)}
-                          required={mode === 'register'}
-                          disabled={!college}
-                        >
-                          <option value="">{college ? '— Select your branch —' : '— Select college first —'}</option>
-                          {getBranchesForCollege(college).map((b) => (
-                            <option key={b} value={b}>{b}</option>
-                          ))}
-                        </Select>
-                      </FormField>
-                    </>
-                  )}
+                        <FormField label="Branch / major" required hint={!college ? 'Select a college first.' : undefined}>
+                          <Select
+                            id="branch"
+                            value={branch}
+                            onChange={(e) => setBranch(e.target.value)}
+                            required={mode === 'register'}
+                            disabled={!college}
+                          >
+                            <option value="">{college ? '— Select your branch —' : '— Select college first —'}</option>
+                            {getBranchesForCollege(college).map((b) => (
+                              <option key={b} value={b}>{b}</option>
+                            ))}
+                          </Select>
+                        </FormField>
+                      </>
+                    )}
+                  </>
 
                   <div className={styles.stepActions}>
                     <Button type="button" variant="secondary" onClick={() => setRegisterStep(1)}>
@@ -575,15 +595,15 @@ const Auth: React.FC = () => {
           {mode === 'login' ? (
             <p>
               Don&apos;t have an account?{' '}
-              <button type="button" onClick={() => { setMode('register'); setRegisterStep(1); setError(null); }} className={styles.switchBtn}>
+              <button type="button" onClick={switchToRegister} className={styles.switchBtn}>
                 Sign up
               </button>
             </p>
           ) : (
             <p>
               Already have an account?{' '}
-              <button type="button" onClick={() => { setMode('login'); setError(null); }} className={styles.switchBtn}>
-                Sign in
+              <button type="button" onClick={switchToLogin} className={styles.switchBtn}>
+                Log in
               </button>
             </p>
           )}

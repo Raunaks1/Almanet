@@ -64,3 +64,5 @@ export type { TooltipProps } from './Tooltip';
 
 export { Divider } from './Divider';
 export type { DividerProps } from './Divider';
+
+export { VariableFontHover } from './VariableFontHover';

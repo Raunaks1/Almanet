@@ -7,11 +7,20 @@ import { cx } from '../components/ui/internal';
 import { ConnectScene } from '../components/home/ConnectScene';
 import { globePeople } from '../data/globePeople';
 import SiteFooter from '../components/layout/SiteFooter';
+import { VariableFontHover } from '../components/ui';
 import { type Step } from '../components/home/HowItWorks';
 import styles from './Home.module.css';
 
 const FeatureSteps = lazy(() => import('../components/home/FeatureSteps'));
 const HowItWorksLazy = lazy(() => import('../components/home/HowItWorks'));
+const Faq = lazy(() => import('../components/home/Faq'));
+
+const NAV_LINKS = [
+  { label: 'Home', id: 'home' },
+  { label: 'How it works', id: 'how-it-works' },
+  { label: 'Features', id: 'features' },
+  { label: 'FAQs', id: 'faq' },
+] as const;
 
 const HOW_IT_WORKS: Step[] = [
   { step: '01', title: 'Create your profile', description: 'Sign up with your college, branch, degree and graduation year.', theme: 'blue' },
@@ -29,6 +38,7 @@ const FEATURES = [
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
+  const [navActiveId, setNavActiveId] = useState<string>('home');
   const reduced = useReducedMotion() ?? false;
 
   useEffect(() => {
@@ -37,6 +47,39 @@ export default function Home() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Scroll spy: the section crossing the upper third of the viewport
+  // becomes the active nav link.
+  useEffect(() => {
+    const ids = ['home', 'how-it-works', 'features', 'faq'];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.boundingClientRect.top - a.boundingClientRect.top)[0];
+        if (visible) {
+          setNavActiveId(visible.target.id);
+        }
+      },
+      { threshold: 0.33, rootMargin: '0px 0px -66% 0px' },
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToSection = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (id === 'home') {
+      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    } else {
+      const el = document.getElementById(id);
+      el?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    }
+    setNavActiveId(id);
+  };
 
   return (
     <div className={styles.page}>
@@ -47,6 +90,26 @@ export default function Home() {
             <GraduationCap size={20} strokeWidth={1.75} aria-hidden="true" />
             <span>Almanet</span>
           </Link>
+          <ul className={styles.navLinks}>
+            {NAV_LINKS.map((link) => (
+              <li key={link.id}>
+                <a
+                  className={cx(styles.navLink, navActiveId === link.id && styles.navLinkActive)}
+                  href="#/"
+                  onClick={scrollToSection(link.id)}
+                  aria-current={navActiveId === link.id ? 'true' : undefined}
+                >
+                  <VariableFontHover
+                    label={link.label}
+                    fromFontVariationSettings="'wght' 400"
+                    toFontVariationSettings="'wght' 700"
+                    staggerDuration={0.03}
+                    staggerFrom="center"
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
           <div className={styles.navActions}>
             <Link to="/auth" className={styles.btnSecondary}>
               Login
@@ -60,7 +123,7 @@ export default function Home() {
 
       <main className={styles.main}>
         {/* Hero — headline, subtitle, and CTA buttons */}
-        <section className={styles.hero} aria-labelledby="home-hero-title">
+        <section id="home" className={styles.hero} aria-labelledby="home-hero-title">
           <div className={styles.container}>
             <motion.h1
               id="home-hero-title"
@@ -111,6 +174,10 @@ export default function Home() {
 
         <Suspense fallback={<div style={{ minHeight: 560 }} aria-hidden="true" />}>
           <FeatureSteps features={FEATURES} />
+        </Suspense>
+
+        <Suspense fallback={<div style={{ minHeight: 560 }} aria-hidden="true" />}>
+          <Faq />
         </Suspense>
       </main>
 

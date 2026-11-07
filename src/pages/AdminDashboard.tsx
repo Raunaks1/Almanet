@@ -26,14 +26,35 @@ const AdminDashboard: React.FC = () => {
     fetchPendingUsers();
   }, []);
 
-  // fetch logic unchanged
+  // fetch logic: filter pending users by the admin's own college
   const fetchPendingUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+
+    // Determine the admin's college from their profile
+    const { data: { session } } = await supabase.auth.getSession();
+    let collegeFilter: string | null = null;
+    if (session) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('college')
+        .eq('id', session.user.id)
+        .single();
+      if (profile?.college) {
+        collegeFilter = profile.college;
+      }
+    }
+
+    let query = supabase
       .from('profiles')
       .select('*')
       .eq('verification_status', 'pending')
       .order('created_at', { ascending: false });
+
+    if (collegeFilter) {
+      query = query.eq('college', collegeFilter);
+    }
+
+    const { data, error } = await query;
 
     if (!error && data) {
       setPendingUsers(data as UserProfile[]);
