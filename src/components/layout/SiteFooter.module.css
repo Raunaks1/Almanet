@@ -1,25 +1,66 @@
 /* ════════════════════════════════════════════════════════════════
-   AlmaNET site footer — public pages only. No backdrop-filter.
-   Tokens: src/styles/tokens.css (ink, page bg, secondary text,
-   hairline, accent). ═══════════════════════════════════════════════ */
+   Almanet site footer — public pages only. No backdrop-filter.
+   Reference order: giant cropped wordmark (top) → divider →
+   brand + Product/Company/Legal columns → copyright (bottom-left).
+   ════════════════════════════════════════════════════════════════ */
 
 .footer {
   position: relative;
   overflow: hidden;
-  border-top: 1px solid var(--hairline);
-  background: transparent;
-  color: var(--text);
-  padding-top: clamp(56px, 8vw, 80px);
+  background: #0a0a0b;
+  color: #f5f5f7;
+  font-family: var(--font);
+  padding-top: 40px;
 }
 
-.wrap {
-  max-width: 1152px;
+/* ── 1. Giant wordmark (cropped by the divider via overflow) ── */
+.wordmarkWrap {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 clamp(20px, 5vw, 40px) 80px;
+  padding: 0 20px;
+  /* Visible 75–80% of the letter height; bottom ~20–25% is cropped
+     by the divider below. padding-top on .wordmark keeps ascenders
+     ("A", "l", "t") fully inside the wrapper so the tight 0.8
+     line-height doesn't clip the top. */
+  height: calc(clamp(6rem, 18vw, 16rem) * 0.75);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
-/* ── Top grid ── */
-.footer > .wrap {
+.wordmark {
+  font: 800 clamp(6rem, 18vw, 16rem) / 0.8 var(--font);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 100%;
+  padding-top: 0.18em;
+  color: transparent;
+  background-image: linear-gradient(to bottom, #454549 0%, #141416 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── 2. Full-width divider ── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: #1f1f22;
+  margin-top: 0;
+}
+
+/* ── 3. Links row ── */
+.content {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 64px 24px 64px;
+}
+
+.linksRow {
   display: grid;
   grid-template-columns: 1.2fr 2fr;
   gap: 48px;
@@ -34,29 +75,36 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--text);
+  color: #ffffff;
   font: var(--type-headline);
   text-decoration: none;
   letter-spacing: var(--tracking-title);
 }
 
+.brandWordmark {
+  color: #ffffff;
+}
+
 .tagline {
   margin: 16px 0 0;
-  font: 400 14px/24px var(--font);
-  color: var(--text-2);
+  font: 400 15px/24px var(--font);
+  color: #9a9aa0;
+  max-width: 320px;
 }
 
 .nav {
-  color: var(--text);
+  color: #ffffff;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 40px;
 }
 
 .columnTitle {
-  margin: 0 0 14px;
-  font: 500 14px/20px var(--font);
-  color: var(--text);
+  margin: 0 0 16px;
+  font: 600 0.75rem/1.2 var(--font);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6b6b70;
 }
 
 .linkList {
@@ -65,31 +113,39 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 20px; /* ~1.25rem */
 }
 
 .linkList li {
   min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
-.linkList a {
-  display: block;
-  padding: 6px 0;
-  color: var(--text-2);
-  font: 400 14px/20px var(--font);
+.link {
+  display: inline-block;
+  color: #9a9aa0;
+  font: 400 0.95rem / 1.4 var(--font);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 180ms ease;
 }
 
-.linkList a:hover {
-  color: var(--text);
+.link:hover,
+.link:focus-visible {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-/* ── Bottom bar ── */
+.link:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── 4. Copyright row ── */
 .bottomBar {
-  margin-top: 56px;
-  padding: 24px 0;
-  border-top: 1px solid var(--hairline);
+  margin-top: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -99,13 +155,14 @@
 
 .copyright {
   margin: 0;
-  font: 400 14px/20px var(--font);
-  color: var(--text-2);
+  font: 400 0.85rem / 1.4 var(--font);
+  color: #6b6b70;
 }
 
 .socials {
   display: flex;
   gap: 12px;
+  min-height: 1px;
 }
 
 .socialButton {
@@ -116,10 +173,10 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--hairline);
-  color: var(--text-2);
+  border: 1px solid #1f1f22;
+  color: #9a9aa0;
   background: transparent;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
   cursor: pointer;
 }
 
@@ -130,84 +187,56 @@
 }
 
 .socialButton:hover {
-  background: color-mix(in srgb, var(--text) 6%, transparent);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
 }
 
-/* ── Giant wordmark ── */
-.wordmark {
-  margin-top: 56px;
-  text-align: center;
-  font: 700 clamp(72px, 20vw, 240px)/1 var(--font);
-  letter-spacing: -0.05em;
-  margin-bottom: -0.22em;
-  color: transparent;
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--text) 15%, transparent),
-    transparent
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  pointer-events: none;
-  user-select: none;
-  line-height: 1;
-}
-
-/* ── Responsive ── */
+/* ── Responsive: tablet → 2-per-row, brand stacks ── */
 @media (max-width: 1023px) {
-  .footer > .wrap {
+  .linksRow {
     grid-template-columns: 1fr;
     gap: 40px;
   }
-  .bottomBar {
-    flex-direction: row;
-    align-items: center;
+  .brandBlock {
+    max-width: 100%;
   }
-  .bottomBar .copyright,
-  .bottomBar .socials {
-    order: initial;
-  }
-}
-
-@media (max-width: 639px) {
   .nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 40px;
-    row-gap: 24px;
-  }
-  .bottomBar {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    justify-content: center;
-    text-align: center;
-    font-size: 13px;
-    line-height: 18px;
-  }
-  .bottomBar .copyright {
-    order: 2;
-  }
-  .bottomBar .socials {
-    order: 1;
-    justify-content: center;
-  }
-  .copyright,
-  .linkList a {
-    font-size: 13px;
-    line-height: 18px;
-  }
-  .wordmark {
-    margin-top: 40px;
   }
 }
 
-@supports not (backdrop-filter: blur(1px)) {
+/* ── Responsive: mobile ── */
+@media (max-width: 639px) {
   .footer {
-    border-top-color: var(--hairline);
+    padding-top: 28px;
+  }
+  .wordmarkWrap {
+    padding: 0 12px;
+  }
+  .content {
+    padding: 48px 20px 48px;
+  }
+  .linksRow {
+    gap: 36px;
+  }
+  .nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 32px;
+  }
+  .tagline {
+    max-width: 100%;
+  }
+  .bottomBar {
+    margin-top: 48px;
+  }
+  .copyright {
+    text-align: left;
   }
 }
 
 @media (prefers-reduced-transparency: reduce) {
   .socialButton {
-    background: var(--surface);
+    background: #141416;
   }
 }

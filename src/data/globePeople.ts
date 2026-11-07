@@ -125,7 +125,7 @@ export const globePeople: GlobeTestimonial[] = [
     country: "US",
     lat: 37.77,
     lng: -122.42,
-    quote: "Found my startup co-founder right here on AlmaNET! Couldn't be more grateful.",
+    quote: "Found my startup co-founder right here on Almanet! Couldn't be more grateful.",
     image: portrait("photo-1524504388940-b1c1722653e1"),
   },
 ];

@@ -1,0 +1,286 @@
+/* FeatureSteps scenes — all colors as variables, decorative (aria-hidden).
+   6s loop, transform/opacity only (+ typewriter width steps, SVG stroke-dashoffset).
+   Natural style = final visible state; reduced-motion => animation:none. */
+
+.fs-scenes {
+  --sc-bg: #111113;
+  --sc-card: #141416;
+  --sc-border: rgba(255, 255, 255, 0.08);
+  --sc-text: #ffffff;
+  --sc-muted: #8e8e93;
+  --sc-accent: #0a84ff;
+  --sc-ring-orange: #ff9f0a;
+  --sc-ring-green: #30d158;
+  --sc-ring-blue: #0a84ff;
+  --sc-ring-purple: #bf5af2;
+  --sc-ring-yellow: #ffd60a;
+  --sc-heart: #ff375f;
+  --sc-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  color: var(--sc-text);
+  font-family: inherit;
+  width: 100%;
+  height: 100%;
+}
+
+/* primitives */
+.sc-card {
+  background: var(--sc-card);
+  border: 1px solid var(--sc-border);
+  border-radius: 16px;
+}
+.sc-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sc-text);
+  background: #232328;
+  border: 2px solid var(--sc-ring-blue);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.sc-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sc-muted);
+  border: 1px solid var(--sc-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+.sc-muted { color: var(--sc-muted); }
+
+/* Loop fade: every scene container fades out 94%-100% */
+@keyframes sc-loop-fade {
+  0%, 93% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.sc-loop { animation: sc-loop-fade 6s both infinite; will-change: opacity; }
+
+@keyframes sc-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes sc-pop {
+  0% { opacity: 0; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes sc-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* ── Chat ── */
+.sc-chat { display: flex; flex-direction: column; height: 100%; }
+.sc-chat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid var(--sc-border);
+}
+.sc-chat-title { font-size: 13px; font-weight: 600; }
+.sc-avatars { display: flex; }
+.sc-avatars .sc-avatar { margin-left: -8px; width: 24px; height: 24px; font-size: 10px; }
+.sc-avatars .sc-avatar:first-child { margin-left: 0; }
+.sc-chat-body { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+.sc-bubble {
+  max-width: 78%; padding: 9px 12px; border-radius: 14px;
+  font-size: 13px; line-height: 1.35;
+}
+.sc-bubble--in {
+  align-self: flex-start; background: #232328; color: var(--sc-text);
+  border-bottom-left-radius: 4px;
+}
+.sc-bubble--out {
+  align-self: flex-end; background: var(--sc-accent); color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.sc-read {
+  align-self: flex-end; font-size: 11px; color: var(--sc-muted); margin-top: -4px;
+}
+/* chat timing (6s cycle) */
+.sc-chat .m1 { opacity: 0; animation: sc-in 6s var(--sc-ease) both infinite; animation-delay: 0s; } /* 8% */
+.sc-chat .m2 { opacity: 0; animation: sc-in 6s var(--sc-ease) both infinite; } /* 28% */
+.sc-chat .m3 { opacity: 0; } /* typing 45-58% */
+.sc-chat .m4 { opacity: 0; animation: sc-in 6s var(--sc-ease) both infinite; } /* 60% */
+.sc-chat .read { opacity: 0; animation: sc-fade 6s var(--sc-ease) both infinite; } /* 72% */
+@keyframes sc-chat-m1 { 0%,7% {opacity:0;transform:translateY(8px)} 12%,93% {opacity:1;transform:translateY(0)} 100% {opacity:0} }
+@keyframes sc-chat-m2 { 0%,27% {opacity:0;transform:translateY(8px)} 32%,93% {opacity:1;transform:translateY(0)} 100% {opacity:0} }
+@keyframes sc-chat-m3 { 0%,44% {opacity:0;transform:translateY(8px)} 48%,55% {opacity:1;transform:translateY(0)} 59%,100% {opacity:0;transform:translateY(8px)} }
+@keyframes sc-chat-m4 { 0%,59% {opacity:0;transform:translateY(8px)} 64%,93% {opacity:1;transform:translateY(0)} 100% {opacity:0} }
+@keyframes sc-chat-read { 0%,71% {opacity:0} 76%,93% {opacity:1} 100% {opacity:0} }
+.sc-chat .m1 { animation-name: sc-chat-m1; animation-delay: 0s; }
+.sc-chat .m2 { animation-name: sc-chat-m2; }
+.sc-chat .m3 { animation-name: sc-chat-m3; }
+.sc-chat .m4 { animation-name: sc-chat-m4; }
+.sc-chat .read { animation-name: sc-chat-read; }
+.sc-typing { display: inline-flex; gap: 4px; padding: 10px 12px; }
+.sc-dot { width: 6px; height: 6px; border-radius: 50%; background: #6e6e73; animation: sc-bounce 1s infinite; }
+.sc-dot:nth-child(2) { animation-delay: .15s; }
+.sc-dot:nth-child(3) { animation-delay: .3s; }
+@keyframes sc-bounce { 0%,80%,100% { transform: translateY(0); opacity: .5 } 40% { transform: translateY(-3px); opacity: 1 } }
+
+/* ── Jobs ── */
+.sc-jobs { display: flex; flex-direction: column; gap: 10px; height: 100%; justify-content: center; position: relative; }
+.sc-job { padding: 12px 14px; }
+.sc-job-top { border-color: rgba(10,132,255,.55); box-shadow: 0 0 0 1px rgba(10,132,255,.18); }
+.sc-job-title { font-size: 14px; font-weight: 600; margin: 0 0 2px; }
+.sc-job-sub { font-size: 12px; margin: 0 0 8px; }
+.sc-job-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.sc-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.sc-pill {
+  display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; color: var(--sc-ring-green);
+  background: rgba(48,209,88,.12); border: 1px solid rgba(48,209,88,.25);
+}
+.sc-apply {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 72px; height: 30px; padding: 0 12px; border-radius: 999px;
+  background: var(--sc-accent); color: #fff; font-size: 12px; font-weight: 600;
+  overflow: hidden;
+}
+.sc-apply-label, .sc-apply-done { position: absolute; display: inline-flex; align-items: center; gap: 4px; }
+.sc-cursor {
+  position: absolute; width: 10px; height: 10px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 2px rgba(10,132,255,.5);
+  right: 24px; top: 50%; opacity: 0; pointer-events: none;
+}
+.sc-toast {
+  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%) translateY(12px);
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 999px; background: #232328; border: 1px solid var(--sc-border);
+  font-size: 12px; color: var(--sc-text); opacity: 0; white-space: nowrap;
+}
+.sc-toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sc-ring-green); }
+@keyframes sc-job-pop { 0%,5% {opacity:0;transform:scale(.96)} 10%,93% {opacity:1;transform:scale(1)} 100% {opacity:0} }
+@keyframes sc-ref-pill { 0%,34% {opacity:0;transform:scale(.9)} 38% {opacity:1;transform:scale(1)} 42% {transform:scale(1.06)} 46%,93% {opacity:1;transform:scale(1)} 100% {opacity:0} }
+@keyframes sc-cursor { 0%,49% {opacity:0;transform:translate(-30px,-18px)} 52% {opacity:1;transform:translate(0,0)} 56%,100% {opacity:0;transform:translate(0,0)} }
+@keyframes sc-apply-press { 0%,57% {transform:scale(1)} 58.5% {transform:scale(.95)} 60%,100% {transform:scale(1)} }
+@keyframes sc-apply-show { 0%,59% {opacity:1} 62%,100% {opacity:0} }
+@keyframes sc-applied-show { 0%,59% {opacity:0} 62%,93% {opacity:1} 100% {opacity:0} }
+@keyframes sc-check-draw { 0%,60% {stroke-dashoffset:16} 68%,100% {stroke-dashoffset:0} }
+@keyframes sc-toast { 0%,67% {opacity:0;transform:translateX(-50%) translateY(12px)} 72% {opacity:1;transform:translateX(-50%) translateY(0)} 90%,100% {opacity:0;transform:translateX(-50%) translateY(12px)} }
+.sc-jobs .job-top-card { animation: sc-job-pop 6s var(--sc-ease) both infinite; transform-origin: top; will-change: transform, opacity; }
+.sc-jobs .ref-pill { animation: sc-ref-pill 6s var(--sc-ease) both infinite; will-change: transform, opacity; }
+.sc-jobs .cursor { animation: sc-cursor 6s var(--sc-ease) both infinite; will-change: transform, opacity; }
+.sc-jobs .apply-btn { animation: sc-apply-press 6s var(--sc-ease) both infinite; will-change: transform; }
+.sc-jobs .apply-label { animation: sc-apply-show 6s var(--sc-ease) both infinite; }
+.sc-jobs .applied-label { animation: sc-applied-show 6s var(--sc-ease) both infinite; }
+.sc-jobs .check-path { stroke-dasharray: 16; stroke-dashoffset: 16; animation: sc-check-draw 6s var(--sc-ease) both infinite; }
+.sc-jobs .toast { animation: sc-toast 6s var(--sc-ease) both infinite; will-change: transform, opacity; }
+
+/* ── Directory ── */
+.sc-dir { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.sc-search {
+  display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+  border-radius: 12px; background: #232328; border: 1px solid var(--sc-border);
+  font-size: 13px; color: var(--sc-muted);
+}
+.sc-type-wrap { display: inline-flex; align-items: center; overflow: hidden; width: 0; white-space: nowrap; color: var(--sc-text); }
+.sc-caret { width: 1px; height: 14px; background: var(--sc-accent); display: inline-block; animation: sc-blink 1s step-end infinite; margin-left: 1px; }
+@keyframes sc-blink { 50% { opacity: 0; } }
+.sc-ph { display: inline-block; }
+.sc-filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sc-filter { padding: 4px 10px; border-radius: 999px; font-size: 12px; border: 1px solid var(--sc-border); color: var(--sc-muted); background: transparent; }
+.sc-filter--on { background: var(--sc-accent); color: #fff; border-color: var(--sc-accent); }
+.sc-count { margin-left: auto; font-size: 12px; position: relative; min-width: 56px; height: 16px; }
+.sc-count span { position: absolute; right: 0; top: 0; }
+.sc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; }
+.sc-alum { padding: 10px; position: relative; overflow: hidden; }
+.sc-alum-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.sc-alum-name { font-size: 13px; font-weight: 600; }
+.sc-alum-meta { font-size: 11px; margin: 0 0 6px; }
+.sc-msg {
+  position: absolute; left: 10px; right: 10px; bottom: 8px;
+  padding: 6px 0; border-radius: 999px; text-align: center;
+  background: var(--sc-accent); color: #fff; font-size: 12px; font-weight: 600;
+  transform: translateY(8px); opacity: 0;
+}
+@keyframes sc-type { 0%,7% {width:0} 30%,93% {width:5ch} 100% {width:0} }
+@keyframes sc-ph-hide { 0%,7% {opacity:.6} 9%,93% {opacity:0} 100% {opacity:.6} }
+@keyframes sc-chip-on { 0%,34% {background:transparent;color:var(--sc-muted);border-color:var(--sc-border)} 38%,93% {background:var(--sc-accent);color:#fff;border-color:var(--sc-accent)} 100% {background:transparent;color:var(--sc-muted)} }
+@keyframes sc-c4 { 0%,44% {opacity:1} 48%,93% {opacity:0} 100% {opacity:1} }
+@keyframes sc-c2 { 0%,44% {opacity:0} 48%,93% {opacity:1} 100% {opacity:0} }
+@keyframes sc-dim { 0%,44% {opacity:1} 48%,93% {opacity:.15} 100% {opacity:1} }
+@keyframes sc-ring { 0%,61% {box-shadow:none} 65%,80% {box-shadow:0 0 0 2px var(--sc-accent)} 84%,100% {box-shadow:none} }
+@keyframes sc-msg { 0%,61% {opacity:0;transform:translateY(8px)} 66%,80% {opacity:1;transform:translateY(0)} 84%,100% {opacity:0;transform:translateY(8px)} }
+.sc-dir .type { animation: sc-type 6s steps(5) both infinite; will-change: width; }
+.sc-dir .ph { animation: sc-ph-hide 6s both infinite; }
+.sc-dir .chip-ind { animation: sc-chip-on 6s both infinite; }
+.sc-dir .c4 { animation: sc-c4 6s both infinite; }
+.sc-dir .c2 { animation: sc-c2 6s both infinite; }
+.sc-dir .dim { animation: sc-dim 6s both infinite; }
+.sc-dir .ring-card { animation: sc-ring 6s both infinite; }
+.sc-dir .msg { animation: sc-msg 6s var(--sc-ease) both infinite; will-change: transform, opacity; }
+
+/* ── Forum ── */
+.sc-forum { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.sc-post { padding: 12px 14px; }
+.sc-post-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sc-post-meta { display: flex; flex-direction: column; }
+.sc-post-name { font-size: 13px; font-weight: 600; }
+.sc-post-sub { font-size: 11px; }
+.sc-post-text { font-size: 13px; line-height: 1.4; margin: 0 0 10px; }
+.sc-actions { display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--sc-muted); }
+.sc-action { display: inline-flex; align-items: center; gap: 5px; position: relative; }
+.sc-count-swap { position: relative; display: inline-block; min-width: 14px; height: 14px; }
+.sc-count-swap span { position: absolute; left: 0; top: 0; line-height: 14px; }
+.sc-reply { padding: 10px 12px; font-size: 13px; }
+.sc-reply b { color: var(--sc-text); }
+@keyframes sc-forum-post { 0%,5% {opacity:0;transform:translateY(8px)} 10%,93% {opacity:1;transform:translateY(0)} 100% {opacity:0} }
+@keyframes sc-heart-pop { 0%,24% {transform:scale(1);color:var(--sc-muted)} 26% {transform:scale(1.3);color:var(--sc-heart)} 30%,93% {transform:scale(1);color:var(--sc-heart)} 100% {transform:scale(1);color:var(--sc-muted)} }
+@keyframes sc-heart-fill { 0%,24% {fill:transparent} 26%,93% {fill:var(--sc-heart)} 100% {fill:transparent} }
+@keyframes sc-like12 { 0%,24% {opacity:1} 27%,93% {opacity:0} 100% {opacity:1} }
+@keyframes sc-like13 { 0%,24% {opacity:0} 27%,93% {opacity:1} 100% {opacity:0} }
+@keyframes sc-rep3 { 0%,39% {opacity:1} 42%,93% {opacity:0} 100% {opacity:1} }
+@keyframes sc-rep4 { 0%,39% {opacity:0} 42%,93% {opacity:1} 100% {opacity:0} }
+@keyframes sc-reply-in { 0%,49% {opacity:0;transform:translateY(8px)} 54%,93% {opacity:1;transform:translateY(0)} 100% {opacity:0} }
+@keyframes sc-post2 { 0%,74% {opacity:0} 80%,93% {opacity:1} 100% {opacity:0} }
+.sc-forum .post { animation: sc-forum-post 6s var(--sc-ease) both infinite; will-change: transform, opacity; }
+.sc-forum .heart { animation: sc-heart-pop 6s var(--sc-ease) both infinite; display:inline-flex; will-change: transform; }
+.sc-forum .heart path { animation: sc-heart-fill 6s var(--sc-ease) both infinite; }
+.sc-forum .like12 { animation: sc-like12 6s both infinite; }
+.sc-forum .like13 { animation: sc-like13 6s both infinite; }
+.sc-forum .rep3 { animation: sc-rep3 6s both infinite; }
+.sc-forum .rep4 { animation: sc-rep4 6s both infinite; }
+.sc-forum .reply { animation: sc-reply-in 6s var(--sc-ease) both infinite; will-change: transform, opacity; }
+.sc-forum .post2 { animation: sc-post2 6s var(--sc-ease) both infinite; }
+
+/* Final static state when motion is reduced: natural style is final/visible,
+   and we disable all scene animations. */
+@media (prefers-reduced-motion: reduce) {
+  .sc-loop,
+  .sc-chat .m1, .sc-chat .m2, .sc-chat .m3, .sc-chat .m4, .sc-chat .read,
+  .sc-jobs .job-top-card, .sc-jobs .ref-pill, .sc-jobs .cursor, .sc-jobs .apply-btn,
+  .sc-jobs .apply-label, .sc-jobs .applied-label, .sc-jobs .check-path, .sc-jobs .toast,
+  .sc-dir .type, .sc-dir .ph, .sc-dir .chip-ind, .sc-dir .c4, .sc-dir .c2, .sc-dir .dim, .sc-dir .ring-card, .sc-dir .msg,
+  .sc-forum .post, .sc-forum .heart, .sc-forum .heart path, .sc-forum .like12, .sc-forum .like13, .sc-forum .rep3, .sc-forum .rep4, .sc-forum .reply, .sc-forum .post2,
+  .sc-dot, .sc-caret {
+    animation: none !important;
+  }
+  /* show final static state */
+  .sc-chat .m1, .sc-chat .m2, .sc-chat .m4, .sc-chat .read { opacity: 1; transform: none; }
+  .sc-chat .m3 { opacity: 0; } /* typing indicator gone in final state */
+  .sc-jobs .job-top-card, .sc-jobs .ref-pill { opacity: 1; transform: none; }
+  .sc-jobs .apply-label { opacity: 0; }
+  .sc-jobs .applied-label { opacity: 1; }
+  .sc-jobs .check-path { stroke-dashoffset: 0; }
+  .sc-jobs .toast { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .sc-jobs .cursor { opacity: 0; }
+  .sc-dir .type { width: 5ch; }
+  .sc-dir .ph { opacity: 0; }
+  .sc-dir .chip-ind { background: var(--sc-accent); color: #fff; border-color: var(--sc-accent); }
+  .sc-dir .c4 { opacity: 0; } .sc-dir .c2 { opacity: 1; }
+  .sc-dir .dim { opacity: .15; }
+  .sc-dir .ring-card { box-shadow: 0 0 0 2px var(--sc-accent); }
+  .sc-dir .msg { opacity: 1; transform: translateY(0); }
+  .sc-forum .post, .sc-forum .reply, .sc-forum .post2 { opacity: 1; transform: none; }
+  .sc-forum .heart { color: var(--sc-heart); transform: none; }
+  .sc-forum .heart path { fill: var(--sc-heart); }
+  .sc-forum .like12 { opacity: 0; } .sc-forum .like13 { opacity: 1; }
+  .sc-forum .rep3 { opacity: 0; } .sc-forum .rep4 { opacity: 1; }
+}

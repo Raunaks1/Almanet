@@ -23,7 +23,7 @@ const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 function RouteTitle() {
   const { pathname } = useLocation();
   useEffect(() => {
-    const base = 'AlmaNET';
+    const base = 'Almanet';
     let page = '';
     if (pathname === '/' || pathname === '') page = 'Alumni Network';
     else if (pathname === '/auth') page = 'Sign in';

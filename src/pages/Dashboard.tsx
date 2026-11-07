@@ -271,7 +271,7 @@ const Dashboard: React.FC = () => {
               <div>
                 <h2 className={styles.newsTitle}>College News &amp; Success Stories</h2>
                 <p className={styles.newsSub}>
-                  {collegeName ? `Latest updates from ${collegeName}` : 'Highlights from the AlmaNET community'}
+                  {collegeName ? `Latest updates from ${collegeName}` : 'Highlights from the Almanet community'}
                 </p>
               </div>
               <div className={styles.segWrap}>

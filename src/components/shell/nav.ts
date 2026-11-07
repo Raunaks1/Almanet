@@ -47,7 +47,7 @@ export function titleForPath(pathname: string): string {
   const item = [...NAV_ITEMS, ADMIN_ITEM].find((entry) => isItemActive(pathname, entry.to));
   if (item) return item.label;
   if (pathname.startsWith('/profile')) return 'Profile';
-  return 'AlmaNET';
+  return 'Almanet';
 }
 
 /** Locked for unverified users — everything except the dashboard. */

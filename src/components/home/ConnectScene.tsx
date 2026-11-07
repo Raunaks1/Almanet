@@ -139,7 +139,7 @@ function ConnectSceneInner({
 }: Props) {
   return (
     <div className={styles.wrap}>
-      {showBadge && <div className={styles.badge} aria-hidden="true">AlmaNET</div>}
+      {showBadge && <div className={styles.badge} aria-hidden="true">Almanet</div>}
       <div className={styles.globeFrame}>
         <TestimonialGlobe
           items={items}

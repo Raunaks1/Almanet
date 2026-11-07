@@ -1,0 +1,260 @@
+/* HowItWorks — dark Home page, plain CSS, hiw- prefix. Colours in CSS vars only. */
+.hiw-section {
+  --hiw-bg: #0a0a0b;
+  --hiw-card: #141416;
+  --hiw-border: rgba(255, 255, 255, 0.08);
+  --hiw-text: #ffffff;
+  --hiw-muted: #8e8e93;
+  --hiw-accent: #0a84ff;
+  --hiw-dot-bg: rgba(10, 132, 255, 0.25);
+  color: var(--hiw-text);
+  font-family: inherit;
+  background: var(--hiw-bg);
+  padding: 120px 24px;
+}
+
+.hiw-wrap {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.hiw-header {
+  text-align: center;
+  margin: 0 auto 72px;
+}
+
+.hiw-eyebrow {
+  margin: 0 0 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hiw-muted);
+}
+
+.hiw-title {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--hiw-text);
+}
+
+.hiw-subtitle {
+  margin: 14px auto 0;
+  max-width: 520px;
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--hiw-muted);
+}
+
+/* Stage (desktop absolute geometry; overridden on mobile) */
+.hiw-stage {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  aspect-ratio: 1000 / 760;
+}
+
+.hiw-stage[data-active="false"] .hiw-path {
+  animation-play-state: paused !important;
+}
+
+/* Dashed connector path */
+.hiw-path-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hiw-path {
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 8 6;
+  stroke-dashoffset: 0;
+  animation: hiw-dash-flow 3s linear infinite;
+  animation-delay: 1.5s;
+  animation-fill-mode: forwards;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes hiw-dash-flow {
+  to { stroke-dashoffset: -140; }
+}
+
+/* Travelling dot (SMIL animateMotion moves it along the path) */
+.hiw-dot {
+  fill: var(--hiw-accent);
+}
+.hiw-dot-bg {
+  fill: var(--hiw-accent);
+  opacity: 0.25;
+}
+
+/* Cards wrap — entrance handled by motion (outer), rotation+hover by this inner card */
+.hiw-card-wrap {
+  position: absolute;
+  width: 28%;
+  will-change: transform, opacity;
+}
+
+.hiw-card {
+  position: relative;
+  background: var(--hiw-card);
+  border: 1px solid var(--hiw-border);
+  border-radius: 25px;
+  padding: 8px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 300ms ease, z-index 0ms;
+}
+
+.hiw-card:hover {
+  transform: scale(1.04) rotate(0deg) !important;
+  z-index: 30;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+}
+
+/* Pin centred on top of the note */
+.hiw-pin {
+  width: 32px;
+  height: 32px;
+  display: block;
+  margin: 0 auto 10px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+/* Inner panel holding number / title / description */
+.hiw-panel {
+  border-radius: 16px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hiw-number {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.hiw-card-title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--hiw-text);
+}
+
+.hiw-card-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--hiw-muted);
+}
+
+/* Per-theme colours */
+.hiw-card--orange { --hiw-theme: #ff9f0a; }
+.hiw-card--blue   { --hiw-theme: #0a84ff; }
+.hiw-card--purple { --hiw-theme: #bf5af2; }
+.hiw-card--green  { --hiw-theme: #30d158; }
+
+.hiw-card--orange .hiw-number { color: var(--hiw-theme); }
+.hiw-card--blue .hiw-number   { color: var(--hiw-theme); }
+.hiw-card--purple .hiw-number { color: var(--hiw-theme); }
+.hiw-card--green .hiw-number  { color: var(--hiw-theme); }
+
+.hiw-card--orange .hiw-pin { color: var(--hiw-theme); }
+.hiw-card--blue .hiw-pin   { color: var(--hiw-theme); }
+.hiw-card--purple .hiw-pin { color: var(--hiw-theme); }
+.hiw-card--green .hiw-pin  { color: var(--hiw-theme); }
+
+.hiw-card--orange .hiw-panel { background: rgba(255, 159, 10, 0.10); border-color: rgba(255, 159, 10, 0.25); }
+.hiw-card--blue .hiw-panel   { background: rgba(10, 132, 255, 0.10); border-color: rgba(10, 132, 255, 0.25); }
+.hiw-card--purple .hiw-panel { background: rgba(191, 90, 242, 0.10); border-color: rgba(191, 90, 242, 0.25); }
+.hiw-card--green .hiw-panel  { background: rgba(48, 209, 88, 0.10); border-color: rgba(48, 209, 88, 0.25); }
+
+/* Mobile / tablet — stacked single column, no absolute geometry or SVG path */
+@media (max-width: 959px) {
+  .hiw-section { padding: 72px 24px; }
+  .hiw-header { margin-bottom: 48px; }
+
+  .hiw-stage {
+    position: relative;
+    max-width: none;
+    aspect-ratio: auto;
+  }
+
+  .hiw-card-wrap {
+    position: static !important;
+    width: auto !important;
+    max-width: 420px;
+    margin: 0 auto 28px;
+    left: auto !important;
+    top: auto !important;
+    will-change: auto;
+  }
+
+  .hiw-card {
+    transform: none !important;
+  }
+
+  /* Alternating slight rotation on mobile */
+  .hiw-card-wrap:nth-child(odd) .hiw-card { rotate: -2deg; }
+  .hiw-card-wrap:nth-child(even) .hiw-card { rotate: 2deg; }
+
+  /* Hide SVG path/dot; static vertical dashed connector behind cards */
+  .hiw-path-svg { display: none; }
+
+  .hiw-stage::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.2) 0,
+      rgba(255, 255, 255, 0.2) 10px,
+      transparent 10px,
+      transparent 22px
+    );
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-card-wrap,
+  .hiw-card,
+  .hiw-pin,
+  .hiw-path,
+  .hiw-dot,
+  .hiw-dot-bg {
+    animation: none !important;
+    transition: none !important;
+  }
+  .hiw-path {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  .hiw-card {
+    transform: none !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  }
+  .hiw-card:hover {
+    transform: none !important;
+  }
+}

@@ -133,7 +133,7 @@ export const AppShellFrame: React.FC<AppShellFrameProps> = ({ profile, unreadCha
               />
             </svg>
           </span>
-          <span className={styles.brandName}>AlmaNET</span>
+          <span className={styles.brandName}>Almanet</span>
         </Link>
 
         <nav className={styles.nav} aria-label="Primary">

@@ -117,46 +117,75 @@ export default function SiteFooter() {
 
   return (
     <footer className={styles.footer}>
-      <div className={styles.wrap}>
+      {/* Giant cropped wordmark on top */}
+      <div className={styles.wordmarkWrap} aria-hidden="true">
         <motion.div
-          ref={brandRef}
-          {...motionProps(brandVisible, { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: DURATION.reveal, ease: EASE_REVEAL } } }, reduced)}
-          className={styles.brandBlock}
+          ref={wordmarkRef}
+          {...motionProps(wordmarkVisible, riseIn(24, 0.5), reduced)}
+          className={styles.wordmark}
         >
-          <Link to="/" className={styles.brandLink} aria-label="AlmaNET home">
-            <GraduationCap size={20} strokeWidth={1.75} aria-hidden="true" />
-            <span className={styles.brandWordmark}>AlmaNET</span>
-          </Link>
-          <p className={styles.tagline}>
-            A trusted space for alumni and students to connect, share opportunities, and grow together.
-          </p>
+          Almanet
         </motion.div>
+      </div>
 
-        <motion.nav
-          ref={navRef}
-          {...motionProps(navVisible, listStagger(0.08).parent, reduced)}
-          aria-label="Footer"
-          className={styles.nav}
-        >
-          {FOOTER_COLUMNS.map((column) => (
-            <motion.div
-              key={column.title}
-              {...motionProps(true, listStagger(0.08).child, reduced)}
-              className={styles.column}
-            >
-              <h3 className={styles.columnTitle}>{column.title}</h3>
-              <ul className={styles.linkList}>
-                {column.links.map((link) => (
-                  <li key={link.label}>
-                    <Link to={link.to} className={styles.link}>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
-        </motion.nav>
+      <div className={styles.divider} aria-hidden="true" />
+
+      <div className={styles.content}>
+        <div className={styles.linksRow}>
+          <motion.div
+            ref={brandRef}
+            {...motionProps(brandVisible, { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: DURATION.reveal, ease: EASE_REVEAL } } }, reduced)}
+            className={styles.brandBlock}
+          >
+            <Link to="/" className={styles.brandLink} aria-label="Almanet home">
+              <GraduationCap size={20} strokeWidth={1.75} aria-hidden="true" />
+              <span className={styles.brandWordmark}>Almanet</span>
+            </Link>
+            <p className={styles.tagline}>
+              A trusted space for alumni and students to connect, share opportunities, and grow together.
+            </p>
+          </motion.div>
+
+          <motion.nav
+            ref={navRef}
+            {...motionProps(navVisible, listStagger(0.08).parent, reduced)}
+            aria-label="Footer"
+            className={styles.nav}
+          >
+            {FOOTER_COLUMNS.map((column) => (
+              <motion.div
+                key={column.title}
+                {...motionProps(true, listStagger(0.08).child, reduced)}
+                className={styles.column}
+              >
+                <h3 className={styles.columnTitle}>{column.title}</h3>
+                <ul className={styles.linkList}>
+                  {column.links.map((link) => {
+                    const isHowItWorks = link.label === 'How it works';
+                    return (
+                      <li key={link.label}>
+                        <Link
+                          to={link.to}
+                          className={styles.link}
+                          onClick={(e) => {
+                            if (!isHowItWorks) return;
+                            e.preventDefault();
+                            const target = document.getElementById('how-it-works');
+                            if (target) {
+                              target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+                            }
+                          }}
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </motion.div>
+            ))}
+          </motion.nav>
+        </div>
 
         <motion.div
           ref={bottomRef}
@@ -164,7 +193,7 @@ export default function SiteFooter() {
           className={styles.bottomBar}
         >
           <span className={styles.copyright}>
-            © {new Date().getFullYear()} AlmaNET. All rights reserved.
+            © {new Date().getFullYear()} Almanet. All rights reserved.
           </span>
           <div className={styles.socials} aria-label="Social profiles">
             {socials.map((entry) => (
@@ -180,15 +209,6 @@ export default function SiteFooter() {
               </a>
             ))}
           </div>
-        </motion.div>
-
-        <motion.div
-          ref={wordmarkRef}
-          {...motionProps(wordmarkVisible, riseIn(24, 0.6), reduced)}
-          className={styles.wordmark}
-          aria-hidden="true"
-        >
-          AlmaNET
         </motion.div>
       </div>
     </footer>

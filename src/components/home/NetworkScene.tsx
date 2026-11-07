@@ -70,7 +70,7 @@ export function NetworkScene() {
       ref={ref}
       className={styles.stage}
       role="img"
-      aria-label="Animated illustration of alumni and students around the world connecting through the AlmaNET hub, sharing messages across cities."
+      aria-label="Animated illustration of alumni and students around the world connecting through the Almanet hub, sharing messages across cities."
     >
       <div className={styles.scene} aria-hidden="true">
         <AnimatePresence mode="wait">
@@ -101,7 +101,7 @@ export function NetworkScene() {
 
             {/* Hub */}
             <span className={`${styles.ring} ${!reduced ? styles.ringPulse : ''}`} />
-            <div className={styles.hub}>AlmaNET</div>
+            <div className={styles.hub}>Almanet</div>
 
             {/* Profiles */}
             {PROFILES.map((p, i) => (

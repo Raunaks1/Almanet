@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'motion/react';
 import { GraduationCap } from 'lucide-react';
@@ -7,7 +7,25 @@ import { cx } from '../components/ui/internal';
 import { ConnectScene } from '../components/home/ConnectScene';
 import { globePeople } from '../data/globePeople';
 import SiteFooter from '../components/layout/SiteFooter';
+import { type Step } from '../components/home/HowItWorks';
 import styles from './Home.module.css';
+
+const FeatureSteps = lazy(() => import('../components/home/FeatureSteps'));
+const HowItWorksLazy = lazy(() => import('../components/home/HowItWorks'));
+
+const HOW_IT_WORKS: Step[] = [
+  { step: '01', title: 'Create your profile', description: 'Sign up with your college, branch, degree and graduation year.', theme: 'blue' },
+  { step: '02', title: 'Get verified', description: 'College admins confirm you belong, so every member is real.', theme: 'orange' },
+  { step: '03', title: 'Explore the network', description: 'Browse the alumni directory, jobs, events and forums.', theme: 'purple' },
+  { step: '04', title: 'Connect and grow', description: 'Message your batch, ask for referrals and stay in touch after graduation.', theme: 'green' },
+];
+
+const FEATURES = [
+  { step: '01', title: 'Realtime chat', content: 'Message your batch or any member directly, with typing indicators and read receipts.' },
+  { step: '02', title: 'Jobs and referrals', content: 'Alumni post openings and offer to refer you, so opportunities reach you through people you trust.' },
+  { step: '03', title: 'Alumni directory', content: 'Search verified alumni by name, skill, industry, and graduation year.' },
+  { step: '04', title: 'Community forums', content: 'Share updates, ask questions and start discussions with your college community.' },
+];
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
@@ -27,7 +45,7 @@ export default function Home() {
         <nav className={styles.navInner} aria-label="Primary">
           <Link to="/" className={styles.brand}>
             <GraduationCap size={20} strokeWidth={1.75} aria-hidden="true" />
-            <span>AlmaNET</span>
+            <span>Almanet</span>
           </Link>
           <div className={styles.navActions}>
             <Link to="/auth" className={styles.btnSecondary}>
@@ -87,6 +105,13 @@ export default function Home() {
           />
         </section>
 
+        <Suspense fallback={<div style={{ minHeight: 560 }} aria-hidden="true" />}>
+          <HowItWorksLazy steps={HOW_IT_WORKS} />
+        </Suspense>
+
+        <Suspense fallback={<div style={{ minHeight: 560 }} aria-hidden="true" />}>
+          <FeatureSteps features={FEATURES} />
+        </Suspense>
       </main>
 
       <SiteFooter />

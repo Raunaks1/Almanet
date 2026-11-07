@@ -182,7 +182,7 @@ const Auth: React.FC = () => {
           <div className={styles.logoMark}>
             <GraduationCap size={26} strokeWidth={1.75} aria-hidden="true" />
           </div>
-          <h2 className={styles.title}>{mode === 'login' ? 'Welcome back' : 'Join AlmaNET'}</h2>
+          <h2 className={styles.title}>{mode === 'login' ? 'Welcome back' : 'Join Almanet'}</h2>
           <p className={styles.subtitle}>
             {mode === 'login'
               ? 'Enter your credentials to access the network.'
