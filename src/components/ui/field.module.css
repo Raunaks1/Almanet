@@ -1,0 +1,110 @@
+/* Shared field recipe — used by Input, Textarea, Select and Combobox.
+   Filled style on opaque surfaces (constitution: dense content doesn't sit
+   on glass); 16px floor so iOS doesn't zoom; focus ring comes from the
+   global :focus-visible rule. */
+
+.wrap {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+.control {
+  width: 100%;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-1);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.2;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 200ms ease;
+}
+
+.control:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.control::placeholder {
+  color: var(--text-3);
+}
+
+.control:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sm {
+  height: 36px;
+  padding: 0 12px;
+}
+
+.md {
+  height: 44px;
+  padding: 0 14px;
+}
+
+.lg {
+  height: 52px;
+  padding: 0 16px;
+}
+
+/* Left adornment */
+.iconLeft {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.iconLeft + .control {
+  padding-left: 38px;
+}
+
+/* Chevron slot (Select, Combobox) */
+.paddedRight {
+  padding-right: 40px;
+}
+
+.chevron {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+/* Invalid state (aria-invalid pairs with FormField error text) */
+.invalid {
+  border-color: var(--danger);
+}
+
+/* Textarea */
+.area {
+  min-height: 96px;
+  padding: 12px 14px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.sm.area,
+.md.area,
+.lg.area {
+  height: auto;
+}
+
+/* Native select */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}

@@ -1,0 +1,106 @@
+/* ThemeToggle — glass segmented control.
+   Glass recipe comes from tokens.css; never more than ~1 blur layer in this control. */
+
+.theme-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.theme-seg__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  min-width: 40px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background-color var(--dur-fast, 150ms) ease,
+    color var(--dur-fast, 150ms) ease,
+    box-shadow var(--dur-fast, 150ms) ease,
+    transform 100ms ease;
+}
+
+/* Keep labels screen-reader visible only when the segment is active? No —
+   show labels at ≥480px, icons-only below (the 40px hit area stays ≥44px
+   with padding making the outer control ≥44px tall). */
+.theme-seg__label {
+  display: none;
+  white-space: nowrap;
+}
+
+@media (min-width: 480px) {
+  .theme-seg__label {
+    display: inline;
+  }
+}
+
+.theme-seg__btn:hover {
+  color: var(--text);
+}
+
+.theme-seg__btn[aria-checked='true'] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-1);
+}
+
+.theme-seg__btn:active {
+  transform: scale(0.96);
+}
+
+.theme-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Solid fallbacks — tokens.css already swaps the vars; repeat for safety. */
+@supports not (backdrop-filter: blur(1px)) {
+  .theme-seg {
+    background: var(--surface);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .theme-seg {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--surface);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .theme-seg {
+    background: var(--surface);
+    border-color: var(--border-strong);
+  }
+
+  .theme-seg__btn[aria-checked='true'] {
+    box-shadow:
+      inset 0 0 0 1px var(--border-strong),
+      var(--shadow-1);
+  }
+}

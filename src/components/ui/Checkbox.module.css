@@ -1,0 +1,72 @@
+/* Checkbox — the native input IS the painted box (appearance: none). */
+
+.native {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.native:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.native:indeterminate,
+.native:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Checkmark: drawn with borders so it stays crisp at any DPR. */
+.native::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 11px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(45deg) scale(0);
+  transform-origin: 40% 70%;
+  transition: transform 180ms var(--ease-standard, cubic-bezier(0.32, 0.72, 0, 1));
+}
+
+.native:checked::after {
+  transform: rotate(45deg) scale(1);
+}
+
+/* Dash for the mixed state. */
+.native:indeterminate::after {
+  content: '';
+  left: 4px;
+  top: 8px;
+  width: 10px;
+  height: 0;
+  border: none;
+  border-top: 2px solid #fff;
+  border-radius: 1px;
+  transform: rotate(0deg) scale(1);
+  transition: transform 180ms var(--ease-standard, cubic-bezier(0.32, 0.72, 0, 1));
+}
+
+.native:hover:not(:disabled) {
+  border-color: var(--text-3);
+}
+
+.native:indeterminate:hover:not(:disabled),
+.native:checked:hover:not(:disabled) {
+  border-color: var(--accent-hover);
+}

@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Search, Users, MessageCircle, Hash, User, Send, Check, CheckCheck, Loader2 } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import {
+  ArrowLeft,
+  Check,
+  CheckCheck,
+  Hash,
+  MessageCircle,
+  Search,
+  Send,
+  User,
+  Users,
+} from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import {
   fetchChannelsForUser,
@@ -16,24 +27,16 @@ import {
   searchUsers,
 } from '../lib/chat';
 import type { ChannelWithMeta, Message } from '../lib/chat';
-
-const COLORS = {
-  bg: '#FBFBF9',
-  text: '#0D1E14',
-  textMuted: '#4A5D53',
-  sage: '#CCDAC6',
-  lavender: '#D9CFF5',
-  blue: '#C7E4F2',
-  terracotta: '#8A4A38',
-  white: '#FFFFFF',
-  border: '#0D1E14',
-  warning: '#FFD166',
-};
+import { Avatar, Skeleton } from '../components/ui';
+import { cx } from '../components/ui/internal';
+import { SPRING } from '../lib/motion';
+import styles from './Chat.module.css';
 
 const Chat: React.FC = () => {
   const navigate = useNavigate();
   const { channelId: urlChannelId } = useParams<{ channelId?: string }>();
   const [searchParams] = useSearchParams();
+  const reduced = useReducedMotion() ?? false;
 
   // Auth & Profile
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -62,8 +65,12 @@ const Chat: React.FC = () => {
   // Realtime subscription ref
   const messageSubRef = useRef<any>(null);
 
-  // Sidebar mobile toggle
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // UI-only state
+  const [mobilePane, setMobilePane] = useState<'list' | 'thread'>('list');
+  const [draft, setDraft] = useState('');
+  const endRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const listSearchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -113,6 +120,7 @@ const Chat: React.FC = () => {
           const refreshed = await fetchChannelsForUser(session.user.id);
           setChannels(refreshed);
           setActiveChannelId(dmChannel.id);
+          setMobilePane('thread');
           setLoading(false);
           return;
         }
@@ -120,6 +128,7 @@ const Chat: React.FC = () => {
 
       if (urlChannelId) {
         setActiveChannelId(urlChannelId);
+        setMobilePane('thread');
       } else if (userChannels.length > 0) {
         setActiveChannelId(userChannels[0].id);
       }
@@ -209,6 +218,20 @@ const Chat: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [searchQuery, currentUser]);
 
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'end' });
+  }, [messages, activeChannelId, reduced]);
+
+  // Auto-grow composer up to 5 lines
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = '0px';
+    const max = 1.35 * 16 * 5 + 16; // ~5 lines (font-size 16, line-height 1.35) + padding
+    el.style.height = `${Math.min(el.scrollHeight, max)}px`;
+  }, [draft]);
+
   const handleStartDM = async (otherUser: any) => {
     if (!currentUser) return;
     const channel = await getOrCreateDMChannel(currentUser.id, otherUser.id, otherUser.full_name);
@@ -218,6 +241,7 @@ const Chat: React.FC = () => {
       const userChannels = await fetchChannelsForUser(currentUser.id);
       setChannels(userChannels);
       setActiveChannelId(channel.id);
+      setMobilePane('thread');
     }
   };
 
@@ -229,9 +253,9 @@ const Chat: React.FC = () => {
   };
 
   const getChannelIcon = (ch: ChannelWithMeta) => {
-    if (ch.type === 'dm') return <User size={16} strokeWidth={2.5} />;
-    if (ch.type === 'batch_branch') return <Hash size={16} strokeWidth={2.5} />;
-    return <Users size={16} strokeWidth={2.5} />;
+    if (ch.type === 'dm') return <User size={16} strokeWidth={1.75} />;
+    if (ch.type === 'batch_branch') return <Hash size={16} strokeWidth={1.75} />;
+    return <Users size={16} strokeWidth={1.75} />;
   };
 
   const formatTime = (dateStr: string) => {
@@ -263,218 +287,179 @@ const Chat: React.FC = () => {
     return groups;
   };
 
+  const sendDraft = async () => {
+    const text = draft.trim();
+    if (!text) return;
+    setDraft('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    await handleSend(text);
+  };
+
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: COLORS.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: '36px', height: '36px', border: `4px solid ${COLORS.border}`, borderTopColor: COLORS.sage, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <div className={styles.wrap} aria-busy="true" aria-label="Loading messages">
+        <div className={styles.panes}>
+          <aside className={styles.listPane}>
+            <div className={styles.listHeader}>
+              <Skeleton width={120} height={24} radius={8} />
+              <Skeleton height={40} radius={999} />
+            </div>
+            <div className={styles.listScroll}>
+              {Array.from({ length: 7 }, (_, i) => (
+                <div key={i} className={styles.skelRow}>
+                  <Skeleton width={44} height={44} radius="circle" />
+                  <div className={styles.skelCol}>
+                    <Skeleton width="60%" height={14} />
+                    <Skeleton width="85%" height={12} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+          <section className={styles.threadPane}>
+            <div className={styles.threadHeader}>
+              <Skeleton width={40} height={40} radius="circle" />
+              <div style={{ flex: 1 }}><Skeleton width={160} height={16} /><div style={{ height: 6 }} /><Skeleton width={100} height={12} /></div>
+            </div>
+            <div className={styles.skelMsgs}>
+              <Skeleton width="55%" height={38} radius={18} className={styles.skelBubbleL} />
+              <Skeleton width="40%" height={38} radius={18} className={styles.skelBubbleR} />
+              <Skeleton width="48%" height={38} radius={18} className={styles.skelBubbleL} />
+            </div>
+          </section>
+        </div>
       </div>
     );
   }
 
   const messageGroups = groupMessagesByDate(messages);
+  const groupChannels = channels.filter(ch => ch.type !== 'dm');
+  const dmChannels = channels.filter(ch => ch.type === 'dm');
+
+  // Find last own message for read receipt text
+  const lastOwnMessageId = [...messages].reverse().find((m) => m.sender_id === currentUser?.id)?.id;
+
+  const renderRows = (items: ChannelWithMeta[]) =>
+    items.map((ch) => {
+      const active = activeChannelId === ch.id;
+      const name = getChannelDisplayName(ch);
+      return (
+        <button
+          key={ch.id}
+          type="button"
+          className={styles.row}
+          aria-current={active ? 'true' : undefined}
+          onClick={() => { setActiveChannelId(ch.id); setMobilePane('thread'); }}
+        >
+          {active && (
+            <motion.span
+              layoutId="chat-row-highlight"
+              className={styles.rowHighlight}
+              aria-hidden="true"
+              transition={reduced ? { duration: 0.12 } : SPRING}
+            />
+          )}
+          <span className={styles.rowInner}>
+            <Avatar name={name} size="sm" />
+            <span className={styles.rowBody}>
+              <span className={styles.rowTop}>
+                <span className={styles.rowName}>{name}</span>
+                {ch.last_message_at && <span className={styles.rowTime}>{formatTime(ch.last_message_at)}</span>}
+              </span>
+              <span className={styles.rowBottom}>
+                <span className={styles.rowPreview}>
+                  {ch.last_message ? (ch.last_message.length > 44 ? ch.last_message.slice(0, 44) + '…' : ch.last_message) : 'No messages yet'}
+                </span>
+                {(ch.unread_count ?? 0) > 0 && (
+                  <span className={styles.unread} aria-label={`${ch.unread_count} unread`}>
+                    {ch.unread_count}
+                  </span>
+                )}
+              </span>
+            </span>
+          </span>
+        </button>
+      );
+    });
 
   return (
-    <div style={{ minHeight: '100vh', background: COLORS.bg, display: 'flex', flexDirection: 'column', fontFamily: '"Inter", sans-serif' }}>
-      {/* Header */}
-      <header style={{
-        padding: '1.25rem 2rem',
-        background: COLORS.white,
-        borderBottom: `2px solid ${COLORS.border}`,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-      }}>
-        <button 
-          onClick={() => navigate('/dashboard')} 
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.5rem 1rem', borderRadius: '99px',
-            background: COLORS.white, border: `2px solid ${COLORS.border}`,
-            color: COLORS.text, fontWeight: 800, cursor: 'pointer',
-            boxShadow: '4px 4px 0px rgba(13,30,20,1)', textTransform: 'uppercase', fontSize: '0.8125rem'
-          }}
-        >
-          <ArrowLeft size={16} strokeWidth={2.5} /> Back
-        </button>
-        <h1 style={{ fontSize: '1.5rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 900, color: COLORS.text, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
-          <MessageCircle size={24} strokeWidth={2.5} color={COLORS.text} /> Messages
-        </h1>
-      </header>
-
-      {/* Main Chat Layout */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', height: 'calc(100vh - 85px)' }}>
-        {/* Sidebar */}
-        <aside style={{
-          width: '340px', minWidth: '340px', background: COLORS.white,
-          borderRight: `2px solid ${COLORS.border}`, display: 'flex', flexDirection: 'column',
-          transition: 'transform 0.3s ease', transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'
-        }}>
-          {/* Search */}
-          <div style={{ padding: '1.5rem', borderBottom: `2px solid ${COLORS.border}` }}>
-            <div style={{ position: 'relative' }}>
-              <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: COLORS.text }} strokeWidth={2.5} />
+    <div className={cx(styles.wrap, mobilePane === 'thread' && styles.mobileThread)}>
+      <div className={styles.panes}>
+        {/* Conversation list */}
+        <aside className={styles.listPane} aria-label="Conversations">
+          <div className={styles.listHeader}>
+            <div className={styles.listTitleRow}>
+              <h1 className={styles.listTitle}>Messages</h1>
+            </div>
+            <div className={styles.searchBox}>
+              <Search size={16} strokeWidth={1.75} className={styles.searchIcon} aria-hidden="true" />
               <input
+                ref={listSearchRef}
                 type="text"
-                placeholder="Find a classmate..."
+                className={styles.searchInput}
+                placeholder="Search or start a message"
+                aria-label="Search people to message"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true); }}
                 onFocus={() => setShowSearch(true)}
-                style={{
-                  width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', 
-                  borderRadius: '99px', border: `2px solid ${COLORS.border}`,
-                  background: COLORS.bg, color: COLORS.text, fontWeight: 700,
-                  outline: 'none', fontSize: '0.875rem'
-                }}
               />
             </div>
           </div>
 
-          {/* Search Results */}
+          {/* Search Results (preserved DM-start logic) */}
           {showSearch && searchQuery.trim() && (
-            <div style={{ background: COLORS.bg, borderBottom: `2px solid ${COLORS.border}`, maxHeight: '300px', overflowY: 'auto' }}>
+            <div className={styles.searchResults}>
               {searchResults.length === 0 ? (
-                <div style={{ padding: '1.5rem', textAlign: 'center', color: COLORS.textMuted, fontWeight: 600, fontSize: '0.875rem' }}>No users found</div>
+                <div className={styles.searchEmpty}>No users found</div>
               ) : (
-                searchResults.map(user => (
-                  <button
-                    key={user.id}
-                    onClick={() => handleStartDM(user)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', width: '100%',
-                      textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer',
-                      borderBottom: `1px solid ${COLORS.border}`
-                    }}
-                  >
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: COLORS.lavender, color: COLORS.text, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, border: `2px solid ${COLORS.border}`, flexShrink: 0 }}>
-                      {user.full_name.charAt(0)}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: COLORS.text }}>{user.full_name}</div>
-                      <div style={{ fontSize: '0.75rem', color: COLORS.textMuted, fontWeight: 600, textTransform: 'uppercase' }}>
+                searchResults.map((user) => (
+                  <button key={user.id} type="button" className={styles.searchResultRow} onClick={() => handleStartDM(user)}>
+                    <Avatar name={user.full_name} size="sm" />
+                    <span style={{ minWidth: 0 }}>
+                      <span className={styles.rowName} style={{ display: 'block' }}>{user.full_name}</span>
+                      <span className={styles.searchMeta}>
                         {user.graduation_year ? `Class of ${user.graduation_year}` : user.user_type}
-                        {user.branch ? ` • ${user.branch}` : ''}
-                      </div>
-                    </div>
+                        {user.branch ? ` · ${user.branch}` : ''}
+                      </span>
+                    </span>
                   </button>
                 ))
               )}
-              <button 
-                onClick={() => { setShowSearch(false); setSearchQuery(''); }}
-                style={{ display: 'block', width: '100%', padding: '0.75rem', textAlign: 'center', fontSize: '0.8125rem', color: COLORS.text, fontWeight: 800, background: COLORS.white, border: 'none', borderTop: `2px solid ${COLORS.border}`, cursor: 'pointer', textTransform: 'uppercase' }}
-              >
+              <button type="button" className={styles.closeSearch} onClick={() => { setShowSearch(false); setSearchQuery(''); }}>
                 Close
               </button>
             </div>
           )}
 
-          {/* Channel List */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 0' }}>
+          <div className={styles.listScroll}>
             {channelsLoading ? (
-              <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-                <div style={{ width: '24px', height: '24px', border: `3px solid ${COLORS.border}`, borderTopColor: COLORS.sage, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-              </div>
-            ) : channels.length === 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '4rem 2rem', color: COLORS.textMuted, textAlign: 'center' }}>
-                <MessageCircle size={48} strokeWidth={1.5} style={{ opacity: 0.5 }} />
-                <div>
-                  <p style={{ fontWeight: 800, color: COLORS.text, fontSize: '1.125rem', margin: '0 0 0.25rem' }}>No conversations</p>
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 600 }}>Search for classmates to start chatting</p>
+              Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className={styles.skelRow}>
+                  <Skeleton width={44} height={44} radius="circle" />
+                  <div className={styles.skelCol}>
+                    <Skeleton width="55%" height={14} />
+                    <Skeleton width="80%" height={12} />
+                  </div>
                 </div>
+              ))
+            ) : channels.length === 0 ? (
+              <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+                <MessageCircle size={28} strokeWidth={1.75} style={{ color: 'var(--text-3)', margin: '0 auto 8px' }} aria-hidden="true" />
+                <p style={{ margin: 0, font: 'var(--type-headline)', fontSize: 16, color: 'var(--text)' }}>No conversations</p>
+                <p style={{ margin: '4px 0 0', font: 'var(--type-footnote)', color: 'var(--text-2)' }}>Search for classmates to start chatting.</p>
               </div>
             ) : (
               <>
-                {/* Group Channels */}
-                {channels.filter(ch => ch.type !== 'dm').length > 0 && (
-                  <div style={{ marginBottom: '1.5rem' }}>
-                    <div style={{ padding: '0 1.5rem 0.5rem', fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', color: COLORS.textMuted, letterSpacing: '0.05em' }}>Group Channels</div>
-                    {channels.filter(ch => ch.type !== 'dm').map(ch => (
-                      <button
-                        key={ch.id}
-                        onClick={() => { setActiveChannelId(ch.id); setSidebarOpen(false); }}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.875rem 1.5rem', width: '100%',
-                          textAlign: 'left', border: 'none', cursor: 'pointer',
-                          background: activeChannelId === ch.id ? COLORS.sage : 'transparent',
-                          borderLeft: activeChannelId === ch.id ? `4px solid ${COLORS.border}` : '4px solid transparent',
-                          borderTop: `1px solid ${COLORS.bg}`, borderBottom: `1px solid ${COLORS.bg}`
-                        }}
-                      >
-                        <div style={{ 
-                          width: '40px', height: '40px', borderRadius: '12px', background: activeChannelId === ch.id ? COLORS.white : COLORS.bg, 
-                          border: `2px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.text, flexShrink: 0,
-                          boxShadow: activeChannelId === ch.id ? 'none' : '2px 2px 0px rgba(13,30,20,1)'
-                        }}>
-                          {getChannelIcon(ch)}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 900, fontSize: '0.9375rem', color: COLORS.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getChannelDisplayName(ch)}</div>
-                          {ch.last_message && (
-                            <div style={{ fontSize: '0.8125rem', color: activeChannelId === ch.id ? COLORS.text : COLORS.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 600, marginTop: '0.125rem' }}>
-                              {ch.last_message.length > 40 ? ch.last_message.slice(0, 40) + '...' : ch.last_message}
-                            </div>
-                          )}
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.375rem', flexShrink: 0 }}>
-                          {ch.last_message_at && (
-                            <span style={{ fontSize: '0.75rem', color: activeChannelId === ch.id ? COLORS.text : COLORS.textMuted, fontWeight: 700 }}>{formatTime(ch.last_message_at)}</span>
-                          )}
-                          {(ch.unread_count ?? 0) > 0 && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px', minWidth: '20px', height: '20px', borderRadius: '10px', background: COLORS.warning, color: COLORS.text, fontSize: '0.6875rem', fontWeight: 900, border: `2px solid ${COLORS.border}` }}>
-                              {ch.unread_count}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    ))}
+                {groupChannels.length > 0 && (
+                  <div>
+                    <div className={styles.sectionLabel}>Batch groups</div>
+                    {renderRows(groupChannels)}
                   </div>
                 )}
-
-                {/* DM Channels */}
-                {channels.filter(ch => ch.type === 'dm').length > 0 && (
+                {dmChannels.length > 0 && (
                   <div>
-                    <div style={{ padding: '0 1.5rem 0.5rem', fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', color: COLORS.textMuted, letterSpacing: '0.05em' }}>Direct Messages</div>
-                    {channels.filter(ch => ch.type === 'dm').map(ch => (
-                      <button
-                        key={ch.id}
-                        onClick={() => { setActiveChannelId(ch.id); setSidebarOpen(false); }}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.875rem 1.5rem', width: '100%',
-                          textAlign: 'left', border: 'none', cursor: 'pointer',
-                          background: activeChannelId === ch.id ? COLORS.lavender : 'transparent',
-                          borderLeft: activeChannelId === ch.id ? `4px solid ${COLORS.border}` : '4px solid transparent',
-                          borderTop: `1px solid ${COLORS.bg}`, borderBottom: `1px solid ${COLORS.bg}`
-                        }}
-                      >
-                        <div style={{ 
-                          width: '40px', height: '40px', borderRadius: '50%', background: activeChannelId === ch.id ? COLORS.white : COLORS.bg, 
-                          border: `2px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.text, flexShrink: 0, fontWeight: 900, fontSize: '1.125rem',
-                          boxShadow: activeChannelId === ch.id ? 'none' : '2px 2px 0px rgba(13,30,20,1)'
-                        }}>
-                          {(ch.dm_partner_name || '?').charAt(0)}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 900, fontSize: '0.9375rem', color: COLORS.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getChannelDisplayName(ch)}</div>
-                          {ch.last_message && (
-                            <div style={{ fontSize: '0.8125rem', color: activeChannelId === ch.id ? COLORS.text : COLORS.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 600, marginTop: '0.125rem' }}>
-                              {ch.last_message.length > 35 ? ch.last_message.slice(0, 35) + '...' : ch.last_message}
-                            </div>
-                          )}
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.375rem', flexShrink: 0 }}>
-                          {ch.last_message_at && (
-                            <span style={{ fontSize: '0.75rem', color: activeChannelId === ch.id ? COLORS.text : COLORS.textMuted, fontWeight: 700 }}>{formatTime(ch.last_message_at)}</span>
-                          )}
-                          {(ch.unread_count ?? 0) > 0 && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px', minWidth: '20px', height: '20px', borderRadius: '10px', background: COLORS.warning, color: COLORS.text, fontSize: '0.6875rem', fontWeight: 900, border: `2px solid ${COLORS.border}` }}>
-                              {ch.unread_count}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    ))}
+                    <div className={styles.sectionLabel}>Direct messages</div>
+                    {renderRows(dmChannels)}
                   </div>
                 )}
               </>
@@ -482,186 +467,165 @@ const Chat: React.FC = () => {
           </div>
         </aside>
 
-        {/* Main Chat Area */}
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: COLORS.bg }}>
+        {/* Thread */}
+        <section className={styles.threadPane} aria-label="Conversation">
           {!activeChannelId ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: COLORS.text }}>
-              <div style={{ width: '96px', height: '96px', borderRadius: '24px', background: COLORS.white, border: `4px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '8px 8px 0px rgba(13,30,20,1)', marginBottom: '1rem' }}>
-                <MessageCircle size={48} strokeWidth={2.5} color={COLORS.text} />
+            <div className={styles.emptyThread}>
+              <div className={styles.emptyThreadInner}>
+                <div className={styles.emptyIcon}><MessageCircle size={28} strokeWidth={1.75} /></div>
+                <h2 className={styles.emptyTitle}>Messages</h2>
+                <p className={styles.emptyText}>Select a conversation to start chatting.</p>
               </div>
-              <h2 style={{ fontSize: '2rem', margin: 0, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>Messages</h2>
-              <p style={{ fontSize: '1.125rem', color: COLORS.textMuted, fontWeight: 600 }}>Select a conversation to start chatting</p>
             </div>
           ) : (
             <>
-              {/* Channel Header */}
-              <div style={{ padding: '1.25rem 2rem', borderBottom: `2px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', gap: '1rem', background: COLORS.white }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: COLORS.blue, border: `2px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.text, boxShadow: '4px 4px 0px rgba(13,30,20,1)' }}>
+              <header className={styles.threadHeader}>
+                <button type="button" className={styles.backBtn} aria-label="Back to conversations" onClick={() => setMobilePane('list')}>
+                  <ArrowLeft size={18} strokeWidth={1.75} />
+                </button>
+                <Avatar name={activeChannel ? getChannelDisplayName(activeChannel) : 'Chat'} size="sm" />
+                <div className={styles.threadTitleWrap}>
+                  <h2 className={styles.threadTitle}>{activeChannel ? getChannelDisplayName(activeChannel) : 'Chat'}</h2>
+                  <p className={styles.threadSub}>
+                    {typingUsers.length > 0 ? (
+                      <>
+                        <span className={styles.dots} aria-hidden="true">
+                          <span className={styles.dot} /><span className={styles.dot} /><span className={styles.dot} />
+                        </span>
+                        <span>{typingUsers.map(u => u.userName).join(', ')} typing…</span>
+                      </>
+                    ) : activeChannel && activeChannel.type !== 'dm' ? (
+                      activeChannel.type === 'batch_year' ? 'Batch year group' : 'Branch group'
+                    ) : (
+                      'Direct message'
+                    )}
+                  </p>
+                </div>
+                <span style={{ color: 'var(--text-3)', display: 'inline-flex' }} aria-hidden="true">
                   {activeChannel && getChannelIcon(activeChannel)}
-                </div>
-                <div>
-                  <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 900, color: COLORS.text, textTransform: 'uppercase' }}>
-                    {activeChannel ? getChannelDisplayName(activeChannel) : 'Chat'}
-                  </h2>
-                  {activeChannel && activeChannel.type !== 'dm' && (
-                    <span style={{ fontSize: '0.8125rem', color: COLORS.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>
-                      {activeChannel.type === 'batch_year' ? 'Batch Year Group' : 'Branch Group'}
-                    </span>
-                  )}
-                </div>
+                </span>
                 {activeChannel?.type === 'dm' && activeChannel.dm_partner_id && (
-                  <button
-                    style={{ 
-                      marginLeft: 'auto', padding: '0.625rem 1.25rem', borderRadius: '99px',
-                      background: COLORS.white, border: `2px solid ${COLORS.border}`,
-                      color: COLORS.text, fontWeight: 800, cursor: 'pointer',
-                      boxShadow: '4px 4px 0px rgba(13,30,20,1)', textTransform: 'uppercase', fontSize: '0.8125rem'
-                    }}
-                    onClick={() => navigate(`/profile/${activeChannel.dm_partner_id}`)}
-                  >
-                    View Profile
+                  <button type="button" className={styles.headerAction} onClick={() => navigate(`/profile/${activeChannel.dm_partner_id}`)}>
+                    View profile
                   </button>
                 )}
-              </div>
+              </header>
 
-              {/* Message Area */}
-              <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <div className={styles.messages} aria-live="polite">
                 {messagesLoading ? (
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '32px', height: '32px', border: `4px solid ${COLORS.border}`, borderTopColor: COLORS.sage, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                  <div className={styles.skelMsgs} aria-busy="true">
+                    <Skeleton width="52%" height={40} radius={18} className={styles.skelBubbleL} />
+                    <Skeleton width="38%" height={40} radius={18} className={styles.skelBubbleR} />
+                    <Skeleton width="46%" height={40} radius={18} className={styles.skelBubbleL} />
+                    <Skeleton width="34%" height={40} radius={18} className={styles.skelBubbleR} />
                   </div>
                 ) : messages.length === 0 ? (
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.textMuted, fontSize: '1.125rem', fontWeight: 700 }}>
-                    <p>No messages yet. Be the first to say hello! 👋</p>
+                  <div className={styles.emptyThread}>
+                    <div className={styles.emptyThreadInner}>
+                      <div className={styles.emptyIcon}><MessageCircle size={28} strokeWidth={1.75} /></div>
+                      <h2 className={styles.emptyTitle}>No messages yet</h2>
+                      <p className={styles.emptyText}>Be the first to say hello.</p>
+                    </div>
                   </div>
                 ) : (
-                  <div style={{ flex: 1, overflowY: 'auto', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {messageGroups.map((group) => (
-                      <React.Fragment key={group.date}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '2rem 0' }}>
-                          <span style={{ padding: '0.375rem 1rem', background: COLORS.white, border: `2px solid ${COLORS.border}`, borderRadius: '9999px', fontSize: '0.75rem', color: COLORS.text, fontWeight: 900, textTransform: 'uppercase', boxShadow: '2px 2px 0px rgba(13,30,20,1)' }}>
-                            {group.date}
-                          </span>
-                        </div>
-                        {group.messages.map((msg) => {
-                          const isMine = msg.sender_id === currentUser?.id;
-                          const isRead = msg.read_by && msg.read_by.length > (isMine ? 0 : -1);
-                          return (
-                            <div
-                              key={msg.id}
-                              style={{
-                                display: 'flex', gap: '0.75rem', maxWidth: '75%', marginBottom: '0.5rem',
-                                alignSelf: isMine ? 'flex-end' : 'flex-start',
-                                flexDirection: isMine ? 'row-reverse' : 'row'
-                              }}
-                            >
-                              {!isMine && (
-                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: COLORS.lavender, border: `2px solid ${COLORS.border}`, color: COLORS.text, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.875rem', flexShrink: 0, marginTop: '1.5rem', boxShadow: '2px 2px 0px rgba(13,30,20,1)' }}>
-                                  {(msg.sender_name || '?').charAt(0)}
-                                </div>
-                              )}
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                {!isMine && activeChannel?.type !== 'dm' && (
-                                  <div style={{ fontSize: '0.75rem', fontWeight: 900, color: COLORS.text, marginBottom: '0.25rem', paddingLeft: '0.25rem', textTransform: 'uppercase' }}>{msg.sender_name}</div>
-                                )}
-                                <div style={{
-                                  padding: '1rem 1.25rem', borderRadius: '20px', lineHeight: 1.5, wordBreak: 'break-word',
-                                  background: isMine ? COLORS.sage : COLORS.white,
-                                  color: COLORS.text, border: `2px solid ${COLORS.border}`,
-                                  boxShadow: '4px 4px 0px rgba(13,30,20,1)',
-                                  borderBottomRightRadius: isMine ? '4px' : '20px',
-                                  borderBottomLeftRadius: !isMine ? '4px' : '20px'
-                                }}>
-                                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{msg.content}</p>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
-                                    <span style={{ fontSize: '0.6875rem', fontWeight: 800, color: COLORS.text, opacity: 0.8 }}>
-                                      {new Date(msg.created_at).toLocaleTimeString('en-US', {
-                                        hour: 'numeric', minute: '2-digit', hour12: true,
-                                      })}
-                                    </span>
-                                    {isMine && (
-                                      <span style={{ display: 'flex', alignItems: 'center', color: COLORS.text }}>
-                                        {isRead && msg.read_by.length > 0 ? (
-                                          <CheckCheck size={16} strokeWidth={3} />
-                                        ) : (
-                                          <Check size={16} strokeWidth={3} />
-                                        )}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </React.Fragment>
-                    ))}
+                  messageGroups.map((group) => (
+                    <React.Fragment key={group.date}>
+                      <div className={styles.dateSep}><span className={styles.datePill}>{group.date}</span></div>
+                      {group.messages.map((msg, idx) => {
+                        const isMine = msg.sender_id === currentUser?.id;
+                        const prev = group.messages[idx - 1];
+                        const next = group.messages[idx + 1];
+                        const sameAsPrev = prev && prev.sender_id === msg.sender_id;
+                        const sameAsNext = next && next.sender_id === msg.sender_id;
+                        const isFirstInGroup = !sameAsPrev;
+                        const isLastInGroup = !sameAsNext;
+                        const tailClass = isMine
+                          ? isFirstInGroup && isLastInGroup ? '' : isLastInGroup ? styles.tailMineLast : isFirstInGroup ? styles.tailMineFirst : styles.tailMineMid
+                          : isFirstInGroup && isLastInGroup ? '' : isLastInGroup ? styles.tailTheirsLast : isFirstInGroup ? styles.tailTheirsFirst : styles.tailTheirsMid;
 
-                    {/* Typing indicator */}
-                    {typingUsers.length > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', color: COLORS.text, fontWeight: 700, fontSize: '0.875rem' }}>
-                        <div style={{ display: 'flex', gap: '0.25rem' }}>
-                          <span style={{ width: '8px', height: '8px', background: COLORS.border, borderRadius: '50%', animation: 'bounce 1s infinite alternate' }}></span>
-                          <span style={{ width: '8px', height: '8px', background: COLORS.border, borderRadius: '50%', animation: 'bounce 1s infinite alternate', animationDelay: '0.2s' }}></span>
-                          <span style={{ width: '8px', height: '8px', background: COLORS.border, borderRadius: '50%', animation: 'bounce 1s infinite alternate', animationDelay: '0.4s' }}></span>
-                        </div>
-                        <span style={{ textTransform: 'uppercase' }}>
-                          {typingUsers.map(u => u.userName).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                        const isRead = !!(msg.read_by && msg.read_by.length > 0);
+                        const showReceipt = isMine && msg.id === lastOwnMessageId;
+                        const receiptText = activeChannel?.type === 'dm'
+                          ? (isRead ? 'Read' : 'Delivered')
+                          : (isRead ? 'Seen' : 'Sent');
+
+                        return (
+                          <motion.div
+                            key={msg.id}
+                            className={cx(styles.msgRow, isMine ? styles.msgMine : styles.msgTheirs)}
+                            style={{ marginTop: isFirstInGroup ? 6 : 1 }}
+                            initial={reduced ? false : { opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={reduced ? { duration: 0.1 } : SPRING}
+                          >
+                            <div className={styles.msgStack}>
+                              {!isMine && isFirstInGroup && activeChannel?.type !== 'dm' && (
+                                <span className={styles.senderName}>{msg.sender_name}</span>
+                              )}
+                              <div className={cx(styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs, tailClass)}>
+                                {msg.content}
+                              </div>
+                              {isLastInGroup && (
+                                <span className={styles.msgMeta}>
+                                  {new Date(msg.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                  {isMine && (
+                                    <span aria-hidden="true" style={{ display: 'inline-flex' }}>
+                                      {isRead && msg.read_by.length > 0 ? <CheckCheck size={13} strokeWidth={2} /> : <Check size={13} strokeWidth={2} />}
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                              {showReceipt && <span className={styles.receipt}>{receiptText}</span>}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </React.Fragment>
+                  ))
                 )}
+                <div ref={endRef} />
               </div>
 
-              {/* Message Input */}
-              <div style={{ padding: '1.5rem 2rem', background: COLORS.white, borderTop: `2px solid ${COLORS.border}` }}>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const input = e.currentTarget.querySelector('input') as HTMLInputElement;
-                    if (input.value.trim()) {
-                      handleSend(input.value);
-                      input.value = '';
-                    }
-                  }}
-                  style={{ display: 'flex', gap: '1rem' }}
-                >
-                  <input
-                    type="text"
-                    placeholder="Type a message..."
-                    onChange={handleTyping}
-                    autoFocus
-                    style={{ 
-                      flex: 1, padding: '1rem 1.5rem', 
-                      borderRadius: '99px', border: `2px solid ${COLORS.border}`,
-                      background: COLORS.bg, color: COLORS.text, fontWeight: 600,
-                      outline: 'none', fontSize: '1rem'
+              {/* Composer: floating glass pill, auto-grow up to 5 lines, send scales in */}
+              <div className={styles.composer}>
+                <div className={styles.composerInner}>
+                  <textarea
+                    ref={textareaRef}
+                    className={styles.composerInput}
+                    placeholder="Message"
+                    aria-label="Type a message"
+                    rows={1}
+                    value={draft}
+                    onChange={(e) => { setDraft(e.target.value); handleTyping(); }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        void sendDraft();
+                      }
                     }}
                   />
-                  <button 
-                    type="submit" 
-                    style={{ 
-                      width: '56px', height: '56px', borderRadius: '50%',
-                      background: COLORS.warning, border: `2px solid ${COLORS.border}`,
-                      color: COLORS.text, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                      boxShadow: '4px 4px 0px rgba(13,30,20,1)'
-                    }}
-                  >
-                    <Send size={24} strokeWidth={2.5} style={{ transform: 'translateX(-2px)' }} />
-                  </button>
-                </form>
+                  <AnimatePresence initial={false}>
+                    {draft.trim().length > 0 && (
+                      <motion.button
+                        type="button"
+                        className={styles.sendBtn}
+                        aria-label="Send message"
+                        onClick={() => void sendDraft()}
+                        initial={reduced ? { opacity: 1 } : { scale: 0.6, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={reduced ? { opacity: 0 } : { scale: 0.6, opacity: 0 }}
+                        transition={reduced ? { duration: 0.1 } : SPRING}
+                      >
+                        <Send size={16} strokeWidth={2} style={{ transform: 'translateX(1px)' }} aria-hidden="true" />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </>
           )}
-        </main>
+        </section>
       </div>
-      <style>{`
-        @keyframes bounce {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-4px); }
-        }
-      `}</style>
     </div>
   );
 };

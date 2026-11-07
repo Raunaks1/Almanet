@@ -1,0 +1,248 @@
+.page {
+  position: relative;
+  min-height: 100dvh;
+  color: var(--text);
+}
+
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+/* ─── Nav (glass pill, 1 backdrop-filter layer) ─── */
+.nav {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  padding: 0 12px;
+}
+
+.navInner {
+  width: min(1120px, calc(100% - 8px));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--glass-bg) 55%, transparent);
+  border: 1px solid transparent;
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.navScrolled .navInner {
+  background: var(--glass-bg-elevated, var(--glass-bg));
+  border-color: var(--glass-border);
+  -webkit-backdrop-filter: var(--nav-blur);
+  backdrop-filter: var(--nav-blur);
+  box-shadow: var(--glass-shadow);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--type-headline);
+  font-size: 17px;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.navActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnPrimary,
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font: var(--type-subhead);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 150ms ease, filter 150ms ease, background-color 150ms ease;
+}
+.btnPrimary {
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid transparent;
+}
+.btnSecondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--hairline);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btnPrimary:hover, .btnSecondary:hover { transform: translateY(-1px); filter: brightness(1.02); }
+}
+.btnPrimary:active, .btnSecondary:active { transform: scale(0.98); }
+
+/* ─── Hero ─── */
+.hero {
+  padding: 72px 0 28px;
+  text-align: center;
+}
+
+.heroTitle {
+  margin: 0 auto;
+  max-width: 960px;
+  font: var(--type-display, var(--type-title));
+  font-size: clamp(38px, 7vw, 72px);
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+.heroSub {
+  margin: 16px auto 0;
+  max-width: 640px;
+  font: var(--type-body);
+  font-size: clamp(17px, 2.2vw, 20px);
+  color: var(--text-2);
+  line-height: 1.45;
+}
+
+.heroActions {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sceneWrap {
+  margin-top: 32px;
+}
+
+.sectionHead {
+  padding: 56px 0 18px;
+  text-align: center;
+}
+.sectionTitle {
+  margin: 0;
+  font: var(--type-title);
+  font-size: clamp(26px, 4vw, 36px);
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.sectionSub {
+  margin: 10px auto 0;
+  max-width: 560px;
+  font: var(--type-body);
+  color: var(--text-2);
+}
+
+/* Three glass scene cards (3 backdrop-filter layers) */
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* How it works — solid pills (no backdrop-filter) to stay within layer budget */
+.howRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+.howPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-1);
+  color: var(--text);
+  font: var(--type-subhead);
+  font-weight: 600;
+}
+.howNum {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Final CTA glass block (1 backdrop-filter layer) */
+.ctaBlock {
+  margin: 56px 0 28px;
+  padding: 32px 24px;
+  border-radius: 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  text-align: center;
+}
+.ctaTitle {
+  margin: 0;
+  font: var(--type-title);
+  font-size: clamp(24px, 3.5vw, 32px);
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+/* Footer — one line, no glass layer */
+.footer {
+  border-top: 1px solid var(--hairline);
+  padding: 18px 0 28px;
+  color: var(--text-2);
+  font: var(--type-footnote);
+}
+.footerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.footerLinks {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.footerLinks a {
+  color: var(--text-2);
+  text-decoration: none;
+}
+.footerLinks a:hover { color: var(--text); }
+
+@media (max-width: 640px) {
+  .navInner { padding: 8px 10px; }
+  .hero { padding-top: 52px; }
+  .navActions .btnSecondary { display: none; } /* keep nav compact; hero has Login */
+  .footerInner { flex-direction: column; align-items: flex-start; }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .navScrolled .navInner,
+  .ctaBlock {
+    background: var(--surface);
+  }
+}

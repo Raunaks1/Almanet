@@ -1,0 +1,178 @@
+/* /ui-kit dev review gallery. */
+
+.page {
+  max-width: 1520px;
+  margin-inline: auto;
+  padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 48px) 120px;
+  color: var(--text);
+  font: var(--type-body);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-title);
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+}
+
+.sub {
+  margin: 8px 0 0;
+  font: var(--type-subhead);
+  color: var(--text-2);
+  max-width: 62ch;
+}
+
+.sub code {
+  font-size: 13px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--surface-2);
+}
+
+/* Two force-themed panes. */
+.panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(430px, 100%), 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.pane {
+  min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-4);
+}
+
+.paneBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--hairline);
+  font: var(--type-footnote);
+  color: var(--text-2);
+}
+
+.paneBar strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.paneBar .light,
+.paneBar .dark {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+}
+
+.paneBar .light {
+  background: #f5f5f7;
+}
+
+.paneBar .dark {
+  background: #0b0b0f;
+}
+
+.paneBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sectionName {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--hairline);
+  font: var(--type-footnote);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 360px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: 12px;
+}
+
+.cardTitle {
+  margin: 0;
+  font: var(--type-headline);
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+}
+
+.cardText {
+  margin: 6px 0 0;
+  font: var(--type-footnote);
+  color: var(--text-2);
+}
+
+.meta {
+  font: var(--type-caption);
+  color: var(--text-3);
+}
+
+/* Checkbox/switch demo rows. */
+.checkRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--type-subhead);
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Skeleton demo. */
+.mockRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

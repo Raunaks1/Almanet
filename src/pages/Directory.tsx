@@ -1,20 +1,13 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, GraduationCap, ArrowLeft, Filter, BadgeCheck, Loader2, Users, MessageCircle } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { BadgeCheck, ChevronDown, GraduationCap, MapPin, MessageCircle, Search, Users, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-
-const COLORS = {
-  bg: '#FBFBF9',
-  text: '#0D1E14',
-  textMuted: '#4A5D53',
-  sage: '#CCDAC6',
-  lavender: '#D9CFF5',
-  blue: '#C7E4F2',
-  terracotta: '#8A4A38',
-  white: '#FFFFFF',
-  border: '#0D1E14',
-  warning: '#FFD166',
-};
+import { PageHeader } from '../components/shell/PageHeader';
+import { Avatar, Badge, EmptyState, Skeleton } from '../components/ui';
+import { cx } from '../components/ui/internal';
+import { DURATION, EASE_REVEAL, listStagger } from '../lib/motion';
+import styles from './Directory.module.css';
 
 export interface UserProfile {
   id: string;
@@ -44,13 +37,94 @@ export interface UserProfile {
 const industries = ['Software Engineering', 'Data Science', 'Product Management', 'Design', 'Finance'];
 const years = [2026, 2025, 2024, 2023, 2022, 2021];
 
+type FilterKind = 'industry' | 'year' | null;
+
+const FilterPopover: React.FC<{
+  label: string;
+  value: string;
+  options: string[];
+  open: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+  onSelect: (value: string) => void;
+}> = ({ label, value, options, open, onToggle, onClose, onSelect }) => {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion() ?? false;
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) onClose();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, onClose]);
+
+  return (
+    <div className={styles.filterWrap} ref={wrapRef}>
+      <button
+        type="button"
+        className={cx(styles.filterChip, value && styles.filterChipActive)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        onClick={onToggle}
+      >
+        <span>{value || label}</span>
+        <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className={styles.popover}
+            role="listbox"
+            aria-label={label}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
+            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
+            transition={reduced ? { duration: 0.12 } : { duration: DURATION.fast, ease: EASE_REVEAL }}
+          >
+            <button
+              type="button"
+              className={cx(styles.popItem, !value && styles.popItemSelected)}
+              onClick={() => { onSelect(''); onClose(); }}
+            >
+              {label === 'Industry' ? 'All industries' : 'All years'}
+            </button>
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                role="option"
+                aria-selected={value === opt}
+                className={cx(styles.popItem, value === opt && styles.popItemSelected)}
+                onClick={() => { onSelect(opt); onClose(); }}
+              >
+                {opt}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const Directory: React.FC = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [alumni, setAlumni] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openFilter, setOpenFilter] = useState<FilterKind>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const reduced = useReducedMotion() ?? false;
 
   React.useEffect(() => {
     const fetchAlumni = async () => {
@@ -68,6 +142,18 @@ const Directory: React.FC = () => {
     fetchAlumni();
   }, []);
 
+  // ⌘K / Ctrl+K focuses search (visual hint shown on desktop; UI-only enhancement)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const filteredAlumni = alumni.filter(user => {
     const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           user.skills.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -77,237 +163,198 @@ const Directory: React.FC = () => {
     return matchesSearch && matchesIndustry && matchesYear;
   });
 
+  const activeFilters = [
+    selectedIndustry ? { key: 'industry', label: selectedIndustry, clear: () => setSelectedIndustry('') } : null,
+    selectedYear ? { key: 'year', label: `Class of ${selectedYear}`, clear: () => setSelectedYear('') } : null,
+  ].filter(Boolean) as Array<{ key: string; label: string; clear: () => void }>;
+
+  const stagger = listStagger();
+
   return (
-    <div style={{ minHeight: '100vh', background: COLORS.bg, display: 'flex', flexDirection: 'column', fontFamily: '"Inter", sans-serif' }}>
-      
-      {/* Header */}
-      <header style={{
-        padding: '1.25rem 2rem',
-        background: COLORS.white,
-        borderBottom: `2px solid ${COLORS.border}`,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-      }}>
-        <button 
-          onClick={() => navigate('/dashboard')} 
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.5rem 1rem', borderRadius: '99px',
-            background: COLORS.white, border: `2px solid ${COLORS.border}`,
-            color: COLORS.text, fontWeight: 800, cursor: 'pointer',
-            boxShadow: '4px 4px 0px rgba(13,30,20,1)', textTransform: 'uppercase', fontSize: '0.8125rem'
-          }}
-        >
-          <ArrowLeft size={16} strokeWidth={2.5} /> Back
-        </button>
-        <h1 style={{ fontSize: '1.5rem', margin: 0, fontWeight: 900, color: COLORS.text, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>Alumni Directory</h1>
-      </header>
+    <div className={styles.page}>
+      <PageHeader
+        title="Directory"
+        subtitle="Find alumni by name, skills, industry, and graduation year."
+      />
 
-      <main style={{ flex: 1, padding: '2.5rem', display: 'flex', gap: '2rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-        
-        {/* Filters Sidebar */}
-        <aside style={{ width: '280px', flexShrink: 0 }}>
-          <div style={{ 
-            background: COLORS.white, padding: '1.5rem', borderRadius: '16px',
-            border: `2px solid ${COLORS.border}`, boxShadow: '8px 8px 0px rgba(13,30,20,1)',
-            position: 'sticky', top: '100px' 
-          }}>
-            <h2 style={{ fontSize: '1.125rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 900, textTransform: 'uppercase', color: COLORS.text }}>
-              <Filter size={20} strokeWidth={2.5} /> Filters
-            </h2>
+      <div className={styles.searchRow}>
+        <div className={styles.searchWrap}>
+          <Search size={18} strokeWidth={1.75} className={styles.searchIcon} aria-hidden="true" />
+          <input
+            ref={searchRef}
+            type="search"
+            className={styles.searchInput}
+            placeholder="Search by name or skill"
+            aria-label="Search alumni by name or skill"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <span className={styles.kbdHint} aria-hidden="true">⌘K</span>
+        </div>
+        <div className={styles.filters}>
+          <FilterPopover
+            label="Industry"
+            value={selectedIndustry}
+            options={industries}
+            open={openFilter === 'industry'}
+            onToggle={() => setOpenFilter((v) => (v === 'industry' ? null : 'industry'))}
+            onClose={() => setOpenFilter(null)}
+            onSelect={setSelectedIndustry}
+          />
+          <FilterPopover
+            label="Graduation year"
+            value={selectedYear}
+            options={years.map(String)}
+            open={openFilter === 'year'}
+            onToggle={() => setOpenFilter((v) => (v === 'year' ? null : 'year'))}
+            onClose={() => setOpenFilter(null)}
+            onSelect={setSelectedYear}
+          />
+        </div>
+      </div>
 
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontWeight: 800, color: COLORS.text, marginBottom: '0.5rem', textTransform: 'uppercase', fontSize: '0.8125rem' }}>Search</label>
-              <div style={{ position: 'relative' }}>
-                <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: COLORS.text }} strokeWidth={2.5} />
-                <input 
-                  type="text" 
-                  placeholder="Name or skill..." 
-                  style={{ 
-                    width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', 
-                    borderRadius: '99px', border: `2px solid ${COLORS.border}`,
-                    background: COLORS.white, color: COLORS.text, fontWeight: 600,
-                    outline: 'none', fontSize: '0.875rem'
-                  }}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+      <div className={styles.activeFilters} aria-live="polite">
+        <AnimatePresence initial={false}>
+          {activeFilters.map((f) => (
+            <motion.span
+              key={f.key}
+              initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
+              transition={{ duration: DURATION.fast, ease: EASE_REVEAL }}
+              style={{ display: 'inline-flex' }}
+            >
+              <Badge variant="accent">
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {f.label}
+                  <button
+                    type="button"
+                    onClick={f.clear}
+                    aria-label={`Remove ${f.label} filter`}
+                    style={{ display: 'inline-flex', border: 'none', background: 'transparent', color: 'inherit', cursor: 'pointer', padding: 0 }}
+                  >
+                    <X size={13} strokeWidth={2} />
+                  </button>
+                </span>
+              </Badge>
+            </motion.span>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {loading ? (
+        <div className={styles.grid} aria-busy="true" aria-label="Loading alumni">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className={styles.card} style={{ minHeight: 260 }}>
+              <div className={styles.cardTop}>
+                <Skeleton width={52} height={52} radius="circle" />
+                <Skeleton width={20} height={20} radius="circle" />
+              </div>
+              <Skeleton width="70%" height={18} />
+              <div style={{ height: 6 }} />
+              <Skeleton width="50%" height={14} />
+              <div style={{ height: 12 }} />
+              <Skeleton width="45%" height={13} />
+              <Skeleton width="38%" height={13} />
+              <div style={{ height: 12 }} />
+              <div style={{ display: 'flex', gap: 6 }}>
+                <Skeleton width={64} height={24} radius={999} />
+                <Skeleton width={54} height={24} radius={999} />
+                <Skeleton width={58} height={24} radius={999} />
+              </div>
+              <div style={{ flex: 1 }} />
+              <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                <Skeleton height={40} radius={999} />
+                <Skeleton height={40} radius={999} />
               </div>
             </div>
-
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontWeight: 800, color: COLORS.text, marginBottom: '0.5rem', textTransform: 'uppercase', fontSize: '0.8125rem' }}>Industry</label>
-              <select 
-                style={{ 
-                  width: '100%', padding: '0.75rem 1rem', 
-                  borderRadius: '99px', border: `2px solid ${COLORS.border}`,
-                  background: COLORS.white, color: COLORS.text, fontWeight: 600,
-                  outline: 'none', appearance: 'none', fontSize: '0.875rem', cursor: 'pointer'
+          ))}
+        </div>
+      ) : filteredAlumni.length === 0 ? (
+        <EmptyState
+          icon={<Users size={28} strokeWidth={1.75} />}
+          title="No alumni found"
+          description="Try adjusting your search or filters to find people in the network."
+          action={
+            (searchTerm || selectedIndustry || selectedYear) ? (
+              <button
+                type="button"
+                onClick={() => { setSearchTerm(''); setSelectedIndustry(''); setSelectedYear(''); }}
+                style={{
+                  minHeight: 40, padding: '0 16px', borderRadius: 999, border: '1px solid var(--border)',
+                  background: 'var(--surface)', color: 'var(--text)', font: 'var(--type-footnote)', fontWeight: 600, cursor: 'pointer',
                 }}
-                value={selectedIndustry}
-                onChange={(e) => setSelectedIndustry(e.target.value)}
               >
-                <option value="">All Industries</option>
-                {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontWeight: 800, color: COLORS.text, marginBottom: '0.5rem', textTransform: 'uppercase', fontSize: '0.8125rem' }}>Graduation Year</label>
-              <select 
-                style={{ 
-                  width: '100%', padding: '0.75rem 1rem', 
-                  borderRadius: '99px', border: `2px solid ${COLORS.border}`,
-                  background: COLORS.white, color: COLORS.text, fontWeight: 600,
-                  outline: 'none', appearance: 'none', fontSize: '0.875rem', cursor: 'pointer'
-                }}
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
+                Clear filters
+              </button>
+            ) : undefined
+          }
+        />
+      ) : (
+        <motion.div
+          className={styles.grid}
+          initial={reduced ? false : 'hidden'}
+          animate="visible"
+          variants={stagger.parent}
+        >
+          {filteredAlumni.map((user: UserProfile) => {
+            const roleLine = user.job_title && user.employer
+              ? `${user.job_title} at ${user.employer}`
+              : user.job_title || user.employer || user.industry || 'Alumni';
+            return (
+              <motion.article
+                key={user.id}
+                className={styles.card}
+                variants={reduced ? undefined : stagger.child}
               >
-                <option value="">All Years</option>
-                {years.map(yr => <option key={yr} value={yr.toString()}>{yr}</option>)}
-              </select>
-            </div>
+                <div className={styles.cardTop}>
+                  <Avatar name={user.full_name} src={user.avatar_url} size="lg" />
+                  {user.verification_status === 'approved' && (
+                    <span className={styles.verified} title="Verified" aria-label="Verified">
+                      <BadgeCheck size={20} strokeWidth={1.75} />
+                    </span>
+                  )}
+                </div>
 
-            <button 
-              onClick={() => { setSearchTerm(''); setSelectedIndustry(''); setSelectedYear(''); }}
-              style={{ 
-                width: '100%', padding: '0.75rem', borderRadius: '99px',
-                background: COLORS.white, border: `2px solid ${COLORS.border}`,
-                color: COLORS.text, fontWeight: 800, cursor: 'pointer',
-                boxShadow: '4px 4px 0px rgba(13,30,20,1)', textTransform: 'uppercase', fontSize: '0.875rem',
-                transition: 'transform 0.1s'
-              }}
-              onMouseDown={(e) => { e.currentTarget.style.transform = 'translate(2px, 2px)'; e.currentTarget.style.boxShadow = '2px 2px 0px rgba(13,30,20,1)'; }}
-              onMouseUp={(e) => { e.currentTarget.style.transform = 'translate(0, 0)'; e.currentTarget.style.boxShadow = '4px 4px 0px rgba(13,30,20,1)'; }}
-            >
-              Clear Filters
-            </button>
-          </div>
-        </aside>
+                <h3 className={styles.name}>{user.full_name}</h3>
+                <p className={styles.roleLine}>{roleLine}</p>
 
-        {/* Directory Grid */}
-        <section style={{ flex: 1 }}>
-          {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-              <div style={{ width: '36px', height: '36px', border: `4px solid ${COLORS.border}`, borderTopColor: COLORS.sage, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            </div>
-          ) : filteredAlumni.length === 0 ? (
-            <div style={{ 
-              background: COLORS.white, padding: '4rem', textAlign: 'center', 
-              border: `2px dashed ${COLORS.border}`, borderRadius: '24px',
-              color: COLORS.textMuted 
-            }}>
-              <Users size={48} style={{ opacity: 0.5, margin: '0 auto 1rem auto' }} strokeWidth={1.5} />
-              <p style={{ fontWeight: 800, fontSize: '1.25rem', color: COLORS.text, margin: 0, textTransform: 'uppercase' }}>No alumni found matching your criteria.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-              {filteredAlumni.map((user: UserProfile, idx: number) => {
-                const accentColors = [COLORS.sage, COLORS.lavender, COLORS.blue, COLORS.warning];
-                const cardAccent = accentColors[idx % accentColors.length];
+                <div className={styles.meta}>
+                  <span className={styles.metaRow}>
+                    <GraduationCap size={15} strokeWidth={1.75} aria-hidden="true" />
+                    Class of {user.graduation_year || '—'}
+                  </span>
+                  {user.location && (
+                    <span className={styles.metaRow}>
+                      <MapPin size={15} strokeWidth={1.75} aria-hidden="true" />
+                      {user.location}
+                    </span>
+                  )}
+                </div>
 
-                return (
-                  <div key={user.id} style={{ 
-                    background: COLORS.white, padding: '1.5rem', display: 'flex', flexDirection: 'column',
-                    border: `2px solid ${COLORS.border}`, borderRadius: '16px', boxShadow: '6px 6px 0px rgba(13,30,20,1)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                      <div style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: '16px',
-                        background: user.avatar_url
-                          ? `url(${user.avatar_url}) center/cover no-repeat`
-                          : cardAccent,
-                        border: `2px solid ${COLORS.border}`,
-                        color: COLORS.text,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '1.5rem',
-                        fontWeight: 900,
-                        boxShadow: '4px 4px 0px rgba(13,30,20,1)'
-                      }}>
-                        {!user.avatar_url && user.full_name.charAt(0)}
-                      </div>
-                      {user.verification_status === 'approved' && (
-                        <div title="Institute Verified" style={{ color: COLORS.text }}>
-                          <BadgeCheck size={24} strokeWidth={2.5} />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem', fontWeight: 900, color: COLORS.text, textTransform: 'uppercase', letterSpacing: '-0.02em' }}>{user.full_name}</h3>
-                    <p style={{ color: COLORS.textMuted, fontSize: '0.875rem', marginBottom: '1rem', fontWeight: 700 }}>
-                      {user.industry || 'No Industry Provided'}
-                    </p>
+                <div className={styles.skills}>
+                  {user.skills.slice(0, 3).map((skill) => (
+                    <Badge key={skill} variant="neutral">{skill}</Badge>
+                  ))}
+                  {user.skills.length > 3 && (
+                    <span className={styles.moreSkills}>+{user.skills.length - 3}</span>
+                  )}
+                </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', color: COLORS.text, fontSize: '0.875rem', fontWeight: 600 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <GraduationCap size={16} strokeWidth={2.5} /> Class of {user.graduation_year || 'Unknown'}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <MapPin size={16} strokeWidth={2.5} /> {user.location || 'Unknown'}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                      {user.skills.slice(0, 3).map(skill => (
-                        <span key={skill} style={{
-                          background: cardAccent,
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '99px',
-                          border: `1.5px solid ${COLORS.border}`,
-                          fontSize: '0.75rem',
-                          color: COLORS.text,
-                          fontWeight: 800,
-                          textTransform: 'uppercase'
-                        }}>
-                          {skill}
-                        </span>
-                      ))}
-                      {user.skills.length > 3 && (
-                        <span style={{ fontSize: '0.75rem', color: COLORS.textMuted, alignSelf: 'center', fontWeight: 800 }}>+{user.skills.length - 3} more</span>
-                      )}
-                    </div>
-
-                    <div style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
-                      <Link 
-                        to={`/profile/${user.id}`} 
-                        style={{ 
-                          flex: 1, padding: '0.625rem', fontSize: '0.8125rem', textDecoration: 'none', textAlign: 'center',
-                          borderRadius: '99px', background: COLORS.white, border: `2px solid ${COLORS.border}`,
-                          color: COLORS.text, fontWeight: 800, textTransform: 'uppercase',
-                          boxShadow: '4px 4px 0px rgba(13,30,20,1)'
-                        }}
-                      >
-                        Profile
-                      </Link>
-                      <Link 
-                        to={`/chat?dm=${user.id}`} 
-                        style={{ 
-                          flex: 1, padding: '0.625rem', fontSize: '0.8125rem', textDecoration: 'none', textAlign: 'center',
-                          borderRadius: '99px', background: COLORS.text, border: `2px solid ${COLORS.border}`,
-                          color: COLORS.white, fontWeight: 800, textTransform: 'uppercase',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem',
-                          boxShadow: '4px 4px 0px rgba(13,30,20,0.3)'
-                        }}
-                      >
-                        <MessageCircle size={14} strokeWidth={2.5} /> Message
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      </main>
+                <div className={styles.actions}>
+                  <Link to={`/profile/${user.id}`} className={cx(styles.actionBtn, styles.actionSecondary)}>
+                    View
+                  </Link>
+                  <Link to={`/chat?dm=${user.id}`} className={cx(styles.actionBtn, styles.actionPrimary)}>
+                    <MessageCircle size={15} strokeWidth={1.75} aria-hidden="true" />
+                    Message
+                  </Link>
+                </div>
+              </motion.article>
+            );
+          })}
+        </motion.div>
+      )}
     </div>
   );
 };

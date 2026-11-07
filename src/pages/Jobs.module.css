@@ -1,0 +1,182 @@
+.page {
+  display: grid;
+  gap: 16px;
+}
+
+.filterBar {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-3);
+  background: color-mix(in srgb, var(--glass-bg) 82%, transparent);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  pointer-events: none;
+}
+.searchInput {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px 0 38px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: var(--surface);
+  color: var(--text);
+  font: var(--type-subhead);
+  font-size: 16px;
+}
+.searchInput::placeholder { color: var(--text-3); }
+.searchInput:focus {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 1px;
+  border-color: var(--border);
+}
+
+.typeScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+.typeScroll::-webkit-scrollbar { display: none; }
+
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: start;
+  padding: 16px 18px;
+  border-radius: var(--radius-3);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-1);
+  transition: transform var(--dur-fast, 150ms) ease, box-shadow var(--dur-fast, 150ms) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-3);
+  }
+}
+
+.monogram {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-2);
+  background: linear-gradient(180deg, var(--accent-subtle), color-mix(in srgb, var(--accent) 18%, var(--surface)));
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent-text);
+  display: grid;
+  place-items: center;
+  font: var(--type-headline);
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.body { min-width: 0; }
+.jobTitle {
+  margin: 0;
+  font: var(--type-headline);
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.companyLine {
+  margin: 3px 0 0;
+  font: var(--type-subhead);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.metaInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-3);
+  font: var(--type-footnote);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.tag {
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  font: var(--type-caption);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.cardRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.posted {
+  font: var(--type-caption);
+  color: var(--text-3);
+}
+
+.skelCard {
+  padding: 16px 18px;
+  border-radius: var(--radius-3);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .filterBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .typeScroll { width: 100%; }
+  .card {
+    grid-template-columns: auto 1fr;
+  }
+  .cardRight {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .skelCard { grid-template-columns: auto 1fr; }
+}

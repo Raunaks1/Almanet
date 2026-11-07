@@ -1,0 +1,36 @@
+/* FormField — one column: label, control, meta text. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.label {
+  font: var(--type-footnote);
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.field:focus-within .label {
+  color: var(--accent-text);
+}
+
+.required {
+  margin-left: 3px;
+  color: var(--danger);
+}
+
+.hint {
+  margin: 0;
+  font: var(--type-caption);
+  color: var(--text-3);
+}
+
+.error {
+  margin: 0;
+  font: var(--type-caption);
+  color: var(--danger);
+}

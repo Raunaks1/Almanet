@@ -1,21 +1,58 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Briefcase, GraduationCap, Mail, MessageSquare, BadgeCheck, Loader2, Edit2, Save, Trash2, X, Camera } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import {
+  BadgeCheck,
+  Briefcase,
+  Camera,
+  ExternalLink,
+  GraduationCap,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+} from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from './Directory';
 import { COLLEGE_NAMES, getBranchesForCollege } from '../lib/colleges';
+import { DURATION, EASE_REVEAL } from '../lib/motion';
+import { PageHeader } from '../components/shell/PageHeader';
+import {
+  Avatar,
+  Badge,
+  Button,
+  Chip,
+  FormField,
+  Input,
+  Modal,
+  SegmentedControl,
+  Select,
+  Skeleton,
+  Textarea,
+  useToast,
+} from '../components/ui';
+import { cx } from '../components/ui/internal';
+import styles from './Profile.module.css';
+
+const VISIBILITY_OPTIONS = [
+  { value: 'public', label: 'Public' },
+  { value: 'private', label: 'Private' },
+  { value: 'alumni-only', label: 'Alumni only' },
+];
 
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
+  const reduced = useReducedMotion() ?? false;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Current user auth
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -24,30 +61,35 @@ const Profile: React.FC = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
+  // UI-only state
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [skillDraft, setSkillDraft] = useState('');
+
   useEffect(() => {
     const fetchProfileAndUser = async () => {
       setLoading(true);
-      
+
       // Get current logged-in user
       const { data: { session } } = await supabase.auth.getSession();
       setCurrentUser(session?.user || null);
-      
+
       if (!id) return;
-      
+
       // Fetch profile
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', id)
         .single();
-      
+
       if (!error && data) {
         setProfile(data as UserProfile);
         setEditForm(data as UserProfile);
       }
       setLoading(false);
     };
-    
+
     fetchProfileAndUser();
   }, [id]);
 
@@ -55,13 +97,13 @@ const Profile: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setEditForm(prev => ({ ...prev, [name]: value }));
+    setEditForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
     if (!profile) return;
     setIsSaving(true);
-    
+
     try {
       // Upload avatar if a new file was selected
       let avatarUrl = editForm.avatar_url || null;
@@ -84,151 +126,156 @@ const Profile: React.FC = () => {
         .from('profiles')
         .update(updatedForm)
         .eq('id', profile.id);
-        
+
       if (error) throw error;
-      
+
       setProfile(updatedForm as UserProfile);
       setIsEditing(false);
       setAvatarFile(null);
       setAvatarPreview(null);
+      toast.show({ title: 'Profile saved', variant: 'success' });
     } catch (err) {
       console.error('Error saving profile:', err);
-      alert('Failed to save profile changes.');
+      toast.show({ title: 'Could not save changes', description: 'Please try again.', variant: 'danger' });
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (window.confirm('Are you sure you want to permanently delete your account? This action cannot be undone and will erase all your profile data.')) {
-      setLoading(true);
-      try {
-        const { error } = await supabase.rpc('delete_user_account');
-        if (error) throw error;
-        await supabase.auth.signOut();
-        navigate('/');
-      } catch (err: any) {
-        console.error('Error deleting account:', err);
-        alert('Failed to delete account. Please ensure the delete_user_account SQL function is set up in Supabase.');
-        setLoading(false);
-      }
+    setDeleting(true);
+    try {
+      const { error } = await supabase.rpc('delete_user_account');
+      if (error) throw error;
+      await supabase.auth.signOut();
+      navigate('/');
+    } catch (err: any) {
+      console.error('Error deleting account:', err);
+      toast.show({
+        title: 'Failed to delete account',
+        description: 'Please ensure the delete_user_account SQL function is set up in Supabase.',
+        variant: 'danger',
+      });
+      setDeleting(false);
+      setDeleteOpen(false);
     }
+  };
+
+  const addSkill = (raw: string) => {
+    const next = raw.split(',').map((s) => s.trim()).filter((s) => s !== '');
+    if (next.length === 0) return;
+    setEditForm((prev) => {
+      const current = prev.skills ?? profile?.skills ?? [];
+      const merged = [...current];
+      next.forEach((s) => {
+        if (!merged.some((m) => m.toLowerCase() === s.toLowerCase())) merged.push(s);
+      });
+      return { ...prev, skills: merged };
+    });
+    setSkillDraft('');
+  };
+
+  const removeSkill = (skill: string) => {
+    setEditForm((prev) => ({ ...prev, skills: (prev.skills ?? []).filter((s) => s !== skill) }));
+  };
+
+  const isDirty = useMemo(() => {
+    if (!profile) return false;
+    if (avatarFile) return true;
+    const keys: Array<keyof UserProfile> = [
+      'full_name', 'bio', 'location', 'phone', 'linkedin', 'twitter', 'visibility',
+      'college', 'graduation_year', 'degree', 'branch', 'industry', 'employer',
+      'job_title', 'years_of_experience', 'mission_statement',
+    ];
+    for (const k of keys) {
+      const a = (editForm as any)[k] ?? '';
+      const b = (profile as any)[k] ?? '';
+      if (String(a) !== String(b)) return true;
+    }
+    const es = (editForm.skills ?? []).join('|');
+    const ps = (profile.skills ?? []).join('|');
+    return es !== ps || (editForm.avatar_url ?? '') !== (profile.avatar_url ?? '');
+  }, [avatarFile, editForm, profile]);
+
+  const cancelEdit = () => {
+    if (profile) setEditForm(profile);
+    setIsEditing(false);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setSkillDraft('');
   };
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Loader2 className="animate-spin" size={28} color="var(--brand-primary)" />
+      <div className={styles.page} aria-busy="true" aria-label="Loading profile">
+        <div className={styles.hero}>
+          <div className={styles.heroInner}>
+            <Skeleton width={88} height={88} radius="circle" />
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <Skeleton width="55%" height={30} radius={8} />
+              <div style={{ height: 8 }} />
+              <Skeleton width="40%" height={16} />
+              <div style={{ height: 12 }} />
+              <Skeleton width={100} height={28} radius={999} />
+            </div>
+          </div>
+        </div>
+        <div className={styles.group}><div style={{ padding: 18 }}><Skeleton width="90%" height={14} /><div style={{ height: 8 }} /><Skeleton width="70%" height={14} /></div></div>
+        <div className={styles.group}><div style={{ padding: 18 }}><Skeleton width="80%" height={14} /><div style={{ height: 8 }} /><Skeleton width="60%" height={14} /></div></div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex-center" style={{ minHeight: '100vh', flexDirection: 'column', gap: '1rem', background: 'var(--bg-primary)' }}>
-        <h2>Profile not found</h2>
-        <Link to="/directory" className="btn btn-primary">Back to Directory</Link>
+      <div className={styles.statePage}>
+        <div className={styles.group} style={{ padding: 28, textAlign: 'center', maxWidth: 420 }}>
+          <h2 style={{ margin: 0, font: 'var(--type-headline)', color: 'var(--text)' }}>Profile not found</h2>
+          <p style={{ margin: '8px 0 16px', font: 'var(--type-subhead)', color: 'var(--text-2)' }}>
+            This profile may not exist or is unavailable.
+          </p>
+          <Button onClick={() => navigate('/directory')}>Back to directory</Button>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      {/* Header */}
-      <header style={{
-        padding: '1rem 1.5rem',
-        background: 'var(--bg-primary)',
-        borderBottom: '1px solid var(--border-color)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-      }}>
-        <button onClick={() => navigate(-1)} className="btn btn-ghost" style={{ padding: '0.5rem 0.75rem' }}>
-          <ArrowLeft size={18} /> Back
-        </button>
-        <h1 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600 }}>{isEditing ? 'Edit Profile' : 'Profile Details'}</h1>
-        
-        {/* Action Buttons for Own Profile */}
-        {isOwnProfile && !isEditing && (
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-            <button onClick={() => setIsEditing(true)} className="btn btn-primary" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem' }}>
-              <Edit2 size={16} /> Edit Profile
-            </button>
-            <button onClick={handleDeleteAccount} className="btn btn-outline" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem', color: 'var(--accent-danger)', borderColor: 'var(--accent-danger)' }}>
-              <Trash2 size={16} /> Delete Account
-            </button>
-          </div>
-        )}
-        {isEditing && (
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-            <button onClick={() => setIsEditing(false)} className="btn btn-outline" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem' }} disabled={isSaving}>
-              <X size={16} /> Cancel
-            </button>
-            <button onClick={handleSave} className="btn btn-primary" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem' }} disabled={isSaving}>
-              {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
-            </button>
-          </div>
-        )}
-      </header>
+  const displayAvatar = avatarPreview || profile.avatar_url || null;
+  const roleLine = profile.user_type === 'alumni'
+    ? (profile.job_title ? `${profile.job_title}${profile.employer || profile.industry ? ` at ${profile.employer || profile.industry}` : ''}` : (profile.industry || 'Alumni'))
+    : profile.user_type === 'student'
+      ? (profile.degree ? `${profile.degree} student` : 'Student')
+      : 'Admin';
 
-      <main className="container" style={{ padding: '1.5rem', maxWidth: '900px' }}>
-        
-        {/* Profile Card */}
-        <div className="card animate-fade-in" style={{ padding: '2rem', display: 'flex', gap: '2rem', flexDirection: 'row', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          
-          {/* Avatar Section */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', minWidth: '140px' }}>
-            {isEditing && isOwnProfile && profile.user_type !== 'admin' ? (
-              /* Editable avatar for student/alumni */
+  const viewTransition = reduced
+    ? { duration: 0.12 }
+    : { duration: DURATION.reveal, ease: EASE_REVEAL };
+
+  return (
+    <div className={styles.page}>
+      {isOwnProfile && (
+        <PageHeader
+          title={isEditing ? 'Edit profile' : 'Your profile'}
+          subtitle={isEditing ? 'Update your details and save when you’re ready.' : 'How others see you in the community.'}
+          actions={!isEditing ? <Button onClick={() => setIsEditing(true)}>Edit profile</Button> : undefined}
+        />
+      )}
+
+      {/* Hero */}
+      <section className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroAvatarWrap}>
+            <Avatar name={editForm.full_name || profile.full_name} src={displayAvatar} size="xl" />
+            {isEditing && isOwnProfile && profile.user_type !== 'admin' && (
               <>
-                <div
+                <button
+                  type="button"
+                  className={styles.avatarEditBtn}
+                  aria-label="Change photo"
                   onClick={() => avatarInputRef.current?.click()}
-                  style={{
-                    width: '100px',
-                    height: '100px',
-                    borderRadius: '50%',
-                    background: avatarPreview
-                      ? `url(${avatarPreview}) center/cover no-repeat`
-                      : profile.avatar_url
-                        ? `url(${profile.avatar_url}) center/cover no-repeat`
-                        : 'var(--brand-primary)',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '2.5rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    border: '2px dashed var(--brand-primary)',
-                    transition: 'transform 0.2s ease',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  {!avatarPreview && !profile.avatar_url && (
-                    <span>{(editForm.full_name || profile.full_name || '?').charAt(0)}</span>
-                  )}
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: 0,
-                    transition: 'opacity 0.2s ease',
-                  }}
-                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                    onMouseLeave={e => e.currentTarget.style.opacity = '0'}
-                  >
-                    <Camera size={22} color="#fff" />
-                  </div>
-                </div>
+                  <Camera size={15} strokeWidth={1.75} aria-hidden="true" />
+                </button>
                 <input
                   ref={avatarInputRef}
                   type="file"
@@ -246,289 +293,435 @@ const Profile: React.FC = () => {
                     }
                   }}
                 />
-                {(avatarPreview || profile.avatar_url) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAvatarFile(null);
-                      setAvatarPreview(null);
-                      setEditForm(prev => ({ ...prev, avatar_url: undefined }));
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--accent-danger)',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      fontWeight: 500,
-                    }}
-                  >
-                    Remove photo
-                  </button>
-                )}
-                <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', textAlign: 'center', margin: 0 }}>Click to change photo</p>
               </>
-            ) : (
-              /* Read-only avatar */
-              <div style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                background: profile.avatar_url
-                  ? `url(${profile.avatar_url}) center/cover no-repeat`
-                  : 'var(--brand-primary)',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2.5rem',
-                fontWeight: 600,
-              }}>
-                {!profile.avatar_url && (editForm.full_name || profile.full_name || '?').charAt(0)}
-              </div>
-            )}
-            {!isEditing && !isOwnProfile && (
-              <Link to={`/chat?dm=${profile.id}`} className="btn btn-primary" style={{ width: '100%', fontSize: '0.8125rem', textDecoration: 'none' }}>
-                <MessageSquare size={16} /> Message
-              </Link>
             )}
           </div>
-
-          {/* Details Section */}
-          <div style={{ flex: 1, minWidth: '300px' }}>
-            {!isEditing ? (
-              // VIEW MODE
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem' }}>
-                  <h1 style={{ fontSize: '2rem', margin: 0, fontWeight: 700 }}>{profile.full_name}</h1>
-                  {profile.verification_status === 'approved' && (
-                    <div title="Institute Verified" style={{ color: 'var(--brand-primary)' }}>
-                      <BadgeCheck size={22} />
-                    </div>
-                  )}
-                </div>
-                
-                <p style={{ fontSize: '1rem', color: 'var(--brand-primary)', fontWeight: 500, marginBottom: '1.25rem' }}>
-                  {profile.user_type === 'alumni' ? (profile.job_title ? `${profile.job_title} at ${profile.employer || profile.industry}` : profile.industry) : profile.user_type === 'student' ? (profile.degree ? `${profile.degree} Student` : 'Student') : 'Admin'}
-                </p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1.75rem' }}>
-                  {(profile.user_type === 'student' || profile.user_type === 'alumni') && profile.graduation_year && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                      <GraduationCap size={18} /> 
-                      <span>Class of {profile.graduation_year}</span>
-                    </div>
-                  )}
-                  {profile.location && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                      <MapPin size={18} /> 
-                      <span>{profile.location}</span>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                    <Mail size={18} /> 
-                    <span>{profile.email}</span>
-                  </div>
-                  {profile.phone && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                      <span style={{ fontSize: '1.125rem' }}>📞</span>
-                      <span>{profile.phone}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ marginBottom: '1.75rem' }}>
-                  <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', fontWeight: 600 }}>About</h3>
-                  <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap', fontSize: '0.9375rem' }}>
-                    {profile.bio || 'This user hasn\'t added a bio yet.'}
-                  </p>
-                </div>
-
-                {profile.user_type !== 'admin' && (
-                  <div>
-                    <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', fontWeight: 600 }}>Skills & Expertise</h3>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
-                      {profile.skills && profile.skills.length > 0 ? profile.skills.map((skill, index) => (
-                        <span key={index} style={{
-                          background: 'var(--bg-tertiary)',
-                          padding: '0.375rem 0.75rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.8125rem',
-                          color: 'var(--text-secondary)',
-                          fontWeight: 500,
-                        }}>
-                          {skill}
-                        </span>
-                      )) : <span style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>No skills listed.</span>}
-                    </div>
-                  </div>
+          <div className={styles.heroBody}>
+            <div className={styles.nameRow}>
+              <h1 className={styles.name}>{isEditing ? (editForm.full_name || profile.full_name) : profile.full_name}</h1>
+              {profile.verification_status === 'approved' && (
+                <span className={styles.verified} title="Verified" aria-label="Verified">
+                  <BadgeCheck size={22} strokeWidth={1.75} />
+                </span>
+              )}
+            </div>
+            <p className={styles.roleLine}>{roleLine}</p>
+            <div className={styles.badges}>
+              <Badge variant="accent">
+                {profile.user_type === 'alumni' ? 'Alumni' : profile.user_type === 'student' ? 'Student' : 'Admin'}
+              </Badge>
+              {profile.visibility && profile.visibility !== 'public' && (
+                <Badge variant="neutral">{profile.visibility === 'alumni-only' ? 'Alumni only' : 'Private'}</Badge>
+              )}
+            </div>
+            {!isEditing && (
+              <div className={styles.quickActions}>
+                {!isOwnProfile && (
+                  <Link to={`/chat?dm=${profile.id}`} className={cx(styles.qaBtn, styles.qaPrimary)}>
+                    <MessageCircle size={16} strokeWidth={1.75} aria-hidden="true" />
+                    Message
+                  </Link>
                 )}
-              </>
-            ) : (
-              // EDIT MODE
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', animation: 'fadeIn 0.3s ease-out' }}>
-                
-                <div className="input-group">
-                  <label className="input-label">Full Name</label>
-                  <input type="text" name="full_name" className="input-field" value={editForm.full_name || ''} onChange={handleInputChange} />
-                </div>
-                
-                <div className="input-group">
-                  <label className="input-label">Bio / About</label>
-                  <textarea name="bio" className="input-field" rows={4} value={editForm.bio || ''} onChange={handleInputChange} placeholder="Tell us about yourself..."></textarea>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                  <div className="input-group">
-                    <label className="input-label">Location</label>
-                    <input type="text" name="location" className="input-field" value={editForm.location || ''} onChange={handleInputChange} placeholder="City, Country" />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Phone (Optional)</label>
-                    <input type="tel" name="phone" className="input-field" value={editForm.phone || ''} onChange={handleInputChange} placeholder="+1 234 567 8900" />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                  <div className="input-group">
-                    <label className="input-label">LinkedIn URL</label>
-                    <input type="url" name="linkedin" className="input-field" value={editForm.linkedin || ''} onChange={handleInputChange} placeholder="https://linkedin.com/in/username" />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Twitter / X URL</label>
-                    <input type="url" name="twitter" className="input-field" value={editForm.twitter || ''} onChange={handleInputChange} placeholder="https://twitter.com/username" />
-                  </div>
-                </div>
-
-                <div className="input-group" style={{ maxWidth: '300px' }}>
-                  <label className="input-label">Profile Visibility</label>
-                  <select name="visibility" className="input-field" value={editForm.visibility || 'public'} onChange={handleInputChange} style={{ appearance: 'none' }}>
-                    <option value="public">Public (Visible to everyone)</option>
-                    <option value="private">Private (Only you)</option>
-                    <option value="alumni-only">Alumni Only (Visible to verified members)</option>
-                  </select>
-                </div>
-
-                {/* Role Specific Fields */}
-                {profile.user_type === 'student' && (
-                  <div style={{ marginTop: '0.5rem', padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-                    <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--brand-primary)', fontWeight: 600 }}>Student Details</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                      <div className="input-group">
-                        <label className="input-label">College / University</label>
-                        <select
-                          name="college"
-                          className="input-field"
-                          value={editForm.college || ''}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, college: e.target.value, branch: '' }))}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <option value="">— Select college —</option>
-                          {COLLEGE_NAMES.map(name => (
-                            <option key={name} value={name}>{name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="input-group">
-                        <label className="input-label">Graduation Year</label>
-                        <input type="number" name="graduation_year" className="input-field" value={editForm.graduation_year || ''} onChange={handleInputChange} />
-                      </div>
-                      <div className="input-group">
-                        <label className="input-label">Degree</label>
-                        <select
-                          name="degree"
-                          className="input-field"
-                          value={editForm.degree || ''}
-                          onChange={handleInputChange}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <option value="">— Select Degree —</option>
-                          <option value="B.Tech / B.E. (Bachelor of Technology / Engineering)">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
-                          <option value="M.Tech / M.E. (Master of Technology / Engineering)">M.Tech / M.E. (Master of Technology / Engineering)</option>
-                          <option value="Ph.D.">Ph.D.</option>
-                        </select>
-                      </div>
-                      <div className="input-group">
-                        <label className="input-label">Branch / Major</label>
-                        <select
-                          name="branch"
-                          className="input-field"
-                          value={editForm.branch || ''}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, branch: e.target.value }))}
-                          disabled={!editForm.college}
-                          style={{ cursor: editForm.college ? 'pointer' : 'not-allowed', opacity: editForm.college ? 1 : 0.6 }}
-                        >
-                          <option value="">{editForm.college ? '— Select branch —' : '— Select college first —'}</option>
-                          {getBranchesForCollege(editForm.college || '').map(b => (
-                            <option key={b} value={b}>{b}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
+                {profile.linkedin && (
+                  <a href={profile.linkedin} target="_blank" rel="noreferrer" className={styles.qaBtn}>
+                    <ExternalLink size={16} strokeWidth={1.75} aria-hidden="true" />
+                    LinkedIn
+                  </a>
                 )}
-
-                {profile.user_type === 'alumni' && (
-                  <div style={{ marginTop: '0.5rem', padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-                    <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--brand-primary)', fontWeight: 600 }}>Alumni Details</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                      <div className="input-group">
-                        <label className="input-label">Current Employer</label>
-                        <input type="text" name="employer" className="input-field" value={editForm.employer || ''} onChange={handleInputChange} />
-                      </div>
-                      <div className="input-group">
-                        <label className="input-label">Job Title</label>
-                        <input type="text" name="job_title" className="input-field" value={editForm.job_title || ''} onChange={handleInputChange} />
-                      </div>
-                      <div className="input-group">
-                        <label className="input-label">Industry</label>
-                        <input type="text" name="industry" className="input-field" value={editForm.industry || ''} onChange={handleInputChange} />
-                      </div>
-                      <div className="input-group">
-                        <label className="input-label">Years of Experience</label>
-                        <input type="number" name="years_of_experience" className="input-field" value={editForm.years_of_experience || ''} onChange={handleInputChange} />
-                      </div>
-                      <div className="input-group">
-                        <label className="input-label">College / University</label>
-                        <input type="text" name="college" className="input-field" value={editForm.college || ''} onChange={handleInputChange} />
-                      </div>
-                      <div className="input-group">
-                        <label className="input-label">Graduation Year</label>
-                        <input type="number" name="graduation_year" className="input-field" value={editForm.graduation_year || ''} onChange={handleInputChange} />
-                      </div>
-                    </div>
-                  </div>
+                {profile.twitter && (
+                  <a href={profile.twitter} target="_blank" rel="noreferrer" className={styles.qaBtn}>
+                    <ExternalLink size={16} strokeWidth={1.75} aria-hidden="true" />
+                    Twitter
+                  </a>
                 )}
-
-                {profile.user_type === 'admin' && (
-                  <div style={{ marginTop: '0.5rem', padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-                    <h3 style={{ marginBottom: '1.25rem', fontSize: '1rem', color: 'var(--brand-primary)', fontWeight: 600 }}>Institution Details</h3>
-                    <div className="input-group">
-                      <label className="input-label">Mission Statement</label>
-                      <textarea name="mission_statement" className="input-field" rows={3} value={editForm.mission_statement || ''} onChange={handleInputChange}></textarea>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="input-group">
-                    <label className="input-label">Skills (Comma separated)</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
-                      value={editForm.skills ? editForm.skills.join(', ') : ''} 
-                      onChange={(e) => {
-                        const skillsArray = e.target.value.split(',').map(s => s.trim()).filter(s => s !== '');
-                        setEditForm(prev => ({ ...prev, skills: skillsArray }));
-                      }} 
-                      placeholder="React, TypeScript, UI Design"
-                    />
-                </div>
               </div>
+            )}
+            {isEditing && isOwnProfile && (avatarPreview || profile.avatar_url) && (
+              <button
+                type="button"
+                className={styles.avatarRemove}
+                onClick={() => {
+                  setAvatarFile(null);
+                  setAvatarPreview(null);
+                  setEditForm((prev) => ({ ...prev, avatar_url: undefined }));
+                }}
+              >
+                Remove photo
+              </button>
             )}
           </div>
         </div>
+      </section>
 
-      </main>
+      <AnimatePresence mode="wait" initial={false}>
+        {!isEditing ? (
+          <motion.div
+            key="view"
+            initial={reduced ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
+            transition={viewTransition}
+            style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+          >
+            <section className={styles.group} aria-labelledby="about-title">
+              <div className={styles.groupHeader}><h2 id="about-title" className={styles.groupTitle}>About</h2></div>
+              <ul className={styles.rows}>
+                <li className={styles.row}>
+                  <span className={styles.rowBody}>
+                    <p className={cx(styles.rowValue, !profile.bio && styles.rowEmpty)}>
+                      {profile.bio || 'No bio added yet.'}
+                    </p>
+                  </span>
+                </li>
+              </ul>
+            </section>
+
+            {(profile.user_type === 'alumni' || profile.employer || profile.job_title || profile.industry) && (
+              <section className={styles.group} aria-labelledby="exp-title">
+                <div className={styles.groupHeader}><h2 id="exp-title" className={styles.groupTitle}>Experience</h2></div>
+                <ul className={styles.rows}>
+                  {(profile.job_title || profile.employer) && (
+                    <li className={styles.row}>
+                      <Briefcase size={18} strokeWidth={1.75} className={styles.rowIcon} aria-hidden="true" />
+                      <span className={styles.rowBody}>
+                        <span className={styles.rowLabel}>Role</span>
+                        <p className={styles.rowValue}>
+                          {[profile.job_title, profile.employer].filter(Boolean).join(' · ')}
+                        </p>
+                      </span>
+                    </li>
+                  )}
+                  {profile.industry && (
+                    <li className={styles.row}>
+                      <span className={styles.rowIcon} style={{ width: 18 }} aria-hidden="true" />
+                      <span className={styles.rowBody}>
+                        <span className={styles.rowLabel}>Industry</span>
+                        <p className={styles.rowValue}>{profile.industry}</p>
+                      </span>
+                    </li>
+                  )}
+                  {profile.years_of_experience != null && (
+                    <li className={styles.row}>
+                      <span className={styles.rowIcon} style={{ width: 18 }} aria-hidden="true" />
+                      <span className={styles.rowBody}>
+                        <span className={styles.rowLabel}>Experience</span>
+                        <p className={styles.rowValue}>{profile.years_of_experience} years</p>
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              </section>
+            )}
+
+            {(profile.college || profile.degree || profile.branch || profile.graduation_year) && (
+              <section className={styles.group} aria-labelledby="edu-title">
+                <div className={styles.groupHeader}><h2 id="edu-title" className={styles.groupTitle}>Education</h2></div>
+                <ul className={styles.rows}>
+                  {profile.college && (
+                    <li className={styles.row}>
+                      <GraduationCap size={18} strokeWidth={1.75} className={styles.rowIcon} aria-hidden="true" />
+                      <span className={styles.rowBody}>
+                        <span className={styles.rowLabel}>College</span>
+                        <p className={styles.rowValue}>{profile.college}</p>
+                      </span>
+                    </li>
+                  )}
+                  {(profile.degree || profile.branch) && (
+                    <li className={styles.row}>
+                      <span className={styles.rowIcon} style={{ width: 18 }} aria-hidden="true" />
+                      <span className={styles.rowBody}>
+                        <span className={styles.rowLabel}>Program</span>
+                        <p className={styles.rowValue}>{[profile.degree, profile.branch].filter(Boolean).join(' · ')}</p>
+                      </span>
+                    </li>
+                  )}
+                  {profile.graduation_year && (
+                    <li className={styles.row}>
+                      <span className={styles.rowIcon} style={{ width: 18 }} aria-hidden="true" />
+                      <span className={styles.rowBody}>
+                        <span className={styles.rowLabel}>Graduation year</span>
+                        <p className={styles.rowValue}>{profile.graduation_year}</p>
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              </section>
+            )}
+
+            {profile.user_type !== 'admin' && (
+              <section className={styles.group} aria-labelledby="skills-title">
+                <div className={styles.groupHeader}><h2 id="skills-title" className={styles.groupTitle}>Skills</h2></div>
+                {profile.skills && profile.skills.length > 0 ? (
+                  <div className={styles.skillsWrap}>
+                    {profile.skills.map((skill) => (
+                      <Badge key={skill} variant="neutral">{skill}</Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <ul className={styles.rows}><li className={styles.row}><p className={cx(styles.rowValue, styles.rowEmpty)}>No skills listed.</p></li></ul>
+                )}
+              </section>
+            )}
+
+            <section className={styles.group} aria-labelledby="contact-title">
+              <div className={styles.groupHeader}><h2 id="contact-title" className={styles.groupTitle}>Contact</h2></div>
+              <ul className={styles.rows}>
+                <li className={styles.row}>
+                  <Mail size={18} strokeWidth={1.75} className={styles.rowIcon} aria-hidden="true" />
+                  <span className={styles.rowBody}>
+                    <span className={styles.rowLabel}>Email</span>
+                    <p className={styles.rowValue}>{profile.email}</p>
+                  </span>
+                </li>
+                {profile.phone && (
+                  <li className={styles.row}>
+                    <Phone size={18} strokeWidth={1.75} className={styles.rowIcon} aria-hidden="true" />
+                    <span className={styles.rowBody}>
+                      <span className={styles.rowLabel}>Phone</span>
+                      <p className={styles.rowValue}>{profile.phone}</p>
+                    </span>
+                  </li>
+                )}
+                {profile.location && (
+                  <li className={styles.row}>
+                    <MapPin size={18} strokeWidth={1.75} className={styles.rowIcon} aria-hidden="true" />
+                    <span className={styles.rowBody}>
+                      <span className={styles.rowLabel}>Location</span>
+                      <p className={styles.rowValue}>{profile.location}</p>
+                    </span>
+                  </li>
+                )}
+              </ul>
+            </section>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="edit"
+            initial={reduced ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
+            transition={viewTransition}
+            style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+          >
+            <section className={styles.group}>
+              <div className={styles.groupHeader}><h2 className={styles.groupTitle}>About</h2></div>
+              <div className={styles.editForm}>
+                <FormField label="Full name">
+                  <Input name="full_name" value={editForm.full_name || ''} onChange={handleInputChange} />
+                </FormField>
+                <FormField label="Bio">
+                  <Textarea name="bio" rows={4} value={editForm.bio || ''} onChange={handleInputChange} placeholder="Tell us about yourself…" />
+                </FormField>
+                <div className={styles.segRow}>
+                  <span className={styles.segLabel}>Profile visibility</span>
+                  <SegmentedControl
+                    aria-label="Profile visibility"
+                    value={(editForm.visibility as string) || 'public'}
+                    onChange={(v) => setEditForm((prev) => ({ ...prev, visibility: v as UserProfile['visibility'] }))}
+                    options={VISIBILITY_OPTIONS}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className={styles.group}>
+              <div className={styles.groupHeader}><h2 className={styles.groupTitle}>Contact</h2></div>
+              <div className={styles.editForm}>
+                <div className={styles.editGrid}>
+                  <FormField label="Location">
+                    <Input name="location" value={editForm.location || ''} onChange={handleInputChange} placeholder="City, Country" />
+                  </FormField>
+                  <FormField label="Phone">
+                    <Input type="tel" name="phone" value={editForm.phone || ''} onChange={handleInputChange} placeholder="+91 98765 43210" />
+                  </FormField>
+                  <FormField label="LinkedIn URL">
+                    <Input type="url" name="linkedin" value={editForm.linkedin || ''} onChange={handleInputChange} placeholder="https://linkedin.com/in/username" />
+                  </FormField>
+                  <FormField label="Twitter / X URL">
+                    <Input type="url" name="twitter" value={editForm.twitter || ''} onChange={handleInputChange} placeholder="https://twitter.com/username" />
+                  </FormField>
+                </div>
+              </div>
+            </section>
+
+            {profile.user_type === 'student' && (
+              <section className={styles.group}>
+                <div className={styles.groupHeader}><h2 className={styles.groupTitle}>Education</h2></div>
+                <div className={styles.editForm}>
+                  <div className={styles.editGrid}>
+                    <FormField label="College / university">
+                      <Select
+                        name="college"
+                        value={editForm.college || ''}
+                        onChange={(e) => setEditForm((prev) => ({ ...prev, college: e.target.value, branch: '' }))}
+                      >
+                        <option value="">— Select college —</option>
+                        {COLLEGE_NAMES.map((name) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </Select>
+                    </FormField>
+                    <FormField label="Graduation year">
+                      <Input type="number" name="graduation_year" value={(editForm.graduation_year as any) || ''} onChange={handleInputChange} />
+                    </FormField>
+                    <FormField label="Degree">
+                      <Select name="degree" value={editForm.degree || ''} onChange={handleInputChange}>
+                        <option value="">— Select degree —</option>
+                        <option value="B.Tech / B.E. (Bachelor of Technology / Engineering)">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
+                        <option value="M.Tech / M.E. (Master of Technology / Engineering)">M.Tech / M.E. (Master of Technology / Engineering)</option>
+                        <option value="Ph.D.">Ph.D.</option>
+                      </Select>
+                    </FormField>
+                    <FormField label="Branch / major">
+                      <Select
+                        name="branch"
+                        value={editForm.branch || ''}
+                        onChange={(e) => setEditForm((prev) => ({ ...prev, branch: e.target.value }))}
+                        disabled={!editForm.college}
+                      >
+                        <option value="">{editForm.college ? '— Select branch —' : '— Select college first —'}</option>
+                        {getBranchesForCollege(editForm.college || '').map((b) => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </Select>
+                    </FormField>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {profile.user_type === 'alumni' && (
+              <section className={styles.group}>
+                <div className={styles.groupHeader}><h2 className={styles.groupTitle}>Experience & education</h2></div>
+                <div className={styles.editForm}>
+                  <div className={styles.editGrid}>
+                    <FormField label="Current employer">
+                      <Input name="employer" value={editForm.employer || ''} onChange={handleInputChange} />
+                    </FormField>
+                    <FormField label="Job title">
+                      <Input name="job_title" value={editForm.job_title || ''} onChange={handleInputChange} />
+                    </FormField>
+                    <FormField label="Industry">
+                      <Input name="industry" value={editForm.industry || ''} onChange={handleInputChange} />
+                    </FormField>
+                    <FormField label="Years of experience">
+                      <Input type="number" name="years_of_experience" value={(editForm.years_of_experience as any) || ''} onChange={handleInputChange} />
+                    </FormField>
+                    <FormField label="College / university">
+                      <Input name="college" value={editForm.college || ''} onChange={handleInputChange} />
+                    </FormField>
+                    <FormField label="Graduation year">
+                      <Input type="number" name="graduation_year" value={(editForm.graduation_year as any) || ''} onChange={handleInputChange} />
+                    </FormField>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {profile.user_type === 'admin' && (
+              <section className={styles.group}>
+                <div className={styles.groupHeader}><h2 className={styles.groupTitle}>Institution details</h2></div>
+                <div className={styles.editForm}>
+                  <FormField label="Mission statement">
+                    <Textarea name="mission_statement" rows={3} value={editForm.mission_statement || ''} onChange={handleInputChange} />
+                  </FormField>
+                </div>
+              </section>
+            )}
+
+            {profile.user_type !== 'admin' && (
+              <section className={styles.group}>
+                <div className={styles.groupHeader}><h2 className={styles.groupTitle}>Skills</h2></div>
+                <div className={styles.editForm}>
+                  <FormField label="Skills" hint="Press Enter or comma to add a skill.">
+                    <div className={styles.skillInputWrap}>
+                      <div className={styles.skillChips}>
+                        <AnimatePresence initial={false}>
+                          {(editForm.skills ?? []).map((skill) => (
+                            <motion.span
+                              key={skill}
+                              initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+                              transition={{ duration: DURATION.fast, ease: EASE_REVEAL }}
+                              style={{ display: 'inline-flex' }}
+                            >
+                              <Chip onRemove={() => removeSkill(skill)}>{skill}</Chip>
+                            </motion.span>
+                          ))}
+                        </AnimatePresence>
+                      </div>
+                      <input
+                        className={styles.skillInput}
+                        value={skillDraft}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v.includes(',')) addSkill(v);
+                          else setSkillDraft(v);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addSkill(skillDraft);
+                          } else if (e.key === 'Backspace' && !skillDraft && (editForm.skills?.length ?? 0) > 0) {
+                            removeSkill(editForm.skills![editForm.skills!.length - 1]);
+                          }
+                        }}
+                        placeholder={(editForm.skills?.length ?? 0) === 0 ? 'e.g. React, TypeScript, Design' : 'Add a skill'}
+                        aria-label="Add a skill"
+                      />
+                    </div>
+                  </FormField>
+                </div>
+              </section>
+            )}
+
+            {isOwnProfile && (
+              <section className={cx(styles.group, styles.dangerGroup)}>
+                <div className={styles.groupHeader}><h2 className={styles.groupTitle}>Danger zone</h2></div>
+                <div className={styles.dangerBody}>
+                  <p className={styles.dangerText}>
+                    Permanently delete your account and profile data. This action cannot be undone.
+                  </p>
+                  <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+                    Delete account
+                  </Button>
+                </div>
+              </section>
+            )}
+
+            {/* Sticky save bar */}
+            <div className={styles.saveBar} role="region" aria-label="Save changes">
+              <p className={styles.saveHint}>
+                {isDirty ? <><strong>Unsaved changes.</strong> Save when you’re ready.</> : 'No unsaved changes.'}
+              </p>
+              <div className={styles.saveActions}>
+                <Button variant="secondary" onClick={cancelEdit} disabled={isSaving}>Cancel</Button>
+                <Button onClick={handleSave} loading={isSaving} disabled={!isDirty && !avatarFile}>
+                  Save changes
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Modal
+        open={deleteOpen}
+        onClose={() => !deleting && setDeleteOpen(false)}
+        title="Delete account?"
+        subtitle="This will permanently erase your profile data. This action cannot be undone."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteOpen(false)} disabled={deleting}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteAccount} loading={deleting}>Delete account</Button>
+          </>
+        }
+      >
+        <p style={{ margin: 0, font: 'var(--type-subhead)', color: 'var(--text-2)' }}>
+          If you’re sure, confirm below. You’ll be signed out and returned to the home page.
+        </p>
+      </Modal>
     </div>
   );
 };

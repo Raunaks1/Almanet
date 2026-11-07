@@ -1,29 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { motion, useReducedMotion } from 'motion/react';
 import {
-  LogOut, LayoutDashboard, Users, Briefcase, MessageSquare,
-  MessageCircle, Calendar, ShieldAlert,
-  GraduationCap, Newspaper, Star, Tag, Lock,
+  Briefcase,
+  Calendar,
+  GraduationCap,
+  Lock,
+  MessageCircle,
+  Newspaper,
+  Star,
+  Users,
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { getStoriesForCollege } from '../lib/collegeNews';
 import type { CollegeStory } from '../lib/collegeNews';
+import { listStagger } from '../lib/motion';
+import { Avatar, Badge, EmptyState, GlassCard, SegmentedControl, Skeleton } from '../components/ui';
+import { cx } from '../components/ui/internal';
+import styles from './Dashboard.module.css';
 
-const COLORS = {
-  bg: '#FBFBF9',
-  text: '#0D1E14',
-  textMuted: '#4A5D53',
-  sage: '#CCDAC6',
-  lavender: '#D9CFF5',
-  blue: '#C7E4F2',
-  terracotta: '#8A4A38',
-  white: '#FFFFFF',
-  border: '#0D1E14',
-  warning: '#FFD166',
-};
+function greetingForHour(hour: number): string {
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function NewsIllustration() {
+  return (
+    <svg width="120" height="84" viewBox="0 0 120 84" fill="none" aria-hidden="true">
+      <rect x="18" y="10" width="84" height="64" rx="12" fill="var(--surface-2)" stroke="var(--hairline)" />
+      <rect x="28" y="22" width="38" height="6" rx="3" fill="var(--surface-3)" />
+      <rect x="28" y="34" width="64" height="4" rx="2" fill="var(--surface-3)" />
+      <rect x="28" y="43" width="56" height="4" rx="2" fill="var(--surface-3)" />
+      <rect x="28" y="52" width="48" height="4" rx="2" fill="var(--surface-3)" />
+      <circle cx="84" cy="26" r="8" fill="var(--accent-subtle)" stroke="color-mix(in srgb, var(--accent) 30%, transparent)" />
+      <path d="M81 26l2 2 4-4" stroke="var(--accent-text)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const reduced = useReducedMotion() ?? false;
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -76,12 +94,45 @@ const Dashboard: React.FC = () => {
     await supabase.auth.signOut();
     navigate('/');
   };
+  void handleSignOut; // Preserved logic; sign-out UI lives in the app shell.
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: COLORS.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: '36px', height: '36px', border: `4px solid ${COLORS.border}`, borderTopColor: COLORS.sage, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      <div className={styles.page} aria-busy="true" aria-label="Loading dashboard">
+        <div className={styles.header}>
+          <Skeleton width="min(320px, 70%)" height={38} radius={10} />
+          <div style={{ height: 8 }} />
+          <Skeleton width="min(420px, 85%)" height={18} />
+        </div>
+        <div className={styles.bento}>
+          <GlassCard className={styles.span7}>
+            <div className={styles.skelRow}>
+              <Skeleton width={56} height={56} radius="circle" />
+              <div className={styles.skelCol} style={{ flex: 1 }}>
+                <Skeleton width={120} height={12} />
+                <Skeleton width="80%" height={18} />
+                <Skeleton width="60%" height={14} />
+              </div>
+            </div>
+          </GlassCard>
+          <GlassCard className={styles.span5}>
+            <div className={styles.skelCol}>
+              <Skeleton width={140} height={18} />
+              <Skeleton width={90} height={28} radius={999} />
+              <Skeleton width="100%" height={14} />
+              <Skeleton width="70%" height={14} />
+            </div>
+          </GlassCard>
+          <GlassCard className={styles.span12}>
+            <Skeleton width={180} height={18} />
+            <div style={{ height: 14 }} />
+            <div className={styles.actionsGrid}>
+              {Array.from({ length: 4 }, (_, i) => (
+                <Skeleton key={i} height={104} radius={14} />
+              ))}
+            </div>
+          </GlassCard>
+        </div>
       </div>
     );
   }
@@ -98,367 +149,178 @@ const Dashboard: React.FC = () => {
   const isVerified = userType === 'admin' || verificationStatus === 'approved';
 
   const stories: CollegeStory[] = getStoriesForCollege(collegeName);
-  const filtered = activeTab === 'all' ? stories : stories.filter(s => s.type === activeTab);
+  const filtered = activeTab === 'all' ? stories : stories.filter((s) => s.type === activeTab);
 
-  const navItems = [
-    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', active: true, restricted: false },
-    { to: '/chat', icon: <MessageCircle size={18} />, label: 'Messages', restricted: true },
-    { to: '/directory', icon: <Users size={18} />, label: 'Alumni Directory', restricted: true },
-    { to: '/forums', icon: <MessageSquare size={18} />, label: 'Discussion Forums', restricted: true },
-    { to: '/jobs', icon: <Briefcase size={18} />, label: 'Job Portal', restricted: true },
-    { to: '/events', icon: <Calendar size={18} />, label: 'Campus Events', restricted: true },
+  const firstName = fullName.split(' ')[0] || 'there';
+  const greeting = `${greetingForHour(new Date().getHours())}, ${firstName}`;
+  const stagger = listStagger();
+
+  const quickActions = [
+    { to: '/directory', label: 'Directory', hint: 'Find people', icon: <Users size={18} strokeWidth={1.75} /> },
+    { to: '/chat', label: 'Chat', hint: 'Messages', icon: <MessageCircle size={18} strokeWidth={1.75} /> },
+    { to: '/jobs', label: 'Jobs', hint: 'Opportunities', icon: <Briefcase size={18} strokeWidth={1.75} /> },
+    { to: '/events', label: 'Events', hint: 'What’s on', icon: <Calendar size={18} strokeWidth={1.75} /> },
   ];
 
-  const tagColors: Record<string, string> = {
-    Placement: COLORS.sage,
-    Research: COLORS.blue,
-    Startup: COLORS.warning,
-    Event: COLORS.lavender,
-    Infrastructure: COLORS.lavender,
-    Workshop: COLORS.warning,
-  };
+  const containerMotion = reduced
+    ? {}
+    : { initial: 'hidden' as const, animate: 'visible' as const, variants: stagger.parent };
+  const itemMotion = reduced ? {} : { variants: stagger.child };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: COLORS.bg, fontFamily: '"Inter", sans-serif' }}>
-      {/* ── Sidebar ── */}
-      <aside style={{
-        width: '280px',
-        background: COLORS.white,
-        borderRight: `2px solid ${COLORS.border}`,
-        padding: '1.5rem',
-        display: 'flex',
-        flexDirection: 'column',
-        flexShrink: 0,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem', padding: '0 0.5rem' }}>
-          <GraduationCap size={28} color={COLORS.text} strokeWidth={2.5} />
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: COLORS.text, letterSpacing: '-0.02em', textTransform: 'uppercase' }}>AlmaNET</h2>
-        </div>
+    <motion.div className={styles.page} {...containerMotion}>
+      <motion.header className={styles.header} {...itemMotion}>
+        <h1 className={styles.greeting}>{greeting}</h1>
+        <p className={styles.sub}>Here’s what’s happening in your network today.</p>
+      </motion.header>
 
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {navItems.map(item => {
-            const locked = item.restricted && !isVerified;
-            return (
-              <Link
-                key={item.to}
-                to={locked ? '#' : item.to}
-                onClick={locked ? (e: React.MouseEvent) => e.preventDefault() : undefined}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '99px',
-                  fontSize: '0.9375rem',
-                  fontWeight: item.active ? 800 : 600,
-                  color: COLORS.text,
-                  background: item.active ? COLORS.sage : 'transparent',
-                  border: item.active ? `2px solid ${COLORS.border}` : '2px solid transparent',
-                  boxShadow: item.active ? '4px 4px 0px rgba(13,30,20,1)' : 'none',
-                  textDecoration: 'none',
-                  transition: 'all 0.15s ease',
-                  opacity: locked ? 0.5 : 1,
-                  cursor: locked ? 'not-allowed' : 'pointer',
-                }}
-                title={locked ? 'Verification required' : item.label}
-              >
-                {item.icon}
-                <span style={{ flex: 1 }}>{item.label}</span>
-                {locked && <Lock size={14} strokeWidth={2.5} />}
-              </Link>
-            );
-          })}
-
-          {userType === 'admin' && (
-            <>
-              <div style={{ height: '2px', background: COLORS.border, margin: '1rem 0' }} />
-              <Link
-                to="/admin"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '0.75rem',
-                  padding: '0.75rem 1rem', borderRadius: '99px',
-                  fontSize: '0.9375rem', fontWeight: 800, color: COLORS.text,
-                  background: COLORS.warning, border: `2px solid ${COLORS.border}`,
-                  boxShadow: '4px 4px 0px rgba(13,30,20,1)', textDecoration: 'none',
-                }}
-              >
-                <ShieldAlert size={18} /> Verification Queue
-              </Link>
-            </>
-          )}
-        </nav>
-
-        {/* Profile footer */}
-        <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: `2px solid ${COLORS.border}` }}>
-          <Link
-            to={user?.id ? `/profile/${user.id}` : '#'}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.75rem',
-              marginBottom: '1rem', padding: '0.5rem',
-              borderRadius: '16px', textDecoration: 'none',
-              color: COLORS.text, transition: 'background 0.15s ease',
-            }}
-          >
-            <div style={{
-              width: '44px', height: '44px', borderRadius: '50%',
-              background: profile?.avatar_url
-                ? `url(${profile.avatar_url}) center/cover no-repeat`
-                : COLORS.lavender,
-              border: `2px solid ${COLORS.border}`,
-              color: COLORS.text, flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: '1rem',
-            }}>
-              {!profile?.avatar_url && fullName.charAt(0).toUpperCase()}
-            </div>
-            <div style={{ overflow: 'hidden' }}>
-              <p style={{ fontWeight: 800, fontSize: '0.875rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0, color: COLORS.text }}>
-                {fullName}
-              </p>
-              <p style={{ fontSize: '0.75rem', fontWeight: 600, color: COLORS.textMuted, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', margin: 0 }}>
-                {user?.email}
-              </p>
-            </div>
-          </Link>
-          <button 
-            onClick={handleSignOut} 
-            style={{ 
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-              padding: '0.75rem', borderRadius: '99px', background: COLORS.white, border: `2px solid ${COLORS.border}`,
-              fontWeight: 800, color: COLORS.text, cursor: 'pointer', boxShadow: '4px 4px 0px rgba(13,30,20,1)',
-              fontSize: '0.875rem', textTransform: 'uppercase'
-            }}
-          >
-            <LogOut size={16} strokeWidth={2.5} /> Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main Content ── */}
-      <main style={{ flex: 1, padding: '3rem', overflowY: 'auto' }}>
-
-        {/* Welcome */}
-        <header style={{ marginBottom: '2.5rem' }}>
-          <h1 style={{ fontSize: 'clamp(2rem, 3vw, 2.5rem)', fontWeight: 900, color: COLORS.text, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>
-            Welcome back, {fullName.split(' ')[0]}! 👋
-          </h1>
-          <p style={{ color: COLORS.textMuted, fontSize: '1.125rem', fontWeight: 500, margin: 0 }}>
-            Here's what's happening in your network today.
-          </p>
-        </header>
-
-        {/* ── College Banner ── */}
-        {collegeName ? (
-          <div style={{
-            background: COLORS.lavender,
-            border: `2px solid ${COLORS.border}`,
-            borderRadius: '24px',
-            padding: '2rem 2.5rem',
-            marginBottom: '3rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.5rem',
-            position: 'relative',
-            boxShadow: '12px 12px 0px rgba(13,30,20,1)',
-          }}>
-            <div style={{
-              width: '64px', height: '64px', borderRadius: '16px',
-              background: COLORS.white, border: `2px solid ${COLORS.border}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              boxShadow: '4px 4px 0px rgba(13,30,20,1)'
-            }}>
-              <GraduationCap size={32} color={COLORS.text} strokeWidth={2.5} />
-            </div>
-
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ color: COLORS.text, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', margin: '0 0 0.5rem 0' }}>
-                Your Institution
-              </p>
-              <h2 style={{ color: COLORS.text, fontSize: '1.5rem', fontWeight: 900, margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
-                {collegeName}
-              </h2>
-              {(degree || branch || gradYear) && (
-                <p style={{ color: COLORS.textMuted, fontSize: '0.9375rem', fontWeight: 600, margin: '0.5rem 0 0 0' }}>
-                  {[degree, branch].filter(Boolean).join(' · ')}
-                  {gradYear ? ` · Batch of ${gradYear}` : ''}
-                </p>
-              )}
-            </div>
-
-            <div style={{
-              padding: '0.75rem 1.5rem',
-              background: COLORS.white,
-              border: `2px solid ${COLORS.border}`,
-              boxShadow: '4px 4px 0px rgba(13,30,20,1)',
-              borderRadius: '9999px',
-              fontSize: '0.875rem',
-              color: COLORS.text,
-              fontWeight: 800,
-              flexShrink: 0,
-              whiteSpace: 'nowrap',
-              textTransform: 'uppercase'
-            }}>
-              {userType === 'alumni' ? '🎓 Alumni' : userType === 'student' ? '📚 Student' : '🛡 Admin'}
-            </div>
-          </div>
-        ) : (
-          <div style={{
-            background: COLORS.white,
-            border: `2px dashed ${COLORS.border}`,
-            borderRadius: '24px',
-            padding: '2rem 2.5rem',
-            marginBottom: '3rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.25rem',
-          }}>
-            <GraduationCap size={28} color={COLORS.textMuted} />
-            <p style={{ color: COLORS.textMuted, fontSize: '1rem', fontWeight: 600, margin: 0 }}>
-              No college linked to your profile yet. Update your profile to see college news &amp; stories.
+      {!isVerified && (
+        <motion.div className={styles.banner} role="status" {...itemMotion}>
+          <span className={styles.bannerDot} aria-hidden="true" />
+          <div>
+            <p className={styles.bannerTitle}>Verification in progress</p>
+            <p className={styles.bannerText}>
+              Your account is being reviewed by the college admin. You can explore the dashboard now — Directory, Chat,
+              Jobs, and Events will unlock once you’re verified.
             </p>
           </div>
-        )}
+        </motion.div>
+      )}
 
-        {/* ── Unverified Banner ── */}
-        {!isVerified && (
-          <div style={{
-            background: COLORS.warning,
-            border: `2px solid ${COLORS.border}`,
-            boxShadow: '8px 8px 0px rgba(13,30,20,1)',
-            borderRadius: '16px',
-            padding: '1.5rem 2rem',
-            marginBottom: '3rem',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '1.25rem',
-          }}>
-            <ShieldAlert size={28} color={COLORS.text} style={{ flexShrink: 0 }} />
-            <div>
-              <h3 style={{ color: COLORS.text, fontSize: '1.125rem', fontWeight: 900, margin: '0 0 0.5rem 0', textTransform: 'uppercase' }}>
-                Account Pending Verification
-              </h3>
-              <p style={{ color: COLORS.text, fontSize: '0.9375rem', fontWeight: 500, margin: 0, lineHeight: 1.5 }}>
-                Your account is currently being reviewed by the admin. 
-                You can browse the dashboard, but you won't be able to access restricted features like the Alumni Directory, Job Portal, or Discussion Forums until your account is verified.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ── News & Stories ── */}
-        <section>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, textTransform: 'uppercase', color: COLORS.text, letterSpacing: '-0.02em' }}>
-                {collegeName ? 'College News & Success Stories' : 'Network News & Success Stories'}
-              </h2>
-              <p style={{ color: COLORS.textMuted, fontSize: '0.9375rem', fontWeight: 600, margin: '0.5rem 0 0 0' }}>
-                {collegeName ? `Latest updates from ${collegeName}` : 'Highlights from the AlmaNET community'}
-              </p>
-            </div>
-
-            {/* Tab filters */}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {(['all', 'news', 'success'] as const).map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  style={{
-                    padding: '0.625rem 1.25rem',
-                    borderRadius: '99px',
-                    fontSize: '0.875rem',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    border: `2px solid ${COLORS.border}`,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    background: activeTab === tab ? COLORS.text : COLORS.white,
-                    color: activeTab === tab ? COLORS.white : COLORS.text,
-                    boxShadow: activeTab === tab ? '4px 4px 0px rgba(13,30,20,0.3)' : '4px 4px 0px rgba(13,30,20,1)',
-                  }}
-                >
-                  {tab === 'all' ? 'All' : tab === 'news' ? '📰 News' : '⭐ Success'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {filtered.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '4rem 2rem',
-              border: `2px dashed ${COLORS.border}`,
-              borderRadius: '24px',
-              background: COLORS.white,
-            }}>
-              <div style={{
-                width: '64px', height: '64px', borderRadius: '16px',
-                background: COLORS.blue, border: `2px solid ${COLORS.border}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 1.5rem', boxShadow: '4px 4px 0px rgba(13,30,20,1)'
-              }}>
-                <Newspaper size={28} color={COLORS.text} />
+      <div className={styles.bento}>
+        {/* Identity card */}
+        <motion.div className={styles.span7} {...itemMotion}>
+          <GlassCard>
+            <div className={styles.identity}>
+              <Avatar name={fullName} src={profile?.avatar_url} size="lg" />
+              <div className={styles.identityBody}>
+                <p className={styles.eyebrow}>Your institution</p>
+                <h2 className={styles.collegeName}>{collegeName || 'No college linked yet'}</h2>
+                {(degree || branch || gradYear) ? (
+                  <p className={styles.metaLine}>
+                    {[degree, branch].filter(Boolean).join(' · ')}
+                    {gradYear ? ` · Batch of ${gradYear}` : ''}
+                  </p>
+                ) : (
+                  <p className={styles.metaLine}>Add your education details to personalize your network.</p>
+                )}
+                <span className={styles.typePill}>
+                  <GraduationCap size={15} strokeWidth={1.75} aria-hidden="true" />
+                  {userType === 'alumni' ? 'Alumni' : userType === 'student' ? 'Student' : 'Admin'}
+                </span>
               </div>
-              <p style={{ fontWeight: 900, fontSize: '1.25rem', margin: '0 0 0.5rem 0', color: COLORS.text, textTransform: 'uppercase' }}>
-                No stories yet
-              </p>
-              <p style={{ color: COLORS.textMuted, fontSize: '0.9375rem', fontWeight: 500, margin: 0 }}>
-                News and success stories from your college will appear here once published.
-              </p>
             </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
-              {filtered.map((story: CollegeStory) => {
-                const tagColor = tagColors[story.tag] || COLORS.blue;
+          </GlassCard>
+        </motion.div>
+
+        {/* Verification status card */}
+        <motion.div className={styles.span5} {...itemMotion}>
+          <GlassCard>
+            <div className={styles.statusRow}>
+              <h2 className={styles.statusTitle}>Verification</h2>
+              <span className={cx(styles.badgePulse, !isVerified && styles.badgePulsePending)}>
+                <Badge variant={isVerified ? 'success' : 'warning'} dot>
+                  {isVerified ? 'Approved' : 'Pending'}
+                </Badge>
+              </span>
+            </div>
+            <p className={styles.statusDesc}>
+              {isVerified
+                ? 'Your account is verified. You have full access to the community.'
+                : 'We’re reviewing your details. This usually doesn’t take long.'}
+            </p>
+          </GlassCard>
+        </motion.div>
+
+        {/* Quick actions */}
+        <motion.div className={styles.span12} {...itemMotion}>
+          <GlassCard>
+            <h2 className={styles.statusTitle} style={{ marginBottom: 14 }}>Quick actions</h2>
+            <div className={styles.actionsGrid}>
+              {quickActions.map((action) => {
+                const locked = !isVerified;
                 return (
-                  <div
-                    key={story.id}
-                    style={{ 
-                      padding: '1.5rem', 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      gap: '1rem',
-                      background: COLORS.white,
-                      border: `2px solid ${COLORS.border}`,
-                      borderRadius: '16px',
-                      boxShadow: '6px 6px 0px rgba(13,30,20,1)'
-                    }}
+                  <Link
+                    key={action.to}
+                    to={locked ? '#' : action.to}
+                    onClick={locked ? (e: React.MouseEvent) => e.preventDefault() : undefined}
+                    className={cx(styles.actionTile, locked && styles.tileLocked)}
+                    aria-disabled={locked || undefined}
+                    tabIndex={locked ? -1 : undefined}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: COLORS.text }}>
-                        {story.type === 'success' ? <Star size={16} strokeWidth={2.5} /> : <Newspaper size={16} strokeWidth={2.5} />}
-                        <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                          {story.type === 'success' ? 'Success Story' : 'News'}
-                        </span>
-                      </div>
-                      <div style={{ 
-                        display: 'flex', alignItems: 'center', gap: '0.375rem', 
-                        padding: '0.25rem 0.75rem', borderRadius: '9999px', 
-                        background: tagColor, color: COLORS.text, 
-                        fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase',
-                        border: `1.5px solid ${COLORS.border}`
-                      }}>
-                        <Tag size={12} strokeWidth={2.5} />
-                        {story.tag}
-                      </div>
-                    </div>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: 900, margin: 0, lineHeight: 1.3, color: COLORS.text }}>
-                      {story.title}
-                    </h3>
-                    <p style={{ fontSize: '0.9375rem', color: COLORS.textMuted, lineHeight: 1.6, margin: 0, flex: 1, fontWeight: 500 }}>
-                      {story.summary}
-                    </p>
-                    <p style={{ fontSize: '0.75rem', color: COLORS.text, fontWeight: 700, margin: 0, borderTop: `2px solid ${COLORS.border}`, paddingTop: '1rem', textTransform: 'uppercase' }}>
-                      {new Date(story.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </p>
-                  </div>
+                    <span className={styles.actionIcon} aria-hidden="true">{action.icon}</span>
+                    <p className={styles.actionLabel}>{action.label}</p>
+                    <p className={styles.actionHint}>{action.hint}</p>
+                    {locked && (
+                      <span className={styles.frost}>
+                        <Lock size={18} strokeWidth={1.75} aria-hidden="true" />
+                        Verification required
+                      </span>
+                    )}
+                  </Link>
                 );
               })}
             </div>
-          )}
-        </section>
-      </main>
-    </div>
+          </GlassCard>
+        </motion.div>
+
+        {/* College News & Success Stories */}
+        <motion.div className={styles.span12} {...itemMotion}>
+          <GlassCard>
+            <div className={styles.newsHeader}>
+              <div>
+                <h2 className={styles.newsTitle}>College News &amp; Success Stories</h2>
+                <p className={styles.newsSub}>
+                  {collegeName ? `Latest updates from ${collegeName}` : 'Highlights from the AlmaNET community'}
+                </p>
+              </div>
+              <div className={styles.segWrap}>
+                <SegmentedControl
+                  aria-label="Story filter"
+                  size="sm"
+                  value={activeTab}
+                  onChange={(v) => setActiveTab(v as 'all' | 'news' | 'success')}
+                  options={[
+                    { value: 'all', label: 'All' },
+                    { value: 'news', label: 'News' },
+                    { value: 'success', label: 'Success' },
+                  ]}
+                />
+              </div>
+            </div>
+
+            {filtered.length === 0 ? (
+              <div className={styles.emptyWrap}>
+                <EmptyState
+                  icon={<NewsIllustration />}
+                  title="No stories yet"
+                  description="News and success stories from your college will appear here once they’re published."
+                />
+              </div>
+            ) : (
+              <div className={styles.stories}>
+                {filtered.map((story: CollegeStory) => (
+                  <article key={story.id} className={styles.story}>
+                    <div className={styles.storyMeta}>
+                      <span className={styles.storyType}>
+                        {story.type === 'success' ? <Star size={14} strokeWidth={1.75} /> : <Newspaper size={14} strokeWidth={1.75} />}
+                        {story.type === 'success' ? 'Success story' : 'News'}
+                      </span>
+                      <Badge variant="neutral">{story.tag}</Badge>
+                    </div>
+                    <h3 className={styles.storyTitle}>{story.title}</h3>
+                    <p className={styles.storySummary}>{story.summary}</p>
+                    <p className={styles.storyDate}>
+                      {new Date(story.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </GlassCard>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 };
 

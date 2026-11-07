@@ -1,0 +1,118 @@
+/* Toast — glass, top-center, stacks up to 3. */
+
+.region {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  max-width: min(440px, 100%);
+  padding: 12px 14px;
+  border-radius: var(--radius-2);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  color: var(--text);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.neutral > svg {
+  color: var(--text-2);
+}
+
+.success > svg {
+  color: var(--success);
+}
+
+.info > svg {
+  color: var(--accent-text);
+}
+
+.warning > svg {
+  color: var(--warning);
+}
+
+.danger > svg {
+  color: var(--danger);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.actionBtn {
+  flex-shrink: 0;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--accent-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--dur-fast, 150ms) ease;
+}
+
+.actionBtn:hover {
+  background: var(--accent-subtle);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background-color var(--dur-fast, 150ms) ease;
+}
+
+.close:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}

@@ -1,0 +1,76 @@
+/* SegmentedControl — opaque container, sliding thumb. */
+
+.seg {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  isolation: isolate; /* keep the thumb behind the buttons within the group */
+}
+
+.sm .btn {
+  height: 30px;
+  font-size: 12px;
+}
+
+.md .btn {
+  height: 36px;
+  font-size: 13px;
+}
+
+.thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-1);
+  z-index: 0;
+  /* width/position are animated by Motion's layout engine */
+}
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-pill);
+  color: var(--text-2);
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+  transition: color var(--dur-fast, 150ms) ease;
+}
+
+.btn:hover {
+  color: var(--text);
+}
+
+.btn[aria-checked='true'] {
+  color: var(--text);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.label {
+  white-space: nowrap;
+}

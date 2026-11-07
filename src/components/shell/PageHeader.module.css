@@ -1,0 +1,45 @@
+/* PageHeader — large title + subtitle + actions. */
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.heading {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-large-title);
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font: var(--type-body);
+  color: var(--text-2);
+  max-width: 68ch;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .title {
+    font: var(--type-title);
+  }
+
+  .subtitle {
+    font: var(--type-subhead);
+  }
+}

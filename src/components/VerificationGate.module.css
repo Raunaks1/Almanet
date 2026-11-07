@@ -1,0 +1,165 @@
+/* VerificationGate — full-page block for unverified users. */
+
+.page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  padding: clamp(24px, 4vw, 34px);
+  border-radius: var(--radius-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  text-align: center;
+}
+
+.iconWrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--warning-subtle);
+  color: var(--warning);
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--warning) 22%, transparent);
+}
+
+.title {
+  margin: 0;
+  font: var(--type-title);
+  font-size: 26px;
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+}
+
+.text {
+  margin: 10px auto 0;
+  max-width: 38ch;
+  font: var(--type-body);
+  font-size: 16px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* Progress timeline */
+.timeline {
+  margin: 26px 0 22px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+  text-align: center;
+}
+
+.step {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+/* connector line between steps */
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: calc(50% + 16px);
+  right: calc(-50% + 16px);
+  height: 2px;
+  background: var(--surface-3);
+  border-radius: 2px;
+}
+.stepDone:not(:last-child)::after {
+  background: var(--success);
+}
+.stepActive:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--success), var(--surface-3));
+}
+
+.dot {
+  position: relative;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  border: 2px solid var(--surface-3);
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stepDone .dot {
+  background: var(--success-subtle);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.stepActive .dot {
+  background: var(--warning-subtle);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stepActive .dot {
+    animation: stepPulse 2s ease-out infinite;
+  }
+}
+@keyframes stepPulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--warning) 40%, transparent); }
+  70% { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.stepLabel {
+  font: var(--type-caption);
+  font-weight: 600;
+  color: var(--text-3);
+  line-height: 1.25;
+}
+.stepDone .stepLabel,
+.stepActive .stepLabel {
+  color: var(--text-2);
+}
+.stepActive .stepLabel {
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* Skeleton loading */
+.skelCard {
+  width: 100%;
+  max-width: 480px;
+  padding: clamp(24px, 4vw, 34px);
+  border-radius: var(--radius-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}

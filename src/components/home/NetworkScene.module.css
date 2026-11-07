@@ -1,0 +1,206 @@
+.stage {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  container-type: size;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  isolation: isolate;
+}
+
+@media (max-width: 640px) {
+  .stage {
+    aspect-ratio: 4 / 5;
+  }
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+.lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.line {
+  stroke: var(--accent);
+  stroke-opacity: 0.5;
+  stroke-width: 1.25;
+  stroke-dasharray: 2.5 3;
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lineFlow {
+    animation: dashFlow 1s linear infinite;
+  }
+}
+
+@keyframes dashFlow {
+  to { stroke-dashoffset: -11; }
+}
+
+.hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 96px;
+  height: 96px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--glass-bg-elevated, var(--surface));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-2);
+  display: grid;
+  place-items: center;
+  z-index: 3;
+  font: var(--type-headline);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 96px;
+  height: 96px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  z-index: 2;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ringPulse {
+    animation: ringPulse 3s ease-out infinite;
+  }
+}
+
+@keyframes ringPulse {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+
+.node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 4;
+  width: max-content;
+  max-width: 28cqw;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nodeFly {
+    animation: nodeFly 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--delay, 0ms);
+  }
+}
+
+@keyframes nodeFly {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--ox, 0cqw), var(--oy, 0cqh)) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+  }
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: var(--type-subhead);
+  font-weight: 700;
+  color: var(--text);
+  border: 2px solid color-mix(in srgb, var(--surface) 85%, transparent);
+  box-shadow: var(--shadow-1);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.labelName {
+  font: var(--type-footnote);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.labelMeta {
+  font: var(--type-caption);
+  font-size: 10px;
+  color: var(--text-2);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.bubble {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 9px;
+  border-radius: 12px 12px 12px 4px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-1);
+  font: var(--type-caption);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  z-index: 5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bubblePop {
+    animation: bubblePop 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes bubblePop {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.92); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* Cycle fade (end of 10s loop) */
+.fadeLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+@media (max-width: 640px) {
+  .avatar { width: 36px; height: 36px; font-size: 13px; }
+  .hub { width: 72px; height: 72px; font-size: 12px; }
+  .ring { width: 72px; height: 72px; }
+  .labelName { font-size: 11px; }
+  .labelMeta { font-size: 9px; }
+  .node { max-width: 34cqw; }
+}

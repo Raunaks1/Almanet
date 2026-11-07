@@ -1,0 +1,152 @@
+/* Modal — scrim + panel. Centered card on desktop, sheet on phones. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--scrim);
+}
+
+/* Bottom-sheet layout: panel pinned to the bottom edge. */
+.overlaySheet {
+  align-items: end;
+  justify-items: stretch;
+  padding: 0;
+}
+
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: min(720px, calc(100dvh - 48px));
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-3);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.panel:focus {
+  outline: none;
+}
+
+.center {
+  max-width: 560px;
+}
+
+.sheet {
+  width: 100%;
+  max-height: 88dvh;
+  border-radius: var(--radius-4) var(--radius-4) 0 0;
+  border-bottom: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.grabber {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 2px;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.handle {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--surface-3);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px 0;
+  flex-shrink: 0;
+}
+
+.sheet .header {
+  padding-top: 2px;
+}
+
+.heading {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-headline);
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font: var(--type-footnote);
+  color: var(--text-2);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  margin: -4px -8px 0 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast, 150ms) ease,
+    color var(--dur-fast, 150ms) ease;
+}
+
+.close:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 24px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--hairline);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .header,
+  .body,
+  .footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .panel {
+    animation: none;
+    transition: none;
+  }
+}

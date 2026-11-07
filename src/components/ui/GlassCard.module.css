@@ -1,0 +1,47 @@
+/* GlassCard — glass recipe comes straight from tokens.css. */
+
+.card {
+  border-radius: var(--radius-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  color: var(--text);
+  padding: 24px;
+}
+
+.elevated {
+  box-shadow:
+    var(--glass-shadow),
+    0 12px 32px rgba(15, 20, 40, 0.1);
+}
+
+.interactive {
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast, 150ms) ease,
+    box-shadow var(--dur-fast, 150ms) ease;
+}
+
+.interactive:active {
+  transform: scale(0.99);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .interactive:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      var(--glass-shadow),
+      0 12px 32px rgba(15, 20, 40, 0.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive,
+  .interactive:hover,
+  .interactive:active {
+    transition: none;
+    transform: none;
+  }
+}

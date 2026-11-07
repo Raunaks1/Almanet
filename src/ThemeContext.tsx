@@ -1,41 +1,62 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'system';
+export type ResolvedTheme = 'light' | 'dark';
 
 interface ThemeContextType {
+  /** What the user picked: follows the OS when "system". */
   theme: Theme;
-  toggleTheme: () => void;
+  /** The theme actually painted, for components that need the real value. */
+  resolvedTheme: ResolvedTheme;
+  setTheme: (theme: Theme) => void;
 }
 
+const STORAGE_KEY = 'almanet-theme';
+
+const systemPrefersDark = () =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+const readStoredTheme = (): Theme => {
+  if (typeof window === 'undefined') return 'system';
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored === 'light' || stored === 'dark' || stored === 'system'
+    ? stored
+    : 'system';
+};
+
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light',
-  toggleTheme: () => {},
+  theme: 'system',
+  resolvedTheme: 'light',
+  setTheme: () => {},
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Check localStorage first
-    const stored = localStorage.getItem('almanet-theme') as Theme | null;
-    if (stored === 'light' || stored === 'dark') return stored;
+  const [theme, setTheme] = useState<Theme>(readStoredTheme);
+  const [systemDark, setSystemDark] = useState(systemPrefersDark);
 
-    // Fall back to system preference
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-    return 'light';
-  });
-
+  // Persist the choice and stamp <html data-theme="…"> — tokens.css maps
+  // "dark" directly and resolves "system" via prefers-color-scheme.
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('almanet-theme', theme);
+    localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
-  };
+  // While on "system", track OS changes so resolvedTheme stays live.
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  const resolvedTheme: ResolvedTheme = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

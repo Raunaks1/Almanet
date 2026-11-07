@@ -1,0 +1,81 @@
+/* Tooltip — opaque bubble, delayed reveal, transform-only motion. */
+
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 9px);
+  z-index: var(--z-lifted);
+  width: max-content;
+  max-width: 240px;
+  padding: 6px 10px;
+  border-radius: var(--radius-1);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-2);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 3px) scale(0.97);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  transition-delay: 0s;
+}
+
+/* Arrow — a rotated square, drawn on the bubble. */
+.tip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 9px;
+  height: 9px;
+  background: var(--surface);
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  transform: translateX(-50%) rotate(45deg);
+  border-bottom-right-radius: 2px;
+}
+
+.wrap:hover .tip,
+.wrap:focus-within .tip {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  transition-delay: 250ms;
+}
+
+/* Bottom placement mirrors the geometry. */
+.wrap[data-side='bottom'] .tip {
+  bottom: auto;
+  top: calc(100% + 9px);
+  transform: translate(-50%, -3px) scale(0.97);
+}
+
+.wrap[data-side='bottom'] .tip::after {
+  bottom: auto;
+  top: -4px;
+  border-right: 1px solid var(--hairline);
+  border-bottom: none;
+  border-top: 1px solid var(--hairline);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.wrap[data-side='bottom']:hover .tip,
+.wrap[data-side='bottom']:focus-within .tip {
+  transform: translate(-50%, 0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tip {
+    transition: opacity 120ms ease;
+    transform: translate(-50%, 0);
+  }
+}

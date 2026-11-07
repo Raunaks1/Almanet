@@ -1,0 +1,40 @@
+/* EmptyState — transparent so it composes on any surface. */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-headline);
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+}
+
+.description {
+  margin: 6px 0 0;
+  font: var(--type-subhead);
+  color: var(--text-2);
+  max-width: 360px;
+}
+
+.action {
+  margin-top: 16px;
+}

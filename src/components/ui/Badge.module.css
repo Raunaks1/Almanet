@@ -1,0 +1,133 @@
+/* Badge & Chip — tinted status pills. */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge.sm {
+  height: 20px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.badge.md {
+  font-size: 12px;
+}
+
+/* Status tints from tokens; legibility via a darkened status ink where
+   color-mix is available, defaults otherwise. */
+.accent {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+.success {
+  background: var(--success-subtle);
+}
+
+.warning {
+  background: var(--warning-subtle);
+}
+
+.danger {
+  background: var(--danger-subtle);
+}
+
+@supports (color: color-mix(in oklab, red, blue)) {
+  .success {
+    color: color-mix(in oklab, var(--success) 62%, var(--text));
+  }
+
+  .warning {
+    color: color-mix(in oklab, var(--warning) 68%, var(--text));
+  }
+
+  .danger {
+    color: color-mix(in oklab, var(--danger) 72%, var(--text));
+  }
+}
+
+.success,
+.warning,
+.danger {
+  color: var(--text);
+}
+
+.neutral {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Chip: interactive relative to Badge. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--dur-fast, 150ms) ease,
+    border-color var(--dur-fast, 150ms) ease,
+    color var(--dur-fast, 150ms) ease;
+}
+
+.chip:hover {
+  background: var(--surface-3);
+}
+
+.chip:active {
+  transform: scale(0.97);
+}
+
+.chip:focus-visible {
+  outline-offset: 2px;
+}
+
+.chipSelected {
+  background: var(--accent-subtle);
+  border-color: transparent;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: -4px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.remove:hover {
+  background: rgba(60, 60, 67, 0.15);
+}

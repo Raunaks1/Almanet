@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldAlert, ArrowLeft, Clock, Loader2 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
+import { ArrowLeft, Check, Clock } from 'lucide-react';
 import { useAuth } from '../lib/useAuth';
+import { Skeleton } from './ui';
+import { cx } from './ui/internal';
+import { DURATION, EASE_REVEAL } from '../lib/motion';
+import styles from './VerificationGate.module.css';
 
 interface VerificationGateProps {
   children: React.ReactNode;
@@ -9,93 +14,97 @@ interface VerificationGateProps {
 
 /**
  * Wraps any page that requires an approved/verified account.
- * Shows a loading spinner while checking, and a blocked message if not verified.
+ * Shows a loading state while checking, and a blocked message if not verified.
+ * (Logic preserved; UI redesigned.)
  */
 const VerificationGate: React.FC<VerificationGateProps> = ({ children }) => {
   const { loading, isVerified } = useAuth();
+  const reduced = useReducedMotion() ?? false;
 
   if (loading) {
     return (
-      <div className="flex-center" style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-        <Loader2 className="animate-spin" size={28} color="var(--brand-primary)" />
+      <div className={styles.page} aria-busy="true" aria-label="Checking verification">
+        <div className={styles.skelCard}>
+          <Skeleton width={64} height={64} radius="circle" />
+          <Skeleton width="60%" height={26} radius={8} />
+          <Skeleton width="88%" height={14} />
+          <Skeleton width="72%" height={14} />
+          <div style={{ display: 'flex', gap: 16, width: '100%', marginTop: 8, justifyContent: 'center' }}>
+            <Skeleton width={72} height={52} radius={10} />
+            <Skeleton width={72} height={52} radius={10} />
+            <Skeleton width={72} height={52} radius={10} />
+          </div>
+          <Skeleton width={160} height={44} radius={999} />
+        </div>
       </div>
     );
   }
 
   if (!isVerified) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'var(--bg-primary)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-      }}>
-        <div
-          className="card animate-fade-in"
-          style={{
-            maxWidth: '460px',
-            width: '100%',
-            padding: '2.5rem',
-            textAlign: 'center',
-          }}
+      <div className={styles.page}>
+        <motion.div
+          className={styles.card}
+          role="status"
+          initial={reduced ? false : { opacity: 0, y: 10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={reduced ? { duration: DURATION.fast } : { duration: DURATION.reveal, ease: EASE_REVEAL }}
         >
-          {/* Icon */}
-          <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            background: 'var(--accent-warning-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 1.5rem',
-          }}>
-            <ShieldAlert size={28} color="var(--accent-warning)" />
+          <div className={styles.iconWrap}>
+            <motion.span
+              animate={reduced ? undefined : { rotate: [0, -8, 8, -4, 0] }}
+              transition={reduced ? undefined : { duration: 2.8, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
+              style={{ display: 'inline-flex' }}
+              aria-hidden="true"
+            >
+              <Clock size={28} strokeWidth={1.75} />
+            </motion.span>
           </div>
 
-          <h2 style={{ fontSize: '1.375rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            Account Pending Verification
-          </h2>
-
-          <p style={{
-            color: 'var(--text-secondary)',
-            fontSize: '0.9375rem',
-            lineHeight: 1.7,
-            marginBottom: '1.5rem',
-          }}>
-            Your account is currently being reviewed by the college admin.
-            You'll get full access to this feature once your identity has been verified.
+          <h2 className={styles.title}>Verification in progress</h2>
+          <p className={styles.text}>
+            Your account is being reviewed by the college admin. You’ll get full access once your identity has been
+            verified.
           </p>
 
-          {/* Status badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.4rem 1rem',
-            borderRadius: '9999px',
-            background: 'var(--accent-warning-subtle)',
-            color: 'var(--accent-warning)',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            marginBottom: '2rem',
-          }}>
-            <Clock size={14} />
-            Verification Pending
-          </div>
+          <ol className={styles.timeline} aria-label="Verification progress">
+            <li className={cx(styles.step, styles.stepDone)}>
+              <span className={styles.dot} aria-hidden="true"><Check size={14} strokeWidth={2.25} /></span>
+              <span className={styles.stepLabel}>Submitted</span>
+            </li>
+            <li className={cx(styles.step, styles.stepActive)} aria-current="step">
+              <span className={styles.dot} aria-hidden="true">2</span>
+              <span className={styles.stepLabel}>Under review</span>
+            </li>
+            <li className={styles.step}>
+              <span className={styles.dot} aria-hidden="true">3</span>
+              <span className={styles.stepLabel}>Approved</span>
+            </li>
+          </ol>
 
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+          <div className={styles.actions}>
             <Link
               to="/dashboard"
-              className="btn btn-primary"
-              style={{ fontSize: '0.875rem' }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                minHeight: 44,
+                padding: '0 20px',
+                borderRadius: 999,
+                background: 'var(--accent)',
+                color: '#fff',
+                font: 'var(--type-subhead)',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
             >
-              <ArrowLeft size={15} /> Go to Dashboard
+              <ArrowLeft size={16} strokeWidth={1.75} aria-hidden="true" />
+              Back to dashboard
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }

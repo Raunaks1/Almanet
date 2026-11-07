@@ -1,0 +1,345 @@
+/* Profile — iOS Settings-style grouped glass layout. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 24px;
+}
+
+/* Hero */
+.hero {
+  border-radius: var(--radius-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  padding: clamp(20px, 3vw, 28px);
+}
+
+.heroInner {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.heroAvatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.heroBody {
+  flex: 1;
+  min-width: min(100%, 240px);
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.name {
+  margin: 0;
+  font: var(--type-title);
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+}
+
+.verified {
+  color: var(--success);
+  display: inline-flex;
+}
+
+.roleLine {
+  margin: 4px 0 0;
+  font: var(--type-body);
+  font-size: 16px;
+  color: var(--text-2);
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.quickActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.qaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: var(--type-footnote);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.qaBtn:active { transform: scale(0.97); }
+.qaPrimary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Grouped inset sections */
+.group {
+  border-radius: var(--radius-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 18px 10px;
+}
+
+.groupTitle {
+  margin: 0;
+  font: var(--type-footnote);
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: 0.01em;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px 8px;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 10px;
+  border-radius: var(--radius-1);
+}
+
+.row + .row {
+  border-top: 1px solid var(--hairline);
+  border-radius: 0;
+}
+.row:first-child { border-radius: var(--radius-1) var(--radius-1) 0 0; }
+.row:last-child { border-radius: 0 0 var(--radius-1) var(--radius-1); }
+.row:only-child { border-radius: var(--radius-1); border-top: none; }
+
+.rowIcon {
+  color: var(--text-3);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rowBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowLabel {
+  display: block;
+  font: var(--type-caption);
+  color: var(--text-3);
+  margin-bottom: 2px;
+}
+
+.rowValue {
+  margin: 0;
+  font: var(--type-subhead);
+  color: var(--text);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.rowEmpty {
+  color: var(--text-3);
+}
+
+.skillsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 18px 16px;
+}
+
+/* Edit mode */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px 18px 18px;
+}
+
+.editGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 640px) {
+  .editGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.segRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.segLabel {
+  font: var(--type-footnote);
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Skill tag input */
+.skillInputWrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: var(--radius-2);
+  border: 1px solid var(--border);
+  background: var(--field-bg);
+}
+.skillInputWrap:focus-within {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 1px;
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+.skillInput {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: var(--type-body);
+  font-size: 16px;
+  outline: none;
+  padding: 4px;
+}
+.skillInput::placeholder { color: var(--text-3); }
+.skillChips {
+  display: contents;
+}
+
+/* Sticky save bar */
+.saveBar {
+  position: sticky;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-lifted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: var(--radius-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-3);
+}
+
+.saveHint {
+  font: var(--type-footnote);
+  color: var(--text-2);
+}
+.saveHint strong { color: var(--text); font-weight: 600; }
+
+.saveActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Danger zone */
+.dangerGroup {
+  border-color: color-mix(in srgb, var(--danger) 22%, var(--glass-border));
+}
+.dangerBody {
+  padding: 4px 18px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.dangerText {
+  margin: 0;
+  font: var(--type-subhead);
+  color: var(--text-2);
+  line-height: 1.45;
+  max-width: 56ch;
+}
+
+/* Avatar edit (hero) */
+.avatarEditBtn {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-1);
+}
+.avatarRemove {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: var(--type-caption);
+  font-weight: 600;
+  color: var(--danger);
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+}
+
+/* States */
+.statePage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+}
+
+@media (max-width: 640px) {
+  .name { font: var(--type-large-title); font-size: 28px; }
+  .saveBar { bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qaBtn, .avatarEditBtn { transition: none; transform: none; }
+}

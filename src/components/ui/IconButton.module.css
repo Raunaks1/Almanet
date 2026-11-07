@@ -1,0 +1,111 @@
+/* IconButton — circular, same variant palette as Button. */
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--dur-fast, 150ms) ease,
+    color var(--dur-fast, 150ms) ease,
+    box-shadow var(--dur-fast, 150ms) ease;
+}
+
+.iconButton:disabled {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+.sm {
+  width: 32px;
+  height: 32px;
+}
+
+/* Touch-class 44px hit area. */
+.md {
+  width: 44px;
+  height: 44px;
+}
+
+.lg {
+  width: 52px;
+  height: 52px;
+}
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.primary:hover {
+  background: var(--accent-hover);
+}
+
+.secondary {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+
+.secondary:hover {
+  background: var(--surface-3);
+}
+
+@supports (background: color-mix(in srgb, red, blue)) {
+  .tinted:hover {
+    background: color-mix(in oklab, var(--accent) 16%, transparent);
+  }
+
+  .primary:hover {
+    background: color-mix(in oklab, var(--accent) 88%, white);
+  }
+
+  .destructive:hover {
+    background: color-mix(in oklab, var(--danger) 88%, white);
+  }
+}
+
+.tinted {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+.plain {
+  background: transparent;
+  color: var(--text-2);
+}
+
+.plain:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.destructive {
+  background: var(--danger);
+  color: #fff;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: iconSpin 0.8s linear infinite;
+}
+
+@keyframes iconSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,163 @@
+/* Button — pill form, Apple-style filled / glass / tinted / destructive. */
+
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--dur-fast, 150ms) ease,
+    color var(--dur-fast, 150ms) ease,
+    box-shadow var(--dur-fast, 150ms) ease;
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Sizes — touch-class minimum heights for md/lg. */
+.sm {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.md {
+  height: 42px;
+  padding: 0 18px;
+  font-size: 15px;
+}
+
+.lg {
+  height: 48px;
+  padding: 0 22px;
+  font-size: 17px;
+}
+
+/* ── Variants ── */
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.primary:hover {
+  background: var(--accent-hover);
+}
+
+/* Glass sits over whatever the page shows; tokens swap it opaque when
+   blur is unsupported or transparency is reduced. */
+.secondary {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  transition:
+    background-color var(--dur-fast, 150ms) ease,
+    box-shadow var(--dur-fast, 150ms) ease;
+}
+
+.secondary:hover {
+  background: var(--surface-3);
+}
+
+.tinted {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+/* Hover deepens the tint ~10% where color-mix is available. */
+@supports (background: color-mix(in srgb, red, blue)) {
+  .primary:hover {
+    background: color-mix(in oklab, var(--accent) 88%, white);
+  }
+
+  .tinted:hover {
+    background: color-mix(in oklab, var(--accent) 16%, transparent);
+  }
+
+  .destructive:hover {
+    background: color-mix(in oklab, var(--danger) 88%, white);
+  }
+}
+
+.plain {
+  background: transparent;
+  color: var(--text);
+}
+
+.plain:hover {
+  background: var(--surface-3);
+}
+
+.destructive {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* ── Hover lift (fine pointers only) ── */
+@media (hover: hover) and (pointer: fine) {
+  .button:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-1);
+  }
+}
+
+/* ── Icons & label ── */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* ── Loading ── */
+.loading .label {
+  opacity: 0.75;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: buttonSpin 0.8s linear infinite;
+}
+
+.sm .spinner {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+@keyframes buttonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.block {
+  width: 100%;
+}

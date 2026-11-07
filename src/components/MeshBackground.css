@@ -1,0 +1,92 @@
+/* MeshBackground — fixed ambient gradient behind the app.
+   Blobs are radial gradients (cheap to composite, no blur filter) drifting
+   on transform alone over very long cycles. Colours come from tokens so the
+   mesh deepens in dark mode automatically. */
+
+.mesh {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-mesh, -1);
+  overflow: clip;
+  pointer-events: none;
+  background: var(--bg);
+}
+
+.mesh__blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.9;
+}
+
+.mesh__blob--lavender {
+  width: 62vmax;
+  aspect-ratio: 1;
+  top: -24vmax;
+  left: -16vmax;
+  background: radial-gradient(circle closest-side, var(--mesh-lavender), transparent 72%);
+  animation: mesh-drift-a 42s ease-in-out infinite alternate;
+}
+
+.mesh__blob--blue {
+  width: 56vmax;
+  aspect-ratio: 1;
+  right: -20vmax;
+  bottom: -18vmax;
+  background: radial-gradient(circle closest-side, var(--mesh-blue), transparent 72%);
+  animation: mesh-drift-b 52s ease-in-out infinite alternate;
+}
+
+.mesh__blob--sage {
+  width: 48vmax;
+  aspect-ratio: 1;
+  top: 4vmax;
+  right: 2vmax;
+  background: radial-gradient(circle closest-side, var(--mesh-sage), transparent 72%);
+  animation: mesh-drift-b 64s ease-in-out infinite alternate;
+}
+
+.mesh__blob--accent {
+  width: 40vmax;
+  aspect-ratio: 1;
+  bottom: -8vmax;
+  left: -6vmax;
+  background: radial-gradient(circle closest-side, var(--mesh-accent), transparent 72%);
+  animation: mesh-drift-a 58s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(6%, 8%, 0) scale(1.12);
+  }
+}
+
+@keyframes mesh-drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.1);
+  }
+  to {
+    transform: translate3d(-7%, -5%, 0) scale(0.96);
+  }
+}
+
+/* Reduced motion: static gradient, no drift. */
+@media (prefers-reduced-motion: reduce) {
+  .mesh__blob {
+    animation: none;
+  }
+}
+
+/* Reduced transparency: keep the tint but flatten it toward the canvas
+   colour so nothing reads as a strong transparency effect. */
+@media (prefers-reduced-transparency: reduce) {
+  .mesh {
+    background: var(--bg);
+  }
+
+  .mesh__blob {
+    opacity: 1;
+  }
+}

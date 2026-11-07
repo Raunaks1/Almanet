@@ -1,0 +1,35 @@
+/* Divider — 1px hairline from the token line color. */
+
+.rule {
+  background: var(--hairline);
+}
+
+.horizontal {
+  height: 1px;
+  width: 100%;
+}
+
+.vertical {
+  align-self: stretch;
+  width: 1px;
+  margin-inline: 12px;
+}
+
+.labeled {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.line {
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}
+
+.word {
+  font: var(--type-caption);
+  color: var(--text-3);
+  white-space: nowrap;
+}
