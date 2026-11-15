@@ -1,0 +1,578 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlmaNET Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            apple: {
+              blue: '#0071E3',
+              'blue-hover': '#005BB5',
+              'blue-light': '#EBF5FF',
+              dark: '#1D1D1F',
+              grey: '#6E6E73',
+              'light-grey': '#86868B',
+              bg: '#F5F5F7',
+              border: 'rgba(0, 0, 0, 0.06)',
+            }
+          },
+          boxShadow: {
+            'apple-card': '0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02)',
+            'apple-hover': '0 10px 25px -4px rgba(0, 0, 0, 0.07), 0 4px 10px -2px rgba(0, 0, 0, 0.03)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.7)',
+            'glass-float': '0 12px 36px -4px rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
+          },
+          borderRadius: {
+            'card': '20px',
+            'tile': '14px',
+            'hero': '28px',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F5F5F7;
+      color: #1D1D1F;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .glass-sidebar {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.04), 0 2px 8px -1px rgba(0, 0, 0, 0.02);
+    }
+    .hero-gradient {
+      background: linear-gradient(135deg, #0A2540 0%, #103778 45%, #2B1D66 100%);
+    }
+    .card-hairline {
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    /* Smooth transitions */
+    .transition-apple {
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-5 lg:p-6 bg-[#F5F5F7]">
+  <div class="max-w-[1440px] mx-auto flex gap-6 items-start">
+    
+    <!-- Floating Rounded Glass Sidebar (260px wide, inset) -->
+    <aside class="w-[260px] flex-shrink-0 sticky top-6 self-start glass-sidebar rounded-[28px] p-6 flex flex-col h-[calc(100vh-3rem)]">
+      <!-- Logo Header -->
+      <div class="flex items-center gap-3 px-2 py-1 mb-6">
+        <div class="w-10 h-10 rounded-[14px] bg-[#0071E3] flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden">
+          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-bold text-[18px] tracking-tight text-[#1D1D1F] leading-tight">AlmaNET</span>
+          <span class="text-[11px] font-medium text-[#86868B] tracking-wide uppercase">Maharashtra</span>
+        </div>
+      </div>
+
+      <!-- Navigation List -->
+      <nav class="flex-1 space-y-1.5 overflow-y-auto pr-0.5">
+        <!-- Dashboard (Active) -->
+        <a href="#dashboard" class="flex items-center justify-between px-3.5 py-2.5 rounded-full bg-white shadow-sm text-[#0071E3] font-semibold text-[14px] transition-apple border border-black/5">
+          <div class="flex items-center gap-3">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 text-[#0071E3] stroke-[2.2]"></i>
+            <span>Dashboard</span>
+          </div>
+          <span class="w-1.5 h-1.5 rounded-full bg-[#0071E3]"></span>
+        </a>
+
+        <!-- Chat with unread badge -->
+        <a href="#chat" class="flex items-center justify-between px-3.5 py-2.5 rounded-full text-[#1D1D1F] hover:bg-white/60 font-medium text-[14px] transition-apple">
+          <div class="flex items-center gap-3">
+            <i data-lucide="message-square" class="w-4 h-4 text-[#6E6E73] stroke-[1.8]"></i>
+            <span>Chat</span>
+          </div>
+          <span class="px-2 py-0.5 text-[11px] font-bold text-white bg-[#FF3B30] rounded-full leading-none">3</span>
+        </a>
+
+        <!-- Directory -->
+        <a href="#directory" class="flex items-center gap-3 px-3.5 py-2.5 rounded-full text-[#1D1D1F] hover:bg-white/60 font-medium text-[14px] transition-apple">
+          <i data-lucide="users" class="w-4 h-4 text-[#6E6E73] stroke-[1.8]"></i>
+          <span>Directory</span>
+        </a>
+
+        <!-- Forums -->
+        <a href="#forums" class="flex items-center gap-3 px-3.5 py-2.5 rounded-full text-[#1D1D1F] hover:bg-white/60 font-medium text-[14px] transition-apple">
+          <i data-lucide="messages-square" class="w-4 h-4 text-[#6E6E73] stroke-[1.8]"></i>
+          <span>Forums</span>
+        </a>
+
+        <!-- Jobs -->
+        <a href="#jobs" class="flex items-center gap-3 px-3.5 py-2.5 rounded-full text-[#1D1D1F] hover:bg-white/60 font-medium text-[14px] transition-apple">
+          <i data-lucide="briefcase" class="w-4 h-4 text-[#6E6E73] stroke-[1.8]"></i>
+          <span>Jobs</span>
+        </a>
+
+        <!-- Events -->
+        <a href="#events" class="flex items-center gap-3 px-3.5 py-2.5 rounded-full text-[#1D1D1F] hover:bg-white/60 font-medium text-[14px] transition-apple">
+          <i data-lucide="calendar" class="w-4 h-4 text-[#6E6E73] stroke-[1.8]"></i>
+          <span>Events</span>
+        </a>
+
+        <!-- Thin Divider -->
+        <div class="pt-3 pb-2 px-3">
+          <div class="h-px bg-black/[0.08] w-full"></div>
+        </div>
+
+        <!-- Admin -->
+        <a href="#admin" class="flex items-center gap-3 px-3.5 py-2.5 rounded-full text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-white/60 font-medium text-[14px] transition-apple">
+          <i data-lucide="shield-check" class="w-4 h-4 text-[#86868B] stroke-[1.8]"></i>
+          <span>Admin</span>
+        </a>
+      </nav>
+
+      <!-- Bottom User Card -->
+      <div class="mt-auto pt-4">
+        <div class="flex items-center justify-between p-3 rounded-[20px] bg-white/70 hover:bg-white card-hairline transition-apple cursor-pointer group shadow-sm">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-full bg-[#EBF5FF] text-[#0071E3] font-semibold text-[13px] flex items-center justify-center flex-shrink-0 border border-[#0071E3]/20">
+              BP
+            </div>
+            <div class="flex flex-col min-w-0 text-left">
+              <span class="text-[13px] font-semibold text-[#1D1D1F] truncate group-hover:text-[#0071E3] transition-apple">Bhavesh Patel</span>
+              <span class="text-[11px] text-[#86868B] font-medium leading-tight">Admin</span>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-[#86868B] group-hover:text-[#1D1D1F] transition-apple flex-shrink-0 ml-1"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 flex flex-col gap-5 pb-8">
+      
+      <!-- Greeting Row: No search bar, no theme toggle -->
+      <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-1">
+        <!-- Left: Bold Large Greeting -->
+        <div>
+          <h1 class="text-[28px] sm:text-[32px] font-bold text-[#1D1D1F] tracking-tight leading-snug">
+            Good afternoon, Bhavesh
+          </h1>
+          <p class="text-[14px] sm:text-[15px] text-[#6E6E73] mt-0.5 font-normal">
+            Stay connected with your alumni community
+          </p>
+        </div>
+
+        <!-- Right: Rounded Pill with College Name (No truncation, wraps onto 2 lines) -->
+        <div class="self-start sm:self-center bg-white rounded-full card-hairline shadow-apple-card px-4 py-2 flex items-center gap-3 max-w-[380px] hover:shadow-apple-hover transition-apple">
+          <div class="w-8 h-8 rounded-[10px] bg-[#EBF5FF] flex items-center justify-center flex-shrink-0 border border-[#0071E3]/15">
+            <svg class="w-4 h-4 text-[#0071E3]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          </div>
+          <span class="text-[12.5px] font-medium text-[#1D1D1F] leading-snug break-words">
+            Shah &amp; Anchor Kutchhi Engineering College, Mumbai
+          </span>
+        </div>
+      </header>
+
+      <!-- Row 1: Four Equal Stat Cards -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Stat 1: Alumni in your college -->
+        <div class="bg-white rounded-[28px] p-7 card-hairline shadow-apple-card hover:shadow-apple-hover hover:-translate-y-0.5 transition-apple cursor-pointer group flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-[18px] bg-[#EBF5FF] text-[#0071E3] flex items-center justify-center">
+              <i data-lucide="users" class="w-5 h-5 stroke-[2]"></i>
+            </div>
+            <div class="w-7 h-7 rounded-full bg-black/[0.03] group-hover:bg-[#0071E3]/10 flex items-center justify-center transition-apple">
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-[#86868B] group-hover:text-[#0071E3] transition-apple"></i>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="text-[34px] font-bold text-[#1D1D1F] tracking-tight leading-none">48</div>
+            <div class="text-[13px] font-medium text-[#6E6E73] mt-2.5 leading-tight">
+              Alumni in<br>your college
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat 2: Unread messages -->
+        <div class="bg-white rounded-[28px] p-7 card-hairline shadow-apple-card hover:shadow-apple-hover hover:-translate-y-0.5 transition-apple cursor-pointer group flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-[18px] bg-[#FEECEC] text-[#FF3B30] flex items-center justify-center">
+              <i data-lucide="message-square" class="w-5 h-5 stroke-[2]"></i>
+            </div>
+            <div class="w-7 h-7 rounded-full bg-black/[0.03] group-hover:bg-[#FF3B30]/10 flex items-center justify-center transition-apple">
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-[#86868B] group-hover:text-[#FF3B30] transition-apple"></i>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="text-[34px] font-bold text-[#1D1D1F] tracking-tight leading-none">3</div>
+            <div class="text-[13px] font-medium text-[#6E6E73] mt-2.5 leading-tight">
+              Unread<br>messages
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat 3: New jobs this week -->
+        <div class="bg-white rounded-[28px] p-7 card-hairline shadow-apple-card hover:shadow-apple-hover hover:-translate-y-0.5 transition-apple cursor-pointer group flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-[18px] bg-[#E8F5E9] text-[#2E7D32] flex items-center justify-center">
+              <i data-lucide="briefcase" class="w-5 h-5 stroke-[2]"></i>
+            </div>
+            <div class="w-7 h-7 rounded-full bg-black/[0.03] group-hover:bg-[#2E7D32]/10 flex items-center justify-center transition-apple">
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-[#86868B] group-hover:text-[#2E7D32] transition-apple"></i>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="text-[34px] font-bold text-[#1D1D1F] tracking-tight leading-none">7</div>
+            <div class="text-[13px] font-medium text-[#6E6E73] mt-2.5 leading-tight">
+              New jobs<br>this week
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat 4: Upcoming events -->
+        <div class="bg-white rounded-[28px] p-7 card-hairline shadow-apple-card hover:shadow-apple-hover hover:-translate-y-0.5 transition-apple cursor-pointer group flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div class="w-12 h-12 rounded-[18px] bg-[#F3E8FF] text-[#7E22CE] flex items-center justify-center">
+              <i data-lucide="calendar" class="w-5 h-5 stroke-[2]"></i>
+            </div>
+            <div class="w-7 h-7 rounded-full bg-black/[0.03] group-hover:bg-[#7E22CE]/10 flex items-center justify-center transition-apple">
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-[#86868B] group-hover:text-[#7E22CE] transition-apple"></i>
+            </div>
+          </div>
+          <div class="mt-5">
+            <div class="text-[34px] font-bold text-[#1D1D1F] tracking-tight leading-none">2</div>
+            <div class="text-[13px] font-medium text-[#6E6E73] mt-2.5 leading-tight">
+              Upcoming<br>events
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Row 2: Two Columns (Hero Card + Upcoming Events) -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        
+        <!-- Left: Hero Card (rounded-[32px], p-8 text-white) -->
+        <div class="lg:col-span-7 hero-gradient rounded-[32px] p-7 sm:p-8 text-white shadow-apple-hover relative overflow-hidden flex flex-col justify-between min-h-[250px]">
+          <!-- Subtle ambient pattern circles (Apple-style specular highlights) -->
+          <div class="absolute -right-12 -top-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="absolute right-20 -bottom-10 w-48 h-48 bg-[#0071E3]/30 rounded-full blur-xl pointer-events-none"></div>
+
+          <!-- Hero Content -->
+          <div class="relative z-10 max-w-md">
+            <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11.5px] font-semibold tracking-wide uppercase mb-3">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-200"></i>
+              Community Hub
+            </span>
+            <h2 class="text-[26px] sm:text-[30px] font-bold text-white tracking-tight leading-tight">
+              Find batchmates
+            </h2>
+            <p class="text-[14px] sm:text-[15px] text-white/80 mt-1.5 font-normal">
+              Explore the alumni directory
+            </p>
+          </div>
+
+          <!-- Hero Footer: White Pill Button + Carousel Controls -->
+          <div class="relative z-10 flex items-center justify-between mt-6 pt-2">
+            <a href="#directory" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#0A2540] font-semibold text-[14px] hover:bg-white/90 shadow-sm transition-apple group">
+              <span>Explore directory</span>
+              <span class="group-hover:translate-x-0.5 transition-apple">→</span>
+            </a>
+
+            <!-- Small carousel dots with tiny pause button -->
+            <div class="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              <span class="w-2 h-2 rounded-full bg-white"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+              <button aria-label="Pause carousel" class="ml-1 text-white/70 hover:text-white transition-apple flex items-center justify-center">
+                <i data-lucide="pause" class="w-3 h-3 stroke-[2.5]"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Upcoming Events Card -->
+        <div class="lg:col-span-5 bg-white rounded-[28px] p-7 sm:p-8 card-hairline shadow-apple-card flex flex-col justify-between">
+          <!-- Card Header: 17px semibold title + View all link -->
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[17px] font-semibold text-[#1D1D1F] tracking-tight">
+              Upcoming events
+            </h3>
+            <a href="#events" class="text-[13px] font-semibold text-[#0071E3] hover:text-apple-blue-hover flex items-center gap-1 transition-apple">
+              View all <span>→</span>
+            </a>
+          </div>
+
+          <!-- Two Event Rows -->
+          <div class="space-y-3.5">
+            <!-- Event 1: NOV 15 -->
+            <div class="p-4 rounded-[18px] bg-[#FAF9FC] card-hairline hover:bg-[#F4F3F8] transition-apple flex items-center gap-3.5 cursor-pointer">
+              <!-- Rounded Date Tile -->
+              <div class="w-12 h-12 rounded-[16px] bg-[#EBF5FF] border border-[#0071E3]/20 flex flex-col items-center justify-center flex-shrink-0 text-center">
+                <span class="text-[10px] font-bold text-[#0071E3] tracking-wider uppercase leading-none">NOV</span>
+                <span class="text-[16px] font-bold text-[#1D1D1F] leading-tight mt-0.5">15</span>
+              </div>
+              <!-- Event details -->
+              <div class="flex-1 min-w-0">
+                <h4 class="text-[14px] font-semibold text-[#1D1D1F] truncate leading-snug">
+                  Annual Alumni Reunion 2024
+                </h4>
+                <div class="flex items-center gap-3 mt-1 text-[12px] text-[#6E6E73]">
+                  <span class="flex items-center gap-1 truncate">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#86868B] stroke-[1.8]"></i>
+                    Main Auditorium, Chembur
+                  </span>
+                  <span class="flex items-center gap-1 flex-shrink-0">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-[#86868B] stroke-[1.8]"></i>
+                    5:00 PM
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Event 2: DEC 05 -->
+            <div class="p-4 rounded-[18px] bg-[#FAF9FC] card-hairline hover:bg-[#F4F3F8] transition-apple flex items-center gap-3.5 cursor-pointer">
+              <!-- Rounded Date Tile -->
+              <div class="w-12 h-12 rounded-[16px] bg-[#EDE7F6] border border-[#7E22CE]/20 flex flex-col items-center justify-center flex-shrink-0 text-center">
+                <span class="text-[10px] font-bold text-[#7E22CE] tracking-wider uppercase leading-none">DEC</span>
+                <span class="text-[16px] font-bold text-[#1D1D1F] leading-tight mt-0.5">05</span>
+              </div>
+              <!-- Event details -->
+              <div class="flex-1 min-w-0">
+                <h4 class="text-[14px] font-semibold text-[#1D1D1F] truncate leading-snug">
+                  Tech Leadership &amp; AI Panel
+                </h4>
+                <div class="flex items-center gap-3 mt-1 text-[12px] text-[#6E6E73]">
+                  <span class="flex items-center gap-1 truncate">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#86868B] stroke-[1.8]"></i>
+                    Virtual / Zoom Live
+                  </span>
+                  <span class="flex items-center gap-1 flex-shrink-0">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-[#86868B] stroke-[1.8]"></i>
+                    6:30 PM
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Row 3: Three Equal-Height Cards -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+        
+        <!-- Card 1: Recent Activity -->
+        <div class="bg-white rounded-[28px] p-7 sm:p-8 card-hairline shadow-apple-card flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[17px] font-semibold text-[#1D1D1F] tracking-tight">
+              Recent activity
+            </h3>
+            <span class="text-[12px] font-medium text-[#86868B]">Live</span>
+          </div>
+
+          <!-- Activity List (3 rows) -->
+          <div class="space-y-4 flex-1 flex flex-col justify-around">
+            <!-- Activity 1: A new job posted -->
+            <div class="flex items-start gap-3">
+              <div class="relative flex-shrink-0">
+                <div class="w-10 h-10 rounded-full bg-[#EBF5FF] text-[#0071E3] font-semibold text-[12.5px] flex items-center justify-center border border-[#0071E3]/15">
+                  RS
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#2E7D32] text-white flex items-center justify-center border-2 border-white">
+                  <i data-lucide="briefcase" class="w-2.5 h-2.5 stroke-[2.5]"></i>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-baseline justify-between gap-1">
+                  <p class="text-[13.5px] font-semibold text-[#1D1D1F] truncate leading-tight">
+                    Rohit Sharma posted a job
+                  </p>
+                  <span class="text-[11.5px] text-[#86868B] whitespace-nowrap">2h ago</span>
+                </div>
+                <p class="text-[12.5px] text-[#6E6E73] truncate mt-0.5">
+                  Senior Backend Architect at Barclays Pune
+                </p>
+              </div>
+            </div>
+
+            <div class="h-px bg-black/[0.04] w-full"></div>
+
+            <!-- Activity 2: New messages in a batch chat -->
+            <div class="flex items-start gap-3">
+              <div class="relative flex-shrink-0">
+                <div class="w-10 h-10 rounded-full bg-[#EDE7F6] text-[#7E22CE] font-semibold text-[12.5px] flex items-center justify-center border border-[#7E22CE]/15">
+                  20
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#0071E3] text-white flex items-center justify-center border-2 border-white">
+                  <i data-lucide="message-square" class="w-2.5 h-2.5 stroke-[2.5]"></i>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-baseline justify-between gap-1">
+                  <p class="text-[13.5px] font-semibold text-[#1D1D1F] truncate leading-tight">
+                    Batch of 2020 chat
+                  </p>
+                  <span class="text-[11.5px] text-[#86868B] whitespace-nowrap">4h ago</span>
+                </div>
+                <p class="text-[12.5px] text-[#6E6E73] truncate mt-0.5">
+                  Priya &amp; 4 others shared updates on reunion
+                </p>
+              </div>
+            </div>
+
+            <div class="h-px bg-black/[0.04] w-full"></div>
+
+            <!-- Activity 3: A forum reply -->
+            <div class="flex items-start gap-3">
+              <div class="relative flex-shrink-0">
+                <div class="w-10 h-10 rounded-full bg-[#E0F2E9] text-[#2E7D32] font-semibold text-[12.5px] flex items-center justify-center border border-[#2E7D32]/15">
+                  AK
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#F59E0B] text-white flex items-center justify-center border-2 border-white">
+                  <i data-lucide="messages-square" class="w-2.5 h-2.5 stroke-[2.5]"></i>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-baseline justify-between gap-1">
+                  <p class="text-[13.5px] font-semibold text-[#1D1D1F] truncate leading-tight">
+                    Aniket Kulkarni replied
+                  </p>
+                  <span class="text-[11.5px] text-[#86868B] whitespace-nowrap">1d ago</span>
+                </div>
+                <p class="text-[12.5px] text-[#6E6E73] truncate mt-0.5">
+                  "Tips for transitioning from IT to Product Management"
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Quick Actions (2x2 Grid of rounded tinted tiles with rounded-[18px]) -->
+        <div class="bg-white rounded-[28px] p-7 sm:p-8 card-hairline shadow-apple-card flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[17px] font-semibold text-[#1D1D1F] tracking-tight">
+              Quick actions
+            </h3>
+            <span class="text-[12px] font-medium text-[#86868B]">Shortcuts</span>
+          </div>
+
+          <!-- 2x2 Grid -->
+          <div class="grid grid-cols-2 gap-3.5 flex-1">
+            <!-- Action 1: Start a chat -->
+            <a href="#chat" class="p-4 rounded-[18px] bg-[#EBF5FF]/70 hover:bg-[#EBF5FF] border border-[#0071E3]/15 transition-apple flex flex-col justify-between group cursor-pointer">
+              <div class="w-10 h-10 rounded-[12px] bg-white text-[#0071E3] flex items-center justify-center shadow-xs">
+                <i data-lucide="message-circle" class="w-4 h-4 stroke-[2]"></i>
+              </div>
+              <span class="text-[13px] font-semibold text-[#1D1D1F] group-hover:text-[#0071E3] transition-apple leading-tight mt-3">
+                Start a chat
+              </span>
+            </a>
+
+            <!-- Action 2: Browse jobs -->
+            <a href="#jobs" class="p-4 rounded-[18px] bg-[#E8F5E9]/70 hover:bg-[#E8F5E9] border border-[#2E7D32]/15 transition-apple flex flex-col justify-between group cursor-pointer">
+              <div class="w-10 h-10 rounded-[12px] bg-white text-[#2E7D32] flex items-center justify-center shadow-xs">
+                <i data-lucide="briefcase" class="w-4 h-4 stroke-[2]"></i>
+              </div>
+              <span class="text-[13px] font-semibold text-[#1D1D1F] group-hover:text-[#2E7D32] transition-apple leading-tight mt-3">
+                Browse jobs
+              </span>
+            </a>
+
+            <!-- Action 3: Post on forums -->
+            <a href="#forums" class="p-4 rounded-[18px] bg-[#F3E8FF]/70 hover:bg-[#F3E8FF] border border-[#7E22CE]/15 transition-apple flex flex-col justify-between group cursor-pointer">
+              <div class="w-10 h-10 rounded-[12px] bg-white text-[#7E22CE] flex items-center justify-center shadow-xs">
+                <i data-lucide="pen-square" class="w-4 h-4 stroke-[2]"></i>
+              </div>
+              <span class="text-[13px] font-semibold text-[#1D1D1F] group-hover:text-[#7E22CE] transition-apple leading-tight mt-3">
+                Post on forums
+              </span>
+            </a>
+
+            <!-- Action 4: Register for event -->
+            <a href="#events" class="p-4 rounded-[18px] bg-[#FFF7ED]/80 hover:bg-[#FFF7ED] border border-[#EA580C]/15 transition-apple flex flex-col justify-between group cursor-pointer">
+              <div class="w-10 h-10 rounded-[12px] bg-white text-[#EA580C] flex items-center justify-center shadow-xs">
+                <i data-lucide="ticket" class="w-4 h-4 stroke-[2]"></i>
+              </div>
+              <span class="text-[13px] font-semibold text-[#1D1D1F] group-hover:text-[#EA580C] transition-apple leading-tight mt-3">
+                Register for event
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 3: Your Profile -->
+        <div class="bg-white rounded-[28px] p-7 sm:p-8 card-hairline shadow-apple-card flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-[17px] font-semibold text-[#1D1D1F] tracking-tight">
+              Your profile
+            </h3>
+            <span class="text-[12px] text-[#86868B] font-medium">B.E. Computer</span>
+          </div>
+
+          <!-- Avatar & Verified Badge -->
+          <div class="flex items-center gap-4 my-2">
+            <div class="w-16 h-16 rounded-full bg-[#EBF5FF] text-[#0071E3] font-bold text-[20px] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm ring-1 ring-[#0071E3]/20">
+              BP
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-[16px] font-bold text-[#1D1D1F] leading-tight">Bhavesh Patel</h4>
+              </div>
+              <!-- Green Verified Pill Badge -->
+              <div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#E8F5E9] text-[#2E7D32] text-[11px] font-semibold mt-1">
+                <i data-lucide="check" class="w-3 h-3 stroke-[2.5]"></i>
+                <span>Verified</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Completeness (80% & Progress Bar) with rounded-[18px] -->
+          <div class="my-2 bg-[#FAF9FC] p-4 rounded-[18px] card-hairline">
+            <div class="flex items-center justify-between text-[13px] mb-2 font-medium">
+              <span class="text-[#6E6E73]">Profile completeness</span>
+              <span class="text-[#1D1D1F] font-bold">80%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-black/[0.06] overflow-hidden">
+              <div class="h-full rounded-full bg-[#0071E3] w-[80%] transition-all duration-500 ease-out"></div>
+            </div>
+          </div>
+
+          <!-- Pill Button "Finish profile" -->
+          <a href="#profile" class="w-full py-3 px-4 rounded-full bg-[#0071E3] hover:bg-apple-blue-hover text-white text-[14px] font-semibold text-center transition-apple shadow-xs block mt-2">
+            Finish profile
+          </a>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Initialize Lucide Icons -->
+  <script>
+    lucide.createIcons();
+  </script>
+
+
+
+
+</body></html>

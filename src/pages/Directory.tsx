@@ -36,8 +36,22 @@ export interface UserProfile {
 
 const industries = ['Software Engineering', 'Data Science', 'Product Management', 'Design', 'Finance'];
 const years = [2026, 2025, 2024, 2023, 2022, 2021];
+const branches = [
+  'Computer Science and Engineering',
+  'Computer Engineering',
+  'Information Technology',
+  'Electronics and Telecommunication Engineering',
+  'Mechanical Engineering',
+  'Civil Engineering',
+  'Electrical Engineering',
+  'Artificial Intelligence and Data Science',
+  'Computer Science and Engineering (AI & ML)',
+  'Electronics and Computer Engineering',
+  'Robotics and Automation',
+  'Chemical Engineering',
+];
 
-type FilterKind = 'industry' | 'year' | null;
+type FilterKind = 'industry' | 'year' | 'branch' | null;
 
 const FilterPopover: React.FC<{
   label: string;
@@ -120,6 +134,7 @@ const Directory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState('');
   const [alumni, setAlumni] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [openFilter, setOpenFilter] = useState<FilterKind>(null);
@@ -159,13 +174,15 @@ const Directory: React.FC = () => {
                           user.skills.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesIndustry = selectedIndustry ? user.industry === selectedIndustry : true;
     const matchesYear = selectedYear ? user.graduation_year?.toString() === selectedYear : true;
+    const matchesBranch = selectedBranch ? user.branch === selectedBranch : true;
 
-    return matchesSearch && matchesIndustry && matchesYear;
+    return matchesSearch && matchesIndustry && matchesYear && matchesBranch;
   });
 
   const activeFilters = [
     selectedIndustry ? { key: 'industry', label: selectedIndustry, clear: () => setSelectedIndustry('') } : null,
     selectedYear ? { key: 'year', label: `Class of ${selectedYear}`, clear: () => setSelectedYear('') } : null,
+    selectedBranch ? { key: 'branch', label: selectedBranch, clear: () => setSelectedBranch('') } : null,
   ].filter(Boolean) as Array<{ key: string; label: string; clear: () => void }>;
 
   const stagger = listStagger();
@@ -192,6 +209,15 @@ const Directory: React.FC = () => {
           <span className={styles.kbdHint} aria-hidden="true">⌘K</span>
         </div>
         <div className={styles.filters}>
+          <FilterPopover
+            label="Branch"
+            value={selectedBranch}
+            options={branches}
+            open={openFilter === 'branch'}
+            onToggle={() => setOpenFilter((v) => (v === 'branch' ? null : 'branch'))}
+            onClose={() => setOpenFilter(null)}
+            onSelect={setSelectedBranch}
+          />
           <FilterPopover
             label="Industry"
             value={selectedIndustry}
@@ -276,10 +302,10 @@ const Directory: React.FC = () => {
           title="No alumni found"
           description="Try adjusting your search or filters to find people in the network."
           action={
-            (searchTerm || selectedIndustry || selectedYear) ? (
+            (searchTerm || selectedIndustry || selectedYear || selectedBranch) ? (
               <button
                 type="button"
-                onClick={() => { setSearchTerm(''); setSelectedIndustry(''); setSelectedYear(''); }}
+                onClick={() => { setSearchTerm(''); setSelectedIndustry(''); setSelectedYear(''); setSelectedBranch(''); }}
                 style={{
                   minHeight: 40, padding: '0 16px', borderRadius: 999, border: '1px solid var(--border)',
                   background: 'var(--surface)', color: 'var(--text)', font: 'var(--type-footnote)', fontWeight: 600, cursor: 'pointer',

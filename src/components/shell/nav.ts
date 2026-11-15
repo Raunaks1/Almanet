@@ -18,11 +18,11 @@ export interface ShellNavItem {
 /** Primary destinations in the authenticated shell. */
 export const NAV_ITEMS: ShellNavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/chat', label: 'Chat', icon: MessageCircle },
   { to: '/directory', label: 'Directory', icon: Users },
   { to: '/forums', label: 'Forums', icon: MessagesSquare },
   { to: '/jobs', label: 'Jobs', icon: Briefcase },
   { to: '/events', label: 'Events', icon: Calendar },
-  { to: '/chat', label: 'Chat', icon: MessageCircle },
 ];
 
 /** Admin-only destination, rendered as its own group. */

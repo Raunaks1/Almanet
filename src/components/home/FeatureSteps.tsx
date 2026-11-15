@@ -81,14 +81,22 @@ export default function FeatureSteps({
       setInView(true);
       return;
     }
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) setInView(e.isIntersecting);
-      },
-      { threshold: 0.15 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
+    let io: IntersectionObserver | null = null;
+    try {
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) setInView(e.isIntersecting);
+        },
+        { threshold: 0.15 },
+      );
+      io.observe(el);
+    } catch {
+      // IntersectionObserver not supported — assume in view.
+      setInView(true);
+    }
+    return () => {
+      io?.disconnect();
+    };
   }, []);
 
   // Reveal header/steps once when scrolled into view
@@ -98,14 +106,22 @@ export default function FeatureSteps({
       setRevealed(true);
       return;
     }
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) setRevealed(true);
-      },
-      { threshold: 0.1 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
+    let io: IntersectionObserver | null = null;
+    try {
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) if (e.isIntersecting) setRevealed(true);
+        },
+        { threshold: 0.1 },
+      );
+      io.observe(el);
+    } catch {
+      // IntersectionObserver not supported — assume revealed.
+      setRevealed(true);
+    }
+    return () => {
+      io?.disconnect();
+    };
   }, []);
 
   // Pause while tab hidden

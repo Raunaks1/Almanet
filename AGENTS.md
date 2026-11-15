@@ -21,11 +21,23 @@ Almanet: alumni network SPA (React 19 + TypeScript + Vite), deployed to GitHub P
 
 We are replacing the neo-brutalist UI with an Apple-grade glassmorphism design (iOS/macOS "Liquid Glass" feel). Backend, security, and logic fixes come in a later phase.
 
+## AI Job Board & Resume Optimization Studio (authorized feature phase)
+
+The following feature is authorized for implementation as a separate phase:
+
+- **Routes**: `/job-board` and `/jobs/:jobId/optimise` — add to `App.tsx` HashRouter
+- **Allowed new dependencies**: `jspdf`, `html2canvas` (plus `@types/jspdf` as dev dependency)
+- **Data integration**: Client-side mock data (React state + localStorage). No Supabase schema changes required for this phase.
+- **Type file**: `src/types/job-matching.ts`
+- **Scoring logic**: `src/lib/atsScoring.ts`
+
 **Do not modify during UI work:**
 - Supabase queries, inserts, updates, RPC calls, storage uploads
 - `src/lib/useAuth.ts`, `src/lib/chat.ts`, `src/lib/supabase.ts`, `src/lib/colleges.ts`, `src/lib/collegeNews.ts`
 - Route definitions, `HashRouter`, `VerificationGate` logic, submit handlers, validation rules
 - Data shapes and field names
+
+*Exception: The AI Job Board feature is authorized to add new routes (`/job-board`, `/jobs/:jobId/optimise`) and new data types/logic files as listed above.*
 
 **Known issues to report, not fix (during UI phase):** the hardcoded admin passphrase in `Auth.tsx`, ungated `/admin`, `user_metadata` fallbacks in `useAuth`, the ID document that is never uploaded, mock Apply/Register/replies. If you touch a file containing one of these, leave it as is and mention it in your summary.
 
@@ -46,7 +58,7 @@ We are replacing the neo-brutalist UI with an Apple-grade glassmorphism design (
 - **No Tailwind or any CSS/UI framework.** Plain CSS with CSS variables; CSS Modules are allowed. Inline styles only for truly dynamic values (e.g. computed positions).
 - New design tokens live in `src/styles/tokens.css`; reset and global rules in `src/styles/base.css`. Shared components live in `src/components/ui/` (each with a co-located CSS Module and a barrel `index.ts`). Page-level styles live next to the page.
 - Legacy variables in `src/index.css` (`--bg-primary`, `--brand-primary`, `.card`, `.btn`, `.input-field`) are still used by Profile, AdminDashboard and VerificationGate until they are redesigned. Keep them working by aliasing them to the new tokens. Remove them only once nothing references them.
-- Allowed new dependencies: `motion` (import from `motion/react`), `@fontsource-variable/inter`. Ask before adding anything else.
+- Allowed new dependencies: `motion` (import from `motion/react`), `@fontsource-variable/inter`, `docx-preview` (PDF/DOCX document viewer). Ask before adding anything else.
 - Icons: `lucide-react` only, stroke width 1.75. No emoji as UI icons.
 
 ## Design constitution
@@ -88,5 +100,6 @@ Update this checklist as each prompt completes.
 - [x] Directory + Profile
 - [x] Chat
 - [x] Forums + Jobs + Events
+- [x] Forums mobile (360–430px + tablets: chip row, FAB, bottom-sheet modals, empty/overflow fixes)
 - [x] AdminDashboard
 - [x] Final polish and audit

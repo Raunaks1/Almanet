@@ -1,8 +1,9 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, useReducedMotion } from 'motion/react';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, Menu, X } from 'lucide-react';
 import { DURATION, EASE_REVEAL } from '../lib/motion';
+import { normaliseRootMargin } from '../lib/utils';
 import { cx } from '../components/ui/internal';
 import { ConnectScene } from '../components/home/ConnectScene';
 import { globePeople } from '../data/globePeople';
@@ -10,6 +11,7 @@ import SiteFooter from '../components/layout/SiteFooter';
 import { VariableFontHover } from '../components/ui';
 import { type Step } from '../components/home/HowItWorks';
 import styles from './Home.module.css';
+import './Home.mobile.css';
 
 const FeatureSteps = lazy(() => import('../components/home/FeatureSteps'));
 const HowItWorksLazy = lazy(() => import('../components/home/HowItWorks'));
@@ -36,10 +38,28 @@ const FEATURES = [
   { step: '04', title: 'Community forums', content: 'Share updates, ask questions and start discussions with your college community.' },
 ];
 
+/** Tiny matchMedia hook: safe SSR default of false, updates on resize/orientation. */
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia(query);
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+    setMatches(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, [query]);
+  return matches;
+}
+
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [navActiveId, setNavActiveId] = useState<string>('home');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const hamburgerRef = useRef<HTMLButtonElement | null>(null);
   const reduced = useReducedMotion() ?? false;
+  const isSmallScreen = useMediaQuery('(max-width: 1023px)');
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -52,23 +72,43 @@ export default function Home() {
   // becomes the active nav link.
   useEffect(() => {
     const ids = ['home', 'how-it-works', 'features', 'faq'];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.boundingClientRect.top - a.boundingClientRect.top)[0];
-        if (visible) {
-          setNavActiveId(visible.target.id);
-        }
-      },
-      { threshold: 0.33, rootMargin: '0px 0px -66% 0px' },
-    );
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
+    let observer: IntersectionObserver | null = null;
+    try {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => b.boundingClientRect.top - a.boundingClientRect.top)[0];
+          if (visible) {
+            setNavActiveId(visible.target.id);
+          }
+        },
+        { threshold: 0.33, rootMargin: normaliseRootMargin('0px 0px -66% 0px') },
+      );
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observer!.observe(el);
+      });
+    } catch {
+      // IntersectionObserver not supported or invalid options — skip scroll spy.
+    }
+    return () => {
+      observer?.disconnect();
+    };
   }, []);
+
+  // Close menu on route change — only when the route actually changes,
+  // not when menuOpen itself toggles (menuOpen is deliberately not a dep).
+  useEffect(() => {
+    if (menuOpen) setMenuOpen(false);
+  }, [location]);
+
+  // Body scroll lock when menu is open.
+  useEffect(() => {
+    if (!menuOpen) return;
+    document.body.classList.add('menu-open');
+    return () => document.body.classList.remove('menu-open');
+  }, [menuOpen]);
 
   const scrollToSection = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -79,18 +119,52 @@ export default function Home() {
       el?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
     }
     setNavActiveId(id);
+    if (isSmallScreen) setMenuOpen(false);
   };
 
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+  };
+
+  // Escape closes the menu; focus returns to the hamburger button.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMenuOpen(false);
+        hamburgerRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
+
+  // Outside tap closes the menu.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      const hamburger = hamburgerRef.current;
+      const panel = document.querySelector('.home-menu-panel');
+      if (hamburger && !hamburger.contains(target) && panel && !panel.contains(target)) {
+        setMenuOpen(false);
+        hamburger.focus();
+      }
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [menuOpen]);
+
   return (
-    <div className={styles.page}>
+    <div className={cx(styles.page, 'home')}>
       {/* Floating glass pill nav */}
-      <header className={cx(styles.nav, scrolled && styles.navScrolled)}>
+      <header className={cx(styles.nav, scrolled && styles.navScrolled, 'home-nav')}>
         <nav className={styles.navInner} aria-label="Primary">
-          <Link to="/" className={styles.brand}>
+          <Link to="/" className={cx(styles.brand, 'home-brand')}>
             <GraduationCap size={20} strokeWidth={1.75} aria-hidden="true" />
             <span>Almanet</span>
           </Link>
-          <ul className={styles.navLinks}>
+          <ul className={cx(styles.navLinks, 'home-nav-links')}>
             {NAV_LINKS.map((link) => (
               <li key={link.id}>
                 <a
@@ -110,24 +184,69 @@ export default function Home() {
               </li>
             ))}
           </ul>
-          <div className={styles.navActions}>
+          <div className={cx(styles.navActions, 'home-nav-actions')}>
             <Link to="/auth" className={styles.btnSecondary}>
               Login
             </Link>
-            <Link to="/auth" className={styles.btnPrimary}>
+            <Link to="/auth" className={cx(styles.btnPrimary, 'home-btn-primary')}>
               Get started
             </Link>
+            {/* Hamburger menu button — hidden on desktop via CSS, shown on mobile/tablet */}
+            <button
+              ref={hamburgerRef}
+              className="home-hamburger"
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+              aria-controls="home-menu-panel"
+              onClick={toggleMenu}
+              style={{ display: 'none' }}
+            >
+              {menuOpen ? <X size={24} strokeWidth={1.75} aria-hidden="true" /> : <Menu size={24} strokeWidth={1.75} aria-hidden="true" />}
+            </button>
           </div>
         </nav>
       </header>
 
+      {/* Mobile/tablet menu panel — hidden by default, animated open via CSS */}
+      <div
+        id="home-menu-panel"
+        className={cx('home-menu-panel', menuOpen && 'open')}
+        role="menu"
+        aria-label="Main navigation"
+        style={{ display: 'none' }}
+      >
+        <ul className="home-menu-list">
+          {NAV_LINKS.map((link) => (
+            <li key={link.id} className="home-menu-item" role="none">
+              <a
+                href="#/"
+                onClick={scrollToSection(link.id)}
+                className={cx(navActiveId === link.id && 'home-menu-item--active')}
+                role="menuitem"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <hr className="home-menu-divider" aria-hidden="true" />
+        <div className="home-menu-action">
+          <Link to="/auth" className="home-menu-login" role="menuitem">
+            Login
+          </Link>
+          <Link to="/auth" className="home-menu-getstarted" role="menuitem">
+            Get started
+          </Link>
+        </div>
+      </div>
+
       <main className={styles.main}>
         {/* Hero — headline, subtitle, and CTA buttons */}
-        <section id="home" className={styles.hero} aria-labelledby="home-hero-title">
+        <section id="home" className={cx(styles.hero, 'home-hero')} aria-labelledby="home-hero-title">
           <div className={styles.container}>
             <motion.h1
               id="home-hero-title"
-              className={styles.heroTitle}
+              className={cx(styles.heroTitle, 'home-hero-title')}
               initial={reduced ? false : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: DURATION.slow, ease: EASE_REVEAL }}
@@ -135,7 +254,7 @@ export default function Home() {
               Remember your batch? They remember you.
             </motion.h1>
             <motion.p
-              className={styles.heroSub}
+              className={cx(styles.heroSub, 'home-hero-sub')}
               initial={reduced ? false : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: DURATION.slow, ease: EASE_REVEAL, delay: reduced ? 0 : DURATION.fast * 0.4 }}
@@ -143,15 +262,15 @@ export default function Home() {
               Find people, share opportunities, and stay close to your community.
             </motion.p>
             <motion.div
-              className={styles.heroActions}
+              className={cx(styles.heroActions, 'home-hero-actions')}
               initial={reduced ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: DURATION.slow, ease: EASE_REVEAL, delay: reduced ? 0 : DURATION.fast * 0.8 }}
             >
-              <Link to="/auth" className={styles.btnPrimary}>
+              <Link to="/auth" className={cx(styles.btnPrimary, 'home-btn-primary')}>
                 Get started
               </Link>
-              <Link to="/auth" className={styles.btnSecondary}>
+              <Link to="/auth" className={cx(styles.btnSecondary, 'home-btn-secondary')}>
                 Login
               </Link>
             </motion.div>
@@ -159,7 +278,7 @@ export default function Home() {
         </section>
 
         {/* Continuous rotating 3D globe showcase overlapping slightly under the hero */}
-        <section className={styles.globeSection} aria-label="Global Alumni Network">
+        <section className={cx(styles.globeSection, 'home-globe-section')} aria-label="Global Alumni Network">
           <ConnectScene
             items={globePeople}
             autoplay={true}

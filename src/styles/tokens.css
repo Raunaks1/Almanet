@@ -14,7 +14,7 @@
   /* ─── Ink & canvas ─── */
   --bg: #f5f5f7;
   --text: #1d1d1f;
-  --text-2: #6e6e73;
+  --text-2: #636366;
   --text-3: #98989d;
 
   /* ─── Accent & status ─── */
@@ -63,12 +63,68 @@
   --mesh-blue: #c7e4f2;
   --mesh-accent: #c5d7f7;
 
+  /* ─── Hero gradient (accent → lavender) ─── */
+  --grad-hero: linear-gradient(135deg, var(--accent), var(--mesh-lavender));
+
+  /* ─── Semi-opaque card surface (no blur) ─── */
+  --surface-card: rgb(255 255 255 / 0.92);
+
+  /* ─── Paper — document preview is always white, even in dark mode ─── */
+  --paper: #ffffff;
+
   /* ─── Radii: 10 / 14 / 20 / 28 / pill ─── */
   --radius-1: 10px;
   --radius-2: 14px;
   --radius-3: 20px;
   --radius-4: 28px;
   --radius-pill: 999px;
+
+  /* ─── Dashboard radii (named, light theme) ─── */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-card: 28px;
+  --radius-hero: 32px;
+  --radius-tile: 18px;
+  --radius-tile-sm: 12px;
+  --radius-date-tile: 16px;
+
+  /* ─── Stitch Dashboard tokens (light) ─── */
+  --grad-hero-cosmic: linear-gradient(135deg, #0a2540 0%, #103778 45%, #2b1d66 100%);
+  --hero-glow-1: rgba(255, 255, 255, 0.1);
+  --hero-glow-2: rgba(0, 113, 227, 0.3);
+
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  --shadow-card-hover: 0 10px 25px -4px rgba(0, 0, 0, 0.07), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+
+  --surface-tile: #faf9fc;
+  --surface-tile-hover: #f4f3f8;
+  --surface-tile-border: rgba(0, 0, 0, 0.06);
+
+  --tint-blue-bg: #ebf5ff;
+  --tint-blue-border: rgba(0, 113, 227, 0.15);
+  --tint-blue-text: #0071e3;
+
+  --tint-red-bg: #feecec;
+  --tint-red-border: rgba(255, 59, 48, 0.15);
+  --tint-red-text: #ff3b30;
+
+  --tint-green-bg: #e8f5e9;
+  --tint-green-border: rgba(46, 125, 50, 0.15);
+  --tint-green-text: #2e7d32;
+
+  --tint-purple-bg: #f3e8ff;
+  --tint-purple-border: rgba(126, 34, 206, 0.15);
+  --tint-purple-text: #7e22ce;
+
+  --tint-orange-bg: #fff7ed;
+  --tint-orange-border: rgba(234, 88, 12, 0.15);
+  --tint-orange-text: #ea580c;
+
+  --tint-amber-bg: #fffbeb;
+  --tint-amber-border: rgba(245, 158, 11, 0.2);
+  --tint-amber-text: #ea580c;
 
   /* ─── Spacing: 4px grid ─── */
   --space-1: 4px;
@@ -129,6 +185,10 @@
   --z-modal: 1000;
   --z-toast: 1100;
 
+  /* ─── Shell layout ─── */
+  --tabbar-height: 64px;
+  --page-gutter: clamp(16px, 5vw, 24px);
+
   /* ─── Motion ─── */
   --dur-fast: 150ms;
   --dur-normal: 220ms;
@@ -147,14 +207,14 @@
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #0b0b0f;
+  --bg: #0a0a0b;
   --text: #f5f5f7;
-  --text-2: #98989d;
-  --text-3: #6e6e73;
+  --text-2: #a1a1a6;
+  --text-3: #8e8e93;
 
   --accent: #0a84ff;
   --accent-hover: #409cff;
-  --accent-text: #2997ff;
+  --accent-text: #5eb0ff;
   --accent-subtle: rgba(10, 132, 255, 0.18);
   --success: #30d158;
   --success-subtle: rgba(48, 209, 88, 0.16);
@@ -163,12 +223,14 @@
   --danger: #ff453a;
   --danger-subtle: rgba(255, 69, 58, 0.16);
 
-  --surface: #1c1c1e;
-  --surface-2: #2c2c2e;
-  --surface-3: #3a3a3c;
+  --surface: #111113;
+  --surface-2: #1a1a1d;
+  --surface-3: #2a2a2e;
 
-  --border: rgba(84, 84, 88, 0.6);
-  --border-strong: rgba(84, 84, 88, 0.85);
+  --paper: #ffffff;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
   --hairline: rgba(255, 255, 255, 0.12);
 
   --glass-bg: rgb(28 28 30 / 0.6);
@@ -191,6 +253,10 @@
   --mesh-blue: #14202e;
   --mesh-accent: #182342;
 
+  --grad-hero: linear-gradient(135deg, var(--accent), var(--mesh-lavender));
+
+  --surface-card: rgb(17 17 19 / 0.92);
+
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-2:
     0 2px 8px rgba(0, 0, 0, 0.35),
@@ -206,6 +272,66 @@
 
   /* Deep additions */
   --nav-bg: rgba(11, 11, 15, 0.72);
+  --tabbar-height: 64px;
+  --page-gutter: clamp(16px, 5vw, 24px);
+
+  /* ─── Avatar ring colours ─── */
+  --ring-orange: #ff9f0a;
+  --ring-green: #30d158;
+  --ring-blue: #0a84ff;
+  --ring-purple: #bf5af2;
+  --ring-yellow: #ffd60a;
+
+  /* ─── Radii (dashboard spec: cards 28px, controls 12px, pills 999px, sidebar 24px) ─── */
+  --radius-card: 28px;
+  --radius-control: 12px;
+  --radius-sidebar: 24px;
+
+  /* ─── Dashboard radii (named, dark theme) ─── */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-hero: 32px;
+  --radius-tile: 18px;
+  --radius-tile-sm: 12px;
+  --radius-date-tile: 16px;
+
+  /* ─── Stitch Dashboard tokens (dark) ─── */
+  --grad-hero-cosmic: linear-gradient(135deg, #061528 0%, #0d2857 45%, #1e1347 100%);
+  --hero-glow-1: rgba(255, 255, 255, 0.08);
+  --hero-glow-2: rgba(10, 132, 255, 0.25);
+
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 10px 28px -4px rgba(0, 0, 0, 0.6), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+
+  --surface-tile: #1c1c1e;
+  --surface-tile-hover: #262629;
+  --surface-tile-border: rgba(255, 255, 255, 0.08);
+
+  --tint-blue-bg: rgba(10, 132, 255, 0.15);
+  --tint-blue-border: rgba(10, 132, 255, 0.25);
+  --tint-blue-text: #0a84ff;
+
+  --tint-red-bg: rgba(255, 69, 58, 0.15);
+  --tint-red-border: rgba(255, 69, 58, 0.25);
+  --tint-red-text: #ff453a;
+
+  --tint-green-bg: rgba(48, 209, 88, 0.15);
+  --tint-green-border: rgba(48, 209, 88, 0.25);
+  --tint-green-text: #30d158;
+
+  --tint-purple-bg: rgba(191, 90, 242, 0.15);
+  --tint-purple-border: rgba(191, 90, 242, 0.25);
+  --tint-purple-text: #bf5af2;
+
+  --tint-orange-bg: rgba(255, 159, 10, 0.15);
+  --tint-orange-border: rgba(255, 159, 10, 0.25);
+  --tint-orange-text: #ff9f0a;
+
+  --tint-amber-bg: rgba(245, 158, 11, 0.15);
+  --tint-amber-border: rgba(245, 158, 11, 0.25);
+  --tint-amber-text: #ff9f0a;
 }
 
 /* Same dark set for users who follow the OS while theme = "system". */
@@ -213,14 +339,14 @@
   :root[data-theme="system"] {
     color-scheme: dark;
 
-    --bg: #0b0b0f;
+    --bg: #0a0a0b;
     --text: #f5f5f7;
-    --text-2: #98989d;
-    --text-3: #6e6e73;
+    --text-2: #a1a1a6;
+    --text-3: #8e8e93;
 
     --accent: #0a84ff;
     --accent-hover: #409cff;
-    --accent-text: #2997ff;
+    --accent-text: #5eb0ff;
     --accent-subtle: rgba(10, 132, 255, 0.18);
     --success: #30d158;
     --success-subtle: rgba(48, 209, 88, 0.16);
@@ -229,12 +355,12 @@
     --danger: #ff453a;
     --danger-subtle: rgba(255, 69, 58, 0.16);
 
-    --surface: #1c1c1e;
-    --surface-2: #2c2c2e;
-    --surface-3: #3a3a3c;
+    --surface: #111113;
+    --surface-2: #1a1a1d;
+    --surface-3: #2a2a2e;
 
-    --border: rgba(84, 84, 88, 0.6);
-    --border-strong: rgba(84, 84, 88, 0.85);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
     --hairline: rgba(255, 255, 255, 0.12);
 
     --glass-bg: rgb(28 28 30 / 0.6);
@@ -256,6 +382,10 @@
     --mesh-blue: #14202e;
     --mesh-accent: #182342;
 
+    --grad-hero: linear-gradient(135deg, var(--accent), var(--mesh-lavender));
+
+    --surface-card: rgb(17 17 19 / 0.92);
+
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-2:
       0 2px 8px rgba(0, 0, 0, 0.35),
@@ -270,6 +400,64 @@
     --scrollbar-thumb-hover: rgba(134, 134, 139, 0.6);
 
     --nav-bg: rgba(11, 11, 15, 0.72);
+
+    /* ─── Avatar ring colours ─── */
+    --ring-orange: #ff9f0a;
+    --ring-green: #30d158;
+    --ring-blue: #0a84ff;
+    --ring-purple: #bf5af2;
+    --ring-yellow: #ffd60a;
+
+    /* ─── Radii ─── */
+    --radius-card: 28px;
+    --radius-control: 12px;
+    --radius-sidebar: 24px;
+
+    /* ─── Dashboard radii (named, dark theme) ─── */
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-hero: 32px;
+    --radius-tile: 18px;
+    --radius-tile-sm: 12px;
+    --radius-date-tile: 16px;
+
+    /* ─── Stitch Dashboard tokens (dark) ─── */
+    --grad-hero-cosmic: linear-gradient(135deg, #061528 0%, #0d2857 45%, #1e1347 100%);
+    --hero-glow-1: rgba(255, 255, 255, 0.08);
+    --hero-glow-2: rgba(10, 132, 255, 0.25);
+
+    --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+    --shadow-card-hover: 0 10px 28px -4px rgba(0, 0, 0, 0.6), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+
+    --surface-tile: #1c1c1e;
+    --surface-tile-hover: #262629;
+    --surface-tile-border: rgba(255, 255, 255, 0.08);
+
+    --tint-blue-bg: rgba(10, 132, 255, 0.15);
+    --tint-blue-border: rgba(10, 132, 255, 0.25);
+    --tint-blue-text: #0a84ff;
+
+    --tint-red-bg: rgba(255, 69, 58, 0.15);
+    --tint-red-border: rgba(255, 69, 58, 0.25);
+    --tint-red-text: #ff453a;
+
+    --tint-green-bg: rgba(48, 209, 88, 0.15);
+    --tint-green-border: rgba(48, 209, 88, 0.25);
+    --tint-green-text: #30d158;
+
+    --tint-purple-bg: rgba(191, 90, 242, 0.15);
+    --tint-purple-border: rgba(191, 90, 242, 0.25);
+    --tint-purple-text: #bf5af2;
+
+    --tint-orange-bg: rgba(255, 159, 10, 0.15);
+    --tint-orange-border: rgba(255, 159, 10, 0.25);
+    --tint-orange-text: #ff9f0a;
+
+    --tint-amber-bg: rgba(245, 158, 11, 0.15);
+    --tint-amber-border: rgba(245, 158, 11, 0.25);
+    --tint-amber-text: #ff9f0a;
   }
 }
 

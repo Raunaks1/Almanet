@@ -1,0 +1,129 @@
+/* ATSIssueCard — single actionable issue card (Liquid Glass) */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.severityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font: var(--type-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.severityText {
+  opacity: 0.9;
+}
+
+.reasonBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-1);
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font: var(--type-caption);
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.reasonBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.title {
+  font: var(--type-subhead);
+  font-weight: 700;
+  color: var(--text);
+  margin: 8px 0 4px 0;
+}
+
+.description {
+  font: var(--type-subhead);
+  color: var(--text-2);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.fixWrapper {
+  margin-top: 10px;
+}
+
+.reasonBox {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.reasonLabel {
+  display: block;
+  font: var(--type-caption);
+  font-weight: 700;
+  color: var(--text-2);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.reasonText {
+  font: var(--type-caption);
+  color: var(--text-2);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.statusBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  color: var(--text-2);
+  font: var(--type-caption);
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.statusBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}

@@ -1,0 +1,169 @@
+/* ResumeOriginalPreview — exact rendering of the uploaded resume file */
+
+.viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--surface-card);
+  color: #111111;
+}
+
+.unsupported,
+.error,
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  text-align: center;
+  padding: 24px;
+  color: #111111;
+}
+
+.icon {
+  margin-bottom: 12px;
+}
+
+.title {
+  font: var(--type-headline);
+  letter-spacing: var(--tracking-title);
+  margin: 0 0 8px 0;
+  color: #111111;
+}
+
+.desc {
+  font: var(--type-body);
+  color: #666666;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.spinner {
+  margin-bottom: 12px;
+  color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.actions Button {
+  width: 100%;
+}
+
+/* ── PDF controls ── */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.pageCounter {
+  font: var(--type-caption);
+  color: #666666;
+}
+
+.zoomControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zoomValue {
+  font: var(--type-caption);
+  color: #111111;
+  min-width: 32px;
+  text-align: center;
+}
+
+/* ── PDF pages ── */
+.pdfPages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.pdfPage {
+  width: 100%;
+  max-width: 640px;
+  background: #ffffff;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-1);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── DOCX container ── */
+.docxContainer {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.docxContainer > * {
+  max-width: 100%;
+}
+
+.note {
+  padding: 16px;
+  text-align: center;
+  color: #666666;
+  border-bottom: 1px solid var(--hairline);
+  flex-shrink: 0;
+}
+
+.note p {
+  margin: 0;
+  font: var(--type-footnote);
+}
+
+.downloadBar {
+  padding: 12px 16px;
+  border-top: 1px solid var(--hairline);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.downloadBar Button {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .pdfPage {
+    max-width: 100%;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .zoomControls {
+    justify-content: center;
+  }
+}

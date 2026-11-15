@@ -68,3 +68,17 @@ export const clampStaggerStep = (items: number, step: number = STAGGER_STEP): nu
  *  no springs, no parallax — plain fades only. */
 export const withReducedMotion = (reduced: boolean, transition: Transition): Transition =>
   reduced ? { duration: 0.15, ease: 'linear' } : transition;
+
+/** Slide in from the right edge — drawer entrance on desktop. */
+export const slideInFromRight = (distance: number = 320, duration: number = DURATION.reveal): Variants => ({
+  hidden: { x: distance },
+  visible: { x: 0, transition: { duration, ease: EASE_REVEAL } },
+  exit: { x: distance, transition: { duration: DURATION.normal, ease: EASE_REVEAL } },
+});
+
+/** Slide in from the bottom edge — bottom sheet entrance on mobile. */
+export const slideInFromBottom = (distance: string | number = '100%', duration: number = DURATION.reveal): Variants => ({
+  hidden: { y: distance, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration, ease: EASE_REVEAL } },
+  exit: { y: distance, opacity: 0, transition: { duration: DURATION.normal, ease: EASE_REVEAL } },
+});

@@ -1,0 +1,20 @@
+/* ResumeEditor — full-page Editor Mode page */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  color: var(--text-2);
+  font: var(--type-callout);
+}

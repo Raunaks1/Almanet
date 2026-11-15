@@ -770,19 +770,26 @@ export function TestimonialGlobe({
       setVisible(s.onScreen && !document.hidden);
       kickRef.current();
     };
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[entries.length - 1];
-      s.onScreen = entry?.isIntersecting ?? true;
+    let observer: IntersectionObserver | null = null;
+    try {
+      observer = new IntersectionObserver((entries) => {
+        const entry = entries[entries.length - 1];
+        s.onScreen = entry?.isIntersecting ?? true;
+        sync();
+      });
+    } catch {
+      // IntersectionObserver not supported — default to on-screen.
+      s.onScreen = true;
       sync();
-    });
+    }
     onMotion();
     motion.addEventListener("change", onMotion);
     document.addEventListener("visibilitychange", sync);
-    observer.observe(root);
+    observer?.observe(root);
     return () => {
       motion.removeEventListener("change", onMotion);
       document.removeEventListener("visibilitychange", sync);
-      observer.disconnect();
+      observer?.disconnect();
     };
   }, []);
 

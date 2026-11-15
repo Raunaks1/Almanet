@@ -18,7 +18,13 @@ const TabsContext = createContext<TabsContextValue | null>(null);
 
 const useTabs = () => {
   const ctx = useContext(TabsContext);
-  if (!ctx) throw new Error('TabPanel must be used inside <Tabs>');
+  if (!ctx) {
+    if (import.meta.env.DEV) {
+      throw new Error('TabPanel must be used inside <Tabs>');
+    }
+    console.warn('TabPanel must be used inside <Tabs>');
+    return { active: '' };
+  }
   return ctx;
 };
 

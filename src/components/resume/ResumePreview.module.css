@@ -1,0 +1,150 @@
+/* ResumePreview — typeset, print-like A4 document surface (StructuredResume) */
+
+.paper {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-2);
+  box-shadow: var(--shadow-2);
+  padding: clamp(20px, 4vw, 40px);
+  font-family: var(--font);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ── Header ── */
+.header {
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #111111;
+  text-align: center;
+}
+
+.name {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+  margin: 0 0 4px 0;
+  color: #111111;
+  text-transform: uppercase;
+}
+
+.headline {
+  font: var(--type-subhead);
+  font-style: italic;
+  color: #444444;
+  margin: 0 0 6px 0;
+}
+
+.contact {
+  font: var(--type-footnote);
+  color: #666666;
+  margin: 0;
+}
+
+/* ── Sections ── */
+.section {
+  margin-bottom: 20px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #444444;
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* ── Entries ── */
+.entry {
+  margin-bottom: 14px;
+}
+
+.entry:last-child {
+  margin-bottom: 0;
+}
+
+.entryHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.entryMain {
+  min-width: 0;
+}
+
+.entryTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  color: #111111;
+}
+
+.entryDates {
+  font: var(--type-footnote);
+  color: #666666;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.entrySub {
+  font: var(--type-footnote);
+  color: #444444;
+  margin: 2px 0 0 0;
+}
+
+.entryLocation {
+  font: var(--type-footnote);
+  font-style: italic;
+  color: #666666;
+  margin: 2px 0 0 0;
+}
+
+.techLine {
+  font: var(--type-footnote);
+  color: #666666;
+  margin: 2px 0 6px 0;
+}
+
+.paragraph {
+  font: var(--type-subhead);
+  line-height: 1.55;
+  color: #111111;
+  margin: 0;
+}
+
+.bullets {
+  margin: 6px 0 0 0;
+  padding-left: 18px;
+}
+
+.bullets li {
+  font: var(--type-subhead);
+  line-height: 1.5;
+  color: #111111;
+  margin-bottom: 3px;
+}
+
+.bullets li::marker {
+  color: #666666;
+}
+
+.skillsLine {
+  font: var(--type-subhead);
+  line-height: 1.55;
+  color: #111111;
+  margin: 0;
+}

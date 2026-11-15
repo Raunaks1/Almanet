@@ -1,0 +1,80 @@
+/* VerificationBanner — full-width status banner */
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-1);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning .icon {
+  background: var(--warning-subtle);
+  color: var(--warning);
+}
+
+.danger .icon {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-headline);
+  color: var(--text);
+}
+
+.text {
+  margin: 0;
+  font: var(--type-subhead);
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.supportBtn {
+  margin-top: 6px;
+  align-self: flex-start;
+  font: var(--type-subhead);
+  font-weight: 600;
+  color: var(--accent);
+}
+
+@media (max-width: 767px) {
+  .banner {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .title {
+    font: var(--type-title);
+  }
+
+  .text {
+    font: var(--type-footnote);
+  }
+}

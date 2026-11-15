@@ -1,0 +1,379 @@
+/* OptimiseModal — Liquid Glass bottom sheet / centered dialog */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  backdrop-filter: blur(8px) saturate(120%);
+  z-index: var(--z-scrim);
+}
+
+.overlayMotion {
+  animation: overlayFade var(--dur-normal) var(--ease-reveal);
+}
+
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  position: fixed;
+  z-index: var(--z-modal);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-3);
+  box-shadow: var(--glass-shadow);
+  color: var(--text);
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Desktop: centered floating glass panel ── */
+.modal:not(.modalMobile) {
+  top: 50%;
+  left: 50%;
+  width: min(560px, 92vw);
+  max-width: min(560px, 92vw);
+  max-height: 88vh;
+  transform: translate(-50%, -50%);
+}
+
+/* ── Mobile: bottom sheet ── */
+.modalMobile {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  max-width: 100vw;
+  height: 94vh;
+  max-height: 94vh;
+  border-radius: var(--radius-3) var(--radius-3) 0 0;
+}
+
+/* ── Editor Mode: wide split-screen panel ── */
+.modalEditor:not(.modalMobile) {
+  top: 50%;
+  left: 50%;
+  width: min(1200px, 96vw);
+  max-width: min(1200px, 96vw);
+  height: 92vh;
+  max-height: 92vh;
+  transform: translate(-50%, -50%);
+}
+
+/* ── Drag handle (iOS bottom sheet) ── */
+.dragHandle {
+  width: 36px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--text-3);
+  opacity: 0.4;
+  margin: 10px auto;
+  flex-shrink: 0;
+}
+
+/* ── Sticky Header ── */
+.sheetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 0 16px;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: var(--glass-blur);
+  flex-shrink: 0;
+}
+
+.headerCenter {
+  flex: 1;
+  text-align: center;
+}
+
+.sheetTitle {
+  font: var(--type-headline);
+  letter-spacing: var(--tracking-title);
+  margin: 0 0 4px 0;
+  color: var(--text);
+}
+
+.sheetSub {
+  font: var(--type-caption);
+  color: var(--text-2);
+  margin: 0;
+}
+
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.closeBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+/* ── Scrollable Content ── */
+.sheetContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--surface-card);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Step 1 styles ── */
+.step {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface-card);
+}
+
+.lead {
+  font: var(--type-body);
+  color: var(--text-2);
+  margin: 0;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.emptyIcon {
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+
+.emptyTitle {
+  font: var(--type-headline);
+  color: var(--text);
+  margin: 0 0 6px 0;
+}
+
+.emptyDesc {
+  font: var(--type-subhead);
+  color: var(--text-2);
+  margin: 0 0 16px 0;
+}
+
+.hint {
+  font: var(--type-caption);
+  color: var(--text-2);
+  margin: 0;
+}
+
+.hintStrong {
+  color: var(--text);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resumeCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+
+.resumeCard:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.resumeCardSelected {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-1);
+  background: var(--surface-2);
+}
+
+.radioWrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Visually hide the native radio input but keep it accessible (not display:none). */
+.radioWrap input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Custom indicator drawn from the input's :checked state. */
+.radioIndicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.radioWrap input[type="radio"]:checked + .radioIndicator {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+.resumeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.resumeName {
+  font: var(--type-subhead);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 2px 0;
+}
+
+.resumeMeta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font: var(--type-caption);
+  color: var(--text-3);
+}
+
+.metaDot {
+  opacity: 0.6;
+}
+
+.resumeScore {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.scoreValue {
+  font: 700 18px var(--font);
+  color: var(--text);
+}
+
+.scoreLabel {
+  font: var(--type-caption);
+  color: var(--text-2);
+}
+
+.scoreNone {
+  font: var(--type-caption);
+  color: var(--text-3);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+/* ── Empty state for Step 2 error ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.emptyState .lead {
+  color: var(--text);
+}
+
+/* ── Sticky Footer ── */
+.sheetFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: var(--glass-blur);
+  flex-shrink: 0;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlayMotion { animation: none; }
+}
+
+/* ── Original document viewer wrap ── */
+.viewerWrap {
+  width: 100%;
+  min-height: 500px;
+  background: var(--surface);
+  border-radius: var(--radius-2);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .viewerWrap {
+    min-height: 40dvh;
+    max-height: 60dvh;
+  }
+}
+
+/* ── Keyword highlights wrap ── */
+.highlightsWrap {
+  width: 100%;
+  min-height: 400px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius-2);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-1);
+  padding: 16px;
+}

@@ -1,0 +1,46 @@
+/* InviteCard — invite classmates card */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-headline);
+  color: var(--text);
+}
+
+.text {
+  margin: 0;
+  font: var(--type-subhead);
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.inviteBtn {
+  font: var(--type-subhead);
+  font-weight: 600;
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  .body {
+    padding: 14px;
+    gap: 8px;
+  }
+}
