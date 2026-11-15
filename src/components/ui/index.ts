@@ -65,4 +65,10 @@ export type { TooltipProps } from './Tooltip';
 export { Divider } from './Divider';
 export type { DividerProps } from './Divider';
 
+export { Menu } from './Menu';
+export type { MenuProps, MenuItem } from './Menu';
+
+export { ErrorBoundary } from './ErrorBoundary';
+export type { Props as ErrorBoundaryProps } from './ErrorBoundary';
+
 export { VariableFontHover } from './VariableFontHover';

@@ -145,19 +145,27 @@ export default function Faq({
       setItemsRevealed(true);
       return;
     }
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setItemsRevealed(true);
-            io.disconnect();
+    let io: IntersectionObserver | null = null;
+    try {
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              setItemsRevealed(true);
+              io?.disconnect();
+            }
           }
-        }
-      },
-      { threshold: 0.3 } as IntersectionObserverInit,
-    );
-    io.observe(el);
-    return () => io.disconnect();
+        },
+        { threshold: 0.3 },
+      );
+      io.observe(el);
+    } catch {
+      // IntersectionObserver not supported — treat as visible.
+      setItemsRevealed(true);
+    }
+    return () => {
+      io?.disconnect();
+    };
   }, []);
 
   const itemVariants = {

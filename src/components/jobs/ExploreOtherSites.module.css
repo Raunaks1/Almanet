@@ -1,0 +1,222 @@
+/* ExploreOtherSites — external job search panel, matched to the Jobs page look */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: var(--radius-3);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+}
+
+.headerTop {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-headline);
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0;
+  font: var(--type-footnote);
+  color: var(--text-2);
+}
+
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+  color: var(--text);
+  font: var(--type-subhead);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.expandBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.expandBtn:hover {
+  background: var(--surface-3);
+}
+
+.chevron {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-top: 2px solid var(--text-3);
+  border-right: 2px solid var(--text-3);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.expandBtn[aria-expanded="true"] .chevron {
+  transform: rotate(225deg);
+}
+
+.body {
+  padding: 0 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font: var(--type-caption);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.input {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+  color: var(--text);
+  font: var(--type-subhead);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input::placeholder {
+  color: var(--text-3);
+}
+
+.input:focus {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 1px;
+  border-color: var(--border);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.checkboxLabel {
+  font: var(--type-subhead);
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxLabel:focus-within {
+  outline: none;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.siteLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+  color: var(--text);
+  font: var(--type-subhead);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.siteLink:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.siteLink:hover {
+  background: var(--surface-3);
+  transform: translateY(-1px);
+}
+
+.note {
+  margin: 0;
+  font: var(--type-caption);
+  color: var(--text-3);
+  text-align: center;
+}
+
+/* Desktop: panel open by default, buttons wrap across available width */
+@media (min-width: 768px) {
+  .actions {
+    gap: 8px;
+  }
+  .siteLink {
+    flex: 1 1 150px;
+    max-width: 220px;
+  }
+}
+
+/* Mobile: single-column inputs, full-width stacked buttons */
+@media (max-width: 767px) {
+  .card {
+    border-radius: var(--radius-3);
+  }
+  .header {
+    padding: 14px 16px;
+  }
+  .body {
+    padding: 0 16px 16px;
+    gap: 10px;
+  }
+  .actions {
+    gap: 8px;
+    flex-direction: column;
+  }
+  .siteLink {
+    width: 100%;
+    max-width: none;
+    justify-content: center;
+  }
+}

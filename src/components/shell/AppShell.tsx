@@ -10,6 +10,7 @@ import {
   User,
 } from 'lucide-react';
 import { SPRING } from '../../lib/motion';
+import { fetchChannelsForUser } from '../../lib/chat';
 import { useAuth } from '../../lib/useAuth';
 import { supabase } from '../../lib/supabase';
 import { Modal } from '../ui';
@@ -292,10 +293,32 @@ export const AppShellFrame: React.FC<AppShellFrameProps> = ({ profile, unreadCha
  */
 export const AppShell: React.FC<{ unreadChats?: number }> = ({ unreadChats = 0 }) => {
   const { user, profile, isVerified, userType } = useAuth();
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const meta = user?.user_metadata ?? {};
   const name: string = profile?.full_name || meta.full_name || user?.email?.split('@')[0] || 'Your account';
   const avatarUrl: string | null = profile?.avatar_url || meta.avatar_url || null;
   const isAdmin = userType === 'admin';
+
+  // Reuse the existing channels query (no new query) so the Chat sidebar badge
+  // reflects the real unread count now that the top-right messages shortcut is gone.
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!user?.id) return;
+      try {
+        const channels = await fetchChannelsForUser(user.id);
+        if (mounted) {
+          setUnreadCount(channels.reduce((sum, ch) => sum + (ch.unread_count || 0), 0));
+        }
+      } catch {
+        // Badge is visual-only; fail silently.
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   return (
     <AppShellFrame
@@ -307,7 +330,9 @@ export const AppShell: React.FC<{ unreadChats?: number }> = ({ unreadChats = 0 }
         isVerified,
         userId: user?.id ?? null,
       }}
-      unreadChats={unreadChats}
+      // `unreadChats` is only set by the dev preview routes; otherwise use the
+      // live unread count computed above.
+      unreadChats={unreadChats !== 0 ? unreadChats : unreadCount}
     />
   );
 };

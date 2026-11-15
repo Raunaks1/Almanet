@@ -329,7 +329,7 @@ function Sections() {
       <section className={styles.section}>
         <h3 className={styles.sectionName}>Avatars</h3>
         <div className={styles.row}>
-          <Avatar name="Raunak Shaikh" size="xs" />
+          <Avatar name="Demo User" size="xs" />
           <Avatar name="Priya Deshmukh" size="sm" />
           <Avatar name="Aniket Patil" size="md" online />
           <Avatar name="Sneha Kulkarni Deshmukh-Patil" size="lg" />

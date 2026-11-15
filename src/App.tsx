@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './ThemeContext';
-import { ToastProvider } from './components/ui';
+import { ToastProvider, ErrorBoundary } from './components/ui';
 import MeshBackground from './components/MeshBackground';
 import { AppShell } from './components/shell/AppShell';
 import { AppShellFrame } from './components/shell/AppShell';
@@ -14,7 +14,9 @@ const Directory = lazy(() => import('./pages/Directory'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Forums = lazy(() => import('./pages/Forums'));
 const Jobs = lazy(() => import('./pages/Jobs'));
+const Optimise = lazy(() => import('./pages/Optimise'));
 const Events = lazy(() => import('./pages/Events'));
+const ResumeEditor = lazy(() => import('./pages/ResumeEditor'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const Chat = lazy(() => import('./pages/Chat'));
 const ShellPreview = lazy(() => import('./pages/ShellPreview'));
@@ -32,6 +34,8 @@ function RouteTitle() {
     else if (pathname.startsWith('/profile')) page = 'Profile';
     else if (pathname === '/forums') page = 'Forums';
     else if (pathname === '/jobs') page = 'Jobs';
+    else if (pathname.startsWith('/jobs/') && pathname.includes('/optimise')) page = 'Resume Optimization';
+    else if (pathname.startsWith('/jobs/') && pathname.includes('/editor')) page = 'Resume Editor';
     else if (pathname === '/events') page = 'Events';
     else if (pathname === '/chat' || pathname.startsWith('/chat/')) page = 'Messages';
     else if (pathname === '/admin') page = 'Admin';
@@ -66,7 +70,8 @@ function App() {
           <RouteTitle />
           <div className="app-container">
             <Suspense fallback={null}>
-            <Routes>
+              <ErrorBoundary>
+                <Routes>
               {/* Public routes — keep their own layout */}
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
@@ -89,6 +94,8 @@ function App() {
                 <Route path="/profile/:id" element={<VerificationGate><Profile /></VerificationGate>} />
                 <Route path="/forums" element={<VerificationGate><Forums /></VerificationGate>} />
                 <Route path="/jobs" element={<VerificationGate><Jobs /></VerificationGate>} />
+                <Route path="/jobs/:jobId/optimise" element={<Optimise />} />
+                <Route path="/jobs/:jobId/editor" element={<VerificationGate><ResumeEditor /></VerificationGate>} />
                 <Route path="/events" element={<VerificationGate><Events /></VerificationGate>} />
                 <Route path="/chat" element={<VerificationGate><Chat /></VerificationGate>} />
                 <Route path="/chat/:channelId" element={<VerificationGate><Chat /></VerificationGate>} />
@@ -102,7 +109,7 @@ function App() {
                 element={
                   <AppShellFrame
                     profile={{
-                      name: 'Raunak Shaikh',
+                      name: 'Demo User',
                       role: 'Verified member',
                       isAdmin: true,
                       isVerified: true,
@@ -131,7 +138,8 @@ function App() {
               >
                 <Route path="/directory/preview" element={<ShellPreview />} />
               </Route>
-            </Routes>
+                </Routes>
+              </ErrorBoundary>
             </Suspense>
           </div>
         </Router>

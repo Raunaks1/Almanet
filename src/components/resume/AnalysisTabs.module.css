@@ -1,0 +1,286 @@
+/* AnalysisTabs — tab navigation with panels (iOS style) */
+
+.root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Primary Tabs (iOS style) ── */
+.tabBar {
+  display: flex;
+  gap: 0;
+  border-radius: var(--radius-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  padding: 2px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-2);
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font: var(--type-callout);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--dur-fast) ease;
+  flex-shrink: 0;
+}
+
+.tabBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.tabBtnActive {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.tabBtn svg {
+  flex-shrink: 0;
+}
+
+.tabLabel {
+  font-size: 14px;
+}
+
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.panel {
+  animation: none;
+}
+
+/* ── Keywords panel ── */
+.keywordsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0;
+}
+
+.panelTitle {
+  font: var(--type-callout);
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px 0;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font: var(--type-caption);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.chipMatched {
+  background: var(--success-subtle);
+  border-color: rgba(52, 199, 89, 0.4);
+  color: var(--success);
+}
+
+.chipMissing {
+  background: var(--warning-subtle);
+  border-color: rgba(255, 159, 10, 0.4);
+  color: var(--warning);
+}
+
+.chipCount {
+  font: var(--type-caption);
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.chipNote {
+  font: var(--type-caption);
+  color: var(--text-2);
+  opacity: 0.8;
+  margin-left: 6px;
+}
+
+.weakList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weakItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-2);
+  background: var(--warning-subtle);
+  border: 1px solid rgba(255, 159, 10, 0.3);
+}
+
+.weakText {
+  font: var(--type-subhead);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.weakSuggestion {
+  font: var(--type-footnote);
+  color: var(--text-2);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.emptyNote {
+  font: var(--type-caption);
+  color: var(--text-3);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* ── Sub-Tabs (segmented control style) ── */
+.filterBar {
+  display: flex;
+  gap: 0;
+  border-radius: var(--radius-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  padding: 2px;
+  margin-bottom: 16px;
+}
+
+.filterBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: var(--radius-2);
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font: var(--type-callout);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--dur-fast) ease;
+  flex-shrink: 0;
+}
+
+.filterBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.filterBtnActive {
+  background: rgba(255, 255, 255, 0.4);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.issuesList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Description panel ── */
+.descriptionPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+}
+
+.jobHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.companyTag {
+  font: var(--type-caption);
+  font-weight: 700;
+  color: var(--accent-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
+.jobTitle {
+  font: var(--type-headline);
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+  margin: 0;
+  font-size: 20px;
+}
+
+.locationTag {
+  font: var(--type-caption);
+  color: var(--text-2);
+  margin-left: auto;
+}
+
+.descriptionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
+  background: var(--surface);
+  padding: 16px;
+  box-shadow: var(--shadow-1);
+}
+
+.descriptionPara {
+  font: var(--type-body);
+  color: var(--text);
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* ── Empty state ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-2);
+}
+
+.emptyIcon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.emptyTitle {
+  font: var(--type-subhead);
+  color: var(--text);
+  margin: 0;
+}

@@ -1,0 +1,134 @@
+/* BatchStrip — approved classmates from the same batch */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+.header {
+  padding: 16px 16px 0;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-headline);
+  color: var(--text);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 16px;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+.row:not(:last-child) {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.rowAvatar {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.avatar {
+  flex-shrink: 0;
+}
+
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rowName {
+  font: var(--type-subhead);
+  color: var(--text);
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.rowBranch {
+  font: var(--type-footnote);
+  color: var(--text-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.messageBtn {
+  font: 600 13px/18px var(--font);
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 16px 0;
+}
+
+.skelItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skelAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+
+.skelCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.skelLine {
+  height: 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+
+@media (max-width: 767px) {
+  .header {
+    padding: 14px 14px 0;
+  }
+
+  .list {
+    padding: 0 14px;
+  }
+
+  .row {
+    padding: 10px 0;
+  }
+}

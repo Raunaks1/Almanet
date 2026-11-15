@@ -1,0 +1,629 @@
+/* ResumeEditorSidebar — left pane of Editor Mode (StructuredResume) */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ── Edit Content header ── */
+.editHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.editHeaderTitleWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.editHeaderTitle {
+  font: var(--type-headline);
+  letter-spacing: var(--tracking-title);
+  color: var(--text);
+}
+
+.editHeaderSection {
+  font: var(--type-caption);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* ── ATS Issues Box ── */
+.issuesBox {
+  padding: 14px;
+  border-radius: var(--radius-2);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.issuesBoxTitle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin: 0 0 10px 0;
+}
+
+.issuesBoxEmpty {
+  font: var(--type-footnote);
+  color: var(--success);
+  margin: 0;
+}
+
+.issueList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.issueBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: var(--radius-1);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font: var(--type-footnote);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.issueBtn:hover {
+  background: var(--surface-2);
+  border-color: var(--hairline);
+}
+
+.issueBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.issueIcon {
+  flex-shrink: 0;
+}
+
+.issueTitle {
+  flex: 1;
+  min-width: 0;
+}
+
+.issueFix {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── Parse warning (honest fallback state) ── */
+.parseWarning {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.warningIcon {
+  color: var(--warning);
+}
+
+.warningBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.warningTitle {
+  font: var(--type-subhead);
+  font-weight: 600;
+  color: var(--warning);
+}
+
+.warningText {
+  font: var(--type-footnote);
+  color: var(--text-2);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.reReadBtn {
+  align-self: flex-start;
+}
+
+/* ── Unclassified text ── */
+.unclassifiedSection {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.unclassifiedHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.unclassifiedHead:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: -3px;
+}
+
+.unclassifiedTitle {
+  font: var(--type-subhead);
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.unclassifiedBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 14px 14px;
+}
+
+.unclassifiedItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-1);
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+
+.unclassifiedText {
+  flex: 1;
+  min-width: 0;
+  font: var(--type-footnote);
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.unclassifiedActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.unclassifiedSelect {
+  min-width: 150px;
+}
+
+/* ── Accordion ── */
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.accItem {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.accItemOpen {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-1);
+}
+
+.accHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.accHead:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: -3px;
+}
+
+.accIcon {
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+
+.accLabelWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.accLabel {
+  font: var(--type-subhead);
+  font-weight: 600;
+}
+
+.accHint {
+  font: var(--type-caption);
+  color: var(--text-3);
+}
+
+.accChevron {
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+.accChevronOpen {
+  transform: rotate(180deg);
+}
+
+.accBody {
+  padding: 14px;
+  border-top: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+
+/* ── Forms ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gridRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.fieldLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fieldHint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: var(--radius-1);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  color: var(--text);
+  font: var(--type-subhead);
+}
+
+.input:focus {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.input::placeholder {
+  color: var(--text-3);
+}
+
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.textarea,
+.bulletInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-1);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  color: var(--text);
+  font: var(--type-subhead);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.textarea:focus,
+.bulletInput:focus {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.textarea::placeholder,
+.bulletInput::placeholder {
+  color: var(--text-3);
+}
+
+/* ── Cards (repeatable entries) ── */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-2);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardTitle {
+  font: var(--type-footnote);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-1);
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+  color: var(--text-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.iconBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.cardHidden {
+  opacity: 0.5;
+  filter: grayscale(0.35);
+  border-color: var(--hairline);
+}
+
+/* ── Inline ATS banner inside a section ── */
+.atsBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-1);
+  border: 1px solid var(--glass-border);
+  background: rgba(255 209 10 / 0.12);
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.atsBannerIcon {
+  flex-shrink: 0;
+  color: var(--warning);
+}
+
+.atsBannerBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.atsBannerTitle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--warning);
+}
+
+.atsBannerText {
+  font: var(--type-footnote);
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* ── Add buttons ── */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--accent);
+  font: var(--type-footnote);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.addBtn:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+}
+
+.addBtn:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+/* ── Empty states ── */
+.emptyNote {
+  font: var(--type-footnote);
+  color: var(--text-3);
+  margin: 0;
+}
+
+/* ── Chips ── */
+.chipInputWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: var(--radius-1);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  color: var(--text);
+  font: var(--type-caption);
+  font-weight: 600;
+}
+
+.chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+.chip button:hover {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.chipInput {
+  flex: 1;
+  min-width: 110px;
+  min-height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: var(--type-subhead);
+}
+
+.chipInput:focus {
+  outline: none;
+}
+
+.chipInput::placeholder {
+  color: var(--text-3);
+}
+
+.suggestionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.suggestionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.suggestionChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--success);
+  background: var(--success-subtle);
+  color: var(--success);
+  font: var(--type-caption);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.suggestionChip:hover {
+  background: var(--success);
+  color: #fff;
+}
+
+.suggestionChip:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}

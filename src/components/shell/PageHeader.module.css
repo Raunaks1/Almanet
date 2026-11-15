@@ -34,12 +34,15 @@
   flex-wrap: wrap;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 899px) {
   .title {
-    font: var(--type-title);
+    font: 700 30px/36px var(--font);
+    letter-spacing: var(--tracking-title);
   }
 
   .subtitle {
-    font: var(--type-subhead);
+    font: 400 15px/21px var(--font);
+    color: var(--text-2);
+    overflow-wrap: anywhere;
   }
 }

@@ -1,0 +1,144 @@
+/* ResumeHighlight — dense resume text panel (opaque surface, not glass) */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
+  box-shadow: var(--shadow-1);
+}
+
+.textWrap {
+  position: relative;
+  min-height: 220px;
+  max-height: 520px;
+  overflow: auto;
+  padding: 16px;
+  font: var(--type-body);
+  color: var(--text);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.segment,
+.highlight {
+  display: inline;
+}
+
+.highlight {
+  border-radius: 6px;
+  padding: 0 2px;
+  margin: 0 -2px;
+  cursor: default;
+  transition: box-shadow var(--dur-fast) ease;
+}
+
+.highlight:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+.highlightMatched {
+  background: var(--success-subtle);
+  border: 1px dotted var(--success);
+  color: var(--text);
+}
+
+.highlightWeak {
+  background: var(--warning-subtle);
+  border: 1px dotted var(--warning);
+  color: var(--text);
+}
+
+.legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  border-radius: var(--radius-2) var(--radius-2) 0 0;
+  font: var(--type-caption);
+  color: var(--text-3);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.swatchMatched {
+  background: var(--success);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.swatchWeak {
+  background: var(--warning);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.tooltip {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 10px;
+  z-index: 10;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-1);
+  box-shadow: var(--shadow-2);
+  padding: 10px 12px;
+  font: var(--type-footnote);
+  color: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  animation: fadeIn var(--dur-normal) var(--ease-reveal);
+}
+
+.tooltipLabel {
+  font-weight: 700;
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+.tooltipClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  cursor: pointer;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.tooltipClose:focus-visible {
+  outline: 3px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip { animation: none; }
+}

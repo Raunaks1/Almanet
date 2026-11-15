@@ -1,0 +1,216 @@
+/* MessagesCard — recent channels card */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 0;
+}
+
+.title {
+  margin: 0;
+  font: var(--type-headline);
+  color: var(--text);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  font: 600 12px/16px var(--font);
+  color: var(--text-2);
+}
+
+.unreadChip {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  border-color: transparent;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 16px;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+.row:not(:last-child) {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.rowAvatar {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.avatar {
+  flex-shrink: 0;
+}
+
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rowName {
+  font: var(--type-subhead);
+  color: var(--text);
+  font-weight: 600;
+  min-width: 0;
+}
+
+.rowTime {
+  font: var(--type-caption);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.rowPreview {
+  font: var(--type-footnote);
+  color: var(--text-2);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.rowBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font: 600 11px/14px var(--font);
+  flex-shrink: 0;
+}
+
+.skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 16px 0;
+}
+
+.skelRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skelAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+
+.skelCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.skelLine {
+  height: 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px 16px;
+}
+
+.footer .button {
+  font: var(--type-subhead);
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  font: var(--type-headline);
+  color: var(--text);
+}
+
+.retryBtn {
+  color: var(--accent);
+  font: var(--type-subhead);
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .card {
+    border-radius: var(--radius-card);
+  }
+
+  .header {
+    padding: 14px 14px 0;
+  }
+
+  .list {
+    padding: 0 14px;
+  }
+
+  .row {
+    padding: 10px 0;
+  }
+
+  .footer {
+    padding: 0 14px 14px;
+  }
+}

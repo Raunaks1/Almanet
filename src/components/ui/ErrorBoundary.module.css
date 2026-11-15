@@ -1,0 +1,62 @@
+/* ErrorBoundary fallback card — glass recipe from tokens.css. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--text);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  max-width: 420px;
+  width: 100%;
+  border-radius: var(--radius-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  box-sizing: border-box;
+}
+
+.title {
+  font: var(--type-headline);
+  letter-spacing: var(--tracking-title);
+  margin: 0;
+}
+
+.message {
+  font: var(--type-body);
+  color: var(--text-2);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.buttons {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+    transform: none;
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .card {
+    background: var(--surface-card);
+    backdrop-filter: none;
+  }
+}
